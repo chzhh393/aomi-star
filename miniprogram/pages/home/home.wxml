@@ -1,0 +1,7 @@
+<!--pages/home/home.wxml-->
+<view class="container">
+  <view class="welcome">
+    <text class="title">欢迎使用小程序</text>
+    <text class="subtitle">开始你的开发之旅</text>
+  </view>
+</view>

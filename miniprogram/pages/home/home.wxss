@@ -1,0 +1,27 @@
+/* pages/home/home.wxss */
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f8f8;
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: #888;
+}
