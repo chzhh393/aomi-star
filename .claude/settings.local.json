@@ -2,9 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(tree:*)",
-      "Bash(.git)"
+      "Bash(.git)",
+      "Bash(test:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "user-prompt-submit": {
+      "command": "node .claude/hooks/user-prompt-submit.js",
+      "enabled": true
+    }
   }
 }

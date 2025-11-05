@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code Skill Auto-Activation Rules",
+  "description": "定义 Skills 的自动激活规则和触发条件",
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-05",
+
+  "skills": [
+    {
+      "id": "miniprogram-dev",
+      "name": "微信小程序开发规范",
+      "path": ".claude/skills/miniprogram-dev/SKILL.md",
+      "enabled": true,
+      "priority": 10,
+
+      "triggers": {
+        "keywords": [
+          "创建页面",
+          "新增页面",
+          "开发页面",
+          "创建组件",
+          "新增组件",
+          "云函数",
+          "cloud function",
+          "TabBar",
+          "自定义导航",
+          "角色切换",
+          "角色管理",
+          "场景参数",
+          "scene",
+          "候选人",
+          "主播",
+          "HR",
+          "经纪人",
+          "运营",
+          "培训师",
+          "造型师",
+          "化妆师",
+          "摄影师",
+          "舞蹈老师",
+          "星探",
+          "管理员"
+        ],
+
+        "filePatterns": [
+          "**/miniprogram/pages/**/*.js",
+          "**/miniprogram/pages/**/*.wxml",
+          "**/miniprogram/pages/**/*.wxss",
+          "**/miniprogram/pages/**/*.json",
+          "**/miniprogram/components/**/*.js",
+          "**/miniprogram/components/**/*.wxml",
+          "**/miniprogram/components/**/*.wxss",
+          "**/miniprogram/components/**/*.json",
+          "**/miniprogram/custom-tab-bar/**/*",
+          "**/cloudfunctions/**/*",
+          "**/miniprogram/utils/role-manager.js",
+          "**/miniprogram/utils/scene-parser.js"
+        ],
+
+        "contextPatterns": [
+          "开发.*工作台",
+          "实现.*功能",
+          "添加.*角色",
+          "创建.*云函数",
+          "修改.*页面",
+          "优化.*组件"
+        ]
+      },
+
+      "autoActivate": {
+        "onKeywordMatch": true,
+        "onFileMatch": true,
+        "onContextMatch": true,
+        "minConfidence": 0.7
+      },
+
+      "metadata": {
+        "description": "Aomi Star 微信小程序开发的专用规范和最佳实践",
+        "tags": ["miniprogram", "wechat", "frontend", "cloud"],
+        "version": "1.0.0",
+        "author": "开发团队"
+      }
+    }
+  ],
+
+  "globalSettings": {
+    "enableAutoActivation": true,
+    "maxActiveSkills": 3,
+    "conflictResolution": "priority",
+    "logLevel": "info"
+  },
+
+  "rules": {
+    "keywordMatching": {
+      "caseSensitive": false,
+      "fuzzyMatch": false,
+      "minimumMatchLength": 2
+    },
+
+    "filePatternMatching": {
+      "enabled": true,
+      "checkCurrentFile": true,
+      "checkRecentFiles": true,
+      "recentFilesWindow": 5
+    },
+
+    "contextMatching": {
+      "enabled": true,
+      "useRegex": true,
+      "checkFullPrompt": true
+    }
+  },
+
+  "notifications": {
+    "showActivationNotice": true,
+    "noticeFormat": "🎯 已自动激活 Skill: {skillName}",
+    "logActivations": true
+  }
+}

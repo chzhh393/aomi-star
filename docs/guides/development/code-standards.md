@@ -1,544 +1,337 @@
-# 📏 代码规范
+# 📏 Aomi Star 代码规范
 
-> 统一的代码规范,提高代码质量和可维护性
+> 项目特定的代码约定和风格指南
 
-## 🎯 总体原则
+**创建日期**: 2025-11-01
+**最后更新**: 2025-11-05
+**维护者**: 开发团队
 
-1. **可读性优先**: 代码是给人看的,其次才是给机器执行的
-2. **一致性**: 保持代码风格的一致性
-3. **简洁性**: 简单清晰,避免过度设计
-4. **可维护性**: 易于理解和修改
+---
 
-## 📝 命名规范
+## 🎯 规范概述
 
-### JavaScript 命名
+本文档定义 **Aomi Star 项目特定** 的代码规范和约定。
 
-```javascript
-// 变量和函数: 小驼峰
-let userName = 'John'
-function getUserInfo() {}
+**分工说明**：
+- 本文档 - 项目特定的约定（命名、文件组织、提交规范）
+- [@Skills/miniprogram-dev](../../../.claude/skills/miniprogram-dev/SKILL.md) - 微信小程序开发详细规范（会自动激活）
+- [@全局 CLAUDE.md](../../CLAUDE.md) - 通用开发哲学和流程
 
-// 常量: 大写下划线
-const MAX_COUNT = 100
-const API_BASE_URL = 'https://api.example.com'
+---
 
-// 类和组件: 大驼峰
-class UserProfile {}
-Component UserCard {}
+## 📂 项目文件命名约定
 
-// 私有变量/方法: 下划线前缀
-let _privateVar = 'private'
-function _privateMethod() {}
-
-// 布尔值: is/has/can 前缀
-let isVisible = true
-let hasPermission = false
-let canEdit = true
-```
-
-### 文件命名
+### 1. 页面和组件目录
 
 ```bash
-# 页面和组件: 小写连字符
-pages/user-profile/
-components/user-card/
+# ✅ 正确：小写字母 + 连字符
+miniprogram/pages/candidate/register-info/
+miniprogram/pages/hr/candidate-list/
+miniprogram/components/common/user-card/
 
-# JS 文件: 小驼峰
-utils/dateUtil.js
-services/userApi.js
-
-# 配置文件: 小写连字符
-project.config.json
+# ❌ 错误：大驼峰或下划线
+miniprogram/pages/candidate/RegisterInfo/
+miniprogram/pages/hr/candidate_list/
 ```
 
-## 💻 JavaScript 规范
+**原因**：
+- 微信小程序路径区分大小写，小写可避免路径错误
+- 连字符是 Web 标准，便于 URL 使用
+- 保持跨平台兼容性
 
-### 1. 使用 const 和 let
+### 2. JavaScript 文件
 
-```javascript
-// ✅ 推荐
-const maxCount = 100
-let currentCount = 0
+```bash
+# ✅ 正确：小驼峰
+miniprogram/utils/roleManager.js
+miniprogram/utils/sceneParser.js
+miniprogram/services/userApi.js
 
-// ❌ 避免
-var count = 0
+# ❌ 错误：连字符或下划线
+miniprogram/utils/role-manager.js
+miniprogram/utils/scene_parser.js
 ```
 
-### 2. 字符串使用单引号
+**原因**：
+- JavaScript 模块导入时不需要引号
+- 符合 Node.js 和前端社区惯例
+- 与变量命名风格一致
 
-```javascript
-// ✅ 推荐
-const name = 'John'
-const message = 'Hello World'
+### 3. 云函数目录
 
-// ❌ 避免
-const name = "John"
+```bash
+# ✅ 正确：小写字母 + 连字符
+cloudfunctions/get-user-info/
+cloudfunctions/verify-invite-code/
+cloudfunctions/update-candidate-status/
+
+# ❌ 错误：小驼峰或下划线
+cloudfunctions/getUserInfo/
+cloudfunctions/verify_invite_code/
 ```
 
-### 3. 对象和数组
+**原因**：
+- 云函数名称会出现在 URL 路径中
+- 连字符是 RESTful API 的标准约定
+- 与页面/组件命名风格统一
+
+### 4. 文档文件
+
+```bash
+# ✅ 正确：大写字母 + 下划线（核心文档）
+docs/CLAUDE.md
+docs/PROJECT_KNOWLEDGE.md
+docs/TROUBLESHOOTING.md
+
+# ✅ 正确：小写字母 + 连字符（普通文档）
+docs/guides/development/code-standards.md
+docs/guides/business/workflows/login-flow.md
+
+# ❌ 错误：混用或空格
+docs/Code Standards.md
+docs/login_Flow.md
+```
+
+**原因**：
+- 大写核心文档更醒目，便于识别
+- 小写普通文档便于路径引用
+- 避免空格导致的路径问题
+
+---
+
+## 🏷️ 变量和函数命名
+
+### 1. 角色相关命名（项目特定）
 
 ```javascript
-// ✅ 推荐
-const obj = {
-  name: 'John',
-  age: 30
+// ✅ 正确：使用完整单词
+const currentRole = 'candidate'      // 候选人
+const streamerInfo = {}              // 主播
+const employeeData = {}              // 员工
+
+// 角色类型常量
+const ROLES = {
+  CANDIDATE: 'candidate',
+  STREAMER: 'anchor',                // 注意：数据库中是 'anchor'
+  HR: 'hr',
+  AGENT: 'agent',
+  OPERATIONS: 'operations',
+  TRAINER: 'dance-teacher',          // 注意：使用连字符
+  STYLIST: 'stylist',
+  MAKEUP_ARTIST: 'makeup-artist',
+  PHOTOGRAPHER: 'photographer',
+  EXTERNAL_SCOUT: 'external-scout',
+  ADMIN: 'admin'
 }
 
-const arr = [1, 2, 3]
-
-// 使用扩展运算符
-const newObj = { ...obj, age: 31 }
-const newArr = [...arr, 4]
-
-// ❌ 避免
-const obj = new Object()
-const arr = new Array()
+// ❌ 错误：使用缩写或不一致
+const curRole = 'cand'
+const anchorInfo = {}                // 应该用 streamerInfo
+const empData = {}
 ```
 
-### 4. 函数
+**原因**：
+- 保持术语一致性（系统统一称"候选人"为 candidate，"主播"为 anchor）
+- 避免缩写导致的歧义
+- 与数据库字段名称一致
+
+### 2. 页面数据命名
 
 ```javascript
-// ✅ 推荐: 箭头函数
-const add = (a, b) => a + b
-
-const getUserInfo = async (id) => {
-  const user = await fetchUser(id)
-  return user
-}
-
-// 普通函数
-function multiply(a, b) {
-  return a * b
-}
-
-// ❌ 避免: 函数表达式
-const add = function(a, b) {
-  return a + b
-}
-```
-
-### 5. 模板字符串
-
-```javascript
-// ✅ 推荐
-const name = 'John'
-const message = `Hello, ${name}!`
-
-// ❌ 避免
-const message = 'Hello, ' + name + '!'
-```
-
-### 6. 解构赋值
-
-```javascript
-// ✅ 推荐
-const { name, age } = user
-const [first, second] = array
-
-// ❌ 避免
-const name = user.name
-const age = user.age
-```
-
-### 7. 条件判断
-
-```javascript
-// ✅ 推荐
-if (value) {
-  // 简洁的真值判断
-}
-
-// 使用三元运算符
-const status = isActive ? 'active' : 'inactive'
-
-// ❌ 避免
-if (value == true) {
-  // 不必要的比较
-}
-```
-
-### 8. 异步处理
-
-```javascript
-// ✅ 推荐: async/await
-async function fetchData() {
-  try {
-    const data = await api.getData()
-    return data
-  } catch (error) {
-    console.error('Error:', error)
-    throw error
-  }
-}
-
-// ❌ 避免: 回调地狱
-api.getData(function(data) {
-  api.processData(data, function(result) {
-    // 嵌套过深
-  })
-})
-```
-
-## 🎨 小程序规范
-
-### 1. 页面结构
-
-```javascript
-// pages/user/user.js
 Page({
-  // 1. 页面数据
   data: {
-    userName: '',
-    userAge: 0
-  },
+    // 用户相关
+    currentRole: '',           // 当前角色
+    userId: '',                // 用户ID
+    userInfo: null,            // 用户信息
 
-  // 2. 生命周期函数
-  onLoad(options) {
-    this.getUserInfo()
-  },
+    // 页面状态（使用 is/has 前缀）
+    isLoading: true,
+    isRefreshing: false,
+    hasMore: true,
+    hasPermission: false,
 
-  onShow() {
-    // ...
-  },
+    // 表单数据（使用 Data 后缀）
+    formData: {},
+    formErrors: {},
 
-  onReady() {
-    // ...
-  },
+    // 列表数据（使用 List 后缀）
+    candidateList: [],
+    interviewList: [],
 
-  // 3. 事件处理函数
-  handleLogin() {
-    // ...
-  },
+    // UI 状态（使用 show 前缀）
+    showModal: false,
+    showTips: true,
 
-  handleSubmit(e) {
-    // ...
-  },
-
-  // 4. 私有方法
-  _updateUserInfo(data) {
-    this.setData({ ...data })
-  },
-
-  // 5. API 调用
-  async getUserInfo() {
-    try {
-      const res = await wx.cloud.callFunction({
-        name: 'getUser'
-      })
-      this._updateUserInfo(res.result)
-    } catch (error) {
-      console.error(error)
+    // 配置项（统一放在 config 对象中）
+    config: {
+      autoRefresh: true,
+      refreshInterval: 30000
     }
   }
 })
 ```
 
-### 2. 组件结构
+### 3. 云函数命名
 
 ```javascript
-// components/user-card/index.js
-Component({
-  // 1. 组件选项
-  options: {
-    multipleSlots: true,
-    styleIsolation: 'isolated'
-  },
+// ✅ 正确：动词 + 名词
+async function getUserInfo(userId) {}
+async function createCandidate(data) {}
+async function updateInterviewStatus(interviewId, status) {}
+async function deleteReferralCode(codeId) {}
+async function verifyInviteCode(code) {}
 
-  // 2. 组件属性
-  properties: {
-    user: {
-      type: Object,
-      value: {}
-    }
-  },
-
-  // 3. 组件数据
-  data: {
-    innerValue: ''
-  },
-
-  // 4. 生命周期
-  lifetimes: {
-    attached() {
-      // ...
-    },
-    detached() {
-      // ...
-    }
-  },
-
-  // 5. 组件方法
-  methods: {
-    handleTap() {
-      this.triggerEvent('tap', {})
-    },
-
-    _privateMethod() {
-      // ...
-    }
-  }
-})
+// ❌ 错误：只有名词或不清晰
+async function user(userId) {}
+async function candidate(data) {}
+async function interview(id) {}
 ```
 
-### 3. WXML 规范
-
-```xml
-<!-- ✅ 推荐 -->
-<view class="container">
-  <view class="user-info">
-    <text class="user-name">{{userName}}</text>
-    <text class="user-age">{{userAge}}</text>
-  </view>
-
-  <!-- 列表渲染 -->
-  <view wx:for="{{list}}" wx:key="id" class="list-item">
-    {{item.name}}
-  </view>
-
-  <!-- 条件渲染 -->
-  <view wx:if="{{isVisible}}">显示内容</view>
-  <view wx:else>隐藏内容</view>
-</view>
-
-<!-- ❌ 避免 -->
-<!-- 不要用 wx:key="*this" -->
-<view wx:for="{{list}}" wx:key="*this">
-  {{item}}
-</view>
-
-<!-- 不要省略 class -->
-<view>内容</view>
-```
-
-### 4. WXSS 规范
-
-```css
-/* ✅ 推荐 */
-.container {
-  display: flex;
-  flex-direction: column;
-  padding: 20rpx;
-}
-
-.user-info {
-  background-color: #fff;
-  border-radius: 10rpx;
-}
-
-.user-name {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-/* 使用 rpx 单位 */
-.box {
-  width: 750rpx;
-  height: 200rpx;
-}
-
-/* ❌ 避免 */
-/* 不要使用 ID 选择器 */
-#user-info {
-  /* ... */
-}
-
-/* 不要过度嵌套 */
-.container .content .item .text {
-  /* 嵌套过深 */
-}
-```
-
-## 📦 云函数规范
-
-```javascript
-// cloudfunctions/getUser/index.js
-const cloud = require('wx-server-sdk')
-
-cloud.init({
-  env: cloud.DYNAMIC_CURRENT_ENV
-})
-
-const db = cloud.database()
-
-/**
- * 获取用户信息
- * @param {Object} event - 云函数参数
- * @param {string} event.userId - 用户ID
- * @returns {Object} 用户信息
- */
-exports.main = async (event, context) => {
-  const { userId } = event
-  const wxContext = cloud.getWXContext()
-
-  // 参数验证
-  if (!userId) {
-    return {
-      success: false,
-      error: '缺少用户ID'
-    }
-  }
-
-  try {
-    // 业务逻辑
-    const { data } = await db
-      .collection('users')
-      .doc(userId)
-      .get()
-
-    return {
-      success: true,
-      data: data,
-      openid: wxContext.OPENID
-    }
-  } catch (error) {
-    console.error('获取用户信息失败:', error)
-    return {
-      success: false,
-      error: error.message
-    }
-  }
-}
-```
+---
 
 ## 📝 注释规范
 
-### 1. 文件注释
+### 1. 文件头注释（仅在复杂文件中使用）
 
 ```javascript
 /**
- * 用户工具函数
- * @file userUtil.js
- * @author 开发者姓名
- * @date 2025-11-01
+ * 角色管理工具
+ *
+ * 提供角色切换、权限检查等功能
+ *
+ * @file miniprogram/utils/roleManager.js
+ * @author 开发团队
+ * @date 2025-11-05
  */
 ```
 
-### 2. 函数注释
+### 2. 函数注释（公共 API 必须）
 
 ```javascript
 /**
- * 格式化用户信息
- * @param {Object} user - 用户对象
- * @param {string} user.name - 用户名
- * @param {number} user.age - 年龄
- * @returns {string} 格式化后的字符串
+ * 获取当前用户的角色
+ *
+ * @returns {Promise<string>} 角色标识（如 'candidate', 'anchor'）
+ * @throws {Error} 如果用户未登录
+ *
  * @example
- * formatUser({ name: 'John', age: 30 })
- * // returns "John (30岁)"
+ * const role = await roleManager.getCurrentRole()
+ * // returns 'candidate'
  */
-function formatUser(user) {
-  return `${user.name} (${user.age}岁)`
+async function getCurrentRole() {
+  // 实现...
 }
 ```
 
-### 3. 代码注释
+### 3. 代码注释（解释"为什么"）
 
 ```javascript
-// ✅ 推荐: 解释"为什么"
-// 使用防抖避免频繁请求
+// ✅ 正确：解释原因或意图
+// 使用防抖避免频繁的云函数调用，降低费用
 const debouncedSearch = debounce(search, 300)
 
-// ❌ 避免: 解释"做什么"(代码本身已经清楚)
+// 必须先检查角色，因为不同角色看到的数据不同
+await this.checkUserRole()
+
+// ❌ 错误：重复代码本身的意思
 // 声明变量
 let count = 0
+
+// 调用函数
+getUserInfo()
 ```
 
-## ⚠️ 错误处理
+---
+
+## 🗂️ 代码组织
+
+### 1. 页面 JS 文件结构顺序
 
 ```javascript
-// ✅ 推荐: 统一的错误处理
-async function fetchData() {
+Page({
+  // 1. 数据定义（按类型分组）
+  data: {
+    // 用户相关
+    currentRole: '',
+    userId: '',
+
+    // 页面状态
+    isLoading: true,
+
+    // 列表数据
+    candidateList: []
+  },
+
+  // 2. 生命周期函数（按调用顺序）
+  onLoad(options) {},
+  onShow() {},
+  onReady() {},
+  onHide() {},
+  onUnload() {},
+  onPullDownRefresh() {},
+  onReachBottom() {},
+  onShareAppMessage() {},
+
+  // 3. 事件处理方法（按功能分组，组内按字母序）
+  // --- 数据加载 ---
+  async loadInitialData() {},
+  async loadMoreData() {},
+
+  // --- 表单处理 ---
+  handleInput(e) {},
+  handleSubmit(e) {},
+  validateForm(data) {},
+
+  // --- 导航跳转 ---
+  navigateToDetail(e) {},
+  navigateBack() {},
+
+  // --- 工具方法 ---
+  formatDate(date) {},
+  showError(message) {}
+})
+```
+
+### 2. 云函数文件结构
+
+```javascript
+// cloudfunctions/[function-name]/index.js
+const cloud = require('wx-server-sdk')
+cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+
+const db = cloud.database()
+const _ = db.command
+
+// ==================== 主函数 ====================
+
+exports.main = async (event, context) => {
+  const { action, data } = event
+  const wxContext = cloud.getWXContext()
+
   try {
-    const data = await api.getData()
-    return data
+    // 1. 参数验证
+    // 2. 权限检查
+    // 3. 业务逻辑
+    // 4. 返回结果
   } catch (error) {
-    console.error('获取数据失败:', error)
-    wx.showToast({
-      title: '操作失败',
-      icon: 'none'
-    })
-    throw error
+    return { success: false, message: error.message }
   }
 }
 
-// ❌ 避免: 静默失败
-async function fetchData() {
-  try {
-    const data = await api.getData()
-    return data
-  } catch (error) {
-    // 什么都不做
-  }
-}
+// ==================== 业务逻辑函数 ====================
+
+async function getData() {}
+async function createData() {}
+async function updateData() {}
+async function checkPermission() {}
 ```
 
-## 🧪 代码质量
+---
 
-### 1. 避免魔法数字
+## 🔧 项目特定的配置
 
-```javascript
-// ✅ 推荐
-const MAX_RETRY_COUNT = 3
-const TIMEOUT_MS = 5000
-
-if (retryCount > MAX_RETRY_COUNT) {
-  // ...
-}
-
-// ❌ 避免
-if (retryCount > 3) {
-  // 3 是什么意思?
-}
-```
-
-### 2. 函数单一职责
-
-```javascript
-// ✅ 推荐: 一个函数做一件事
-function validateUser(user) {
-  return user && user.name && user.age > 0
-}
-
-function saveUser(user) {
-  db.collection('users').add({ data: user })
-}
-
-// ❌ 避免: 一个函数做多件事
-function validateAndSaveUser(user) {
-  if (user && user.name && user.age > 0) {
-    db.collection('users').add({ data: user })
-  }
-}
-```
-
-### 3. 早期返回
-
-```javascript
-// ✅ 推荐
-function processUser(user) {
-  if (!user) return null
-  if (!user.name) return null
-
-  // 主要逻辑
-  return formatUser(user)
-}
-
-// ❌ 避免: 嵌套过深
-function processUser(user) {
-  if (user) {
-    if (user.name) {
-      // 主要逻辑
-      return formatUser(user)
-    }
-  }
-  return null
-}
-```
-
-## 🔍 代码检查
-
-### ESLint 配置(建议)
+### ESLint 配置
 
 ```json
 {
@@ -551,20 +344,92 @@ function processUser(user) {
     "indent": ["error", 2],
     "quotes": ["error", "single"],
     "semi": ["error", "never"],
-    "no-console": "off"
+    "no-console": "off",
+    "no-unused-vars": ["warn", {
+      "argsIgnorePattern": "^_"
+    }]
+  },
+  "globals": {
+    "wx": "readonly",
+    "App": "readonly",
+    "Page": "readonly",
+    "Component": "readonly",
+    "getApp": "readonly",
+    "getCurrentPages": "readonly"
   }
 }
 ```
 
-## 📚 参考资源
+---
 
-- [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
-- [微信小程序开发规范](https://developers.weixin.qq.com/miniprogram/dev/framework/view/wxs/)
-- [Clean Code JavaScript](https://github.com/ryanmcdermott/clean-code-javascript)
+## 📦 Git 提交规范
+
+### 提交信息格式
+
+```bash
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Type 类型
+
+```bash
+feat:     新功能
+fix:      修复 Bug
+docs:     文档更新
+style:    代码格式（不影响代码运行）
+refactor: 重构（既不是新功能，也不是修复 Bug）
+perf:     性能优化
+test:     添加测试
+chore:    构建过程或辅助工具变动
+```
+
+### Scope 范围（项目特定）
+
+```bash
+candidate:  候选人相关
+anchor:     主播相关
+hr:         HR 相关
+agent:      经纪人相关
+operations: 运营相关
+admin:      管理员相关
+scout:      星探相关
+auth:       认证登录
+cloud:      云函数
+utils:      工具函数
+docs:       文档
+```
+
+### 示例
+
+```bash
+# 好的提交信息
+feat(candidate): 添加候选人报名表单
+fix(auth): 修复微信授权失败的问题
+docs(dev): 更新 Dev Docs 使用说明
+refactor(cloud): 重构用户信息查询云函数
+
+# 不好的提交信息
+update code
+fix bug
+修改文件
+```
 
 ---
 
-**最后更新**: 2025-11-01
+## 🔗 相关文档
+
+- [微信小程序开发规范 Skill](../../../.claude/skills/miniprogram-dev/SKILL.md) - 详细的小程序开发标准
+- [全局开发指南](../../CLAUDE.md) - 通用开发哲学
+- [项目知识库](../../PROJECT_KNOWLEDGE.md) - 系统架构和核心概念
+- [问题排查指南](../../TROUBLESHOOTING.md) - 常见问题和解决方案
+
+---
+
+**最后更新**: 2025-11-05
 **维护者**: 开发团队
 
-> 💡 代码规范是团队协作的基础,请严格遵守!
+> 💡 代码规范是团队协作的基础。详细的技术规范请参考对应的 Skill，它们会在需要时自动激活。
