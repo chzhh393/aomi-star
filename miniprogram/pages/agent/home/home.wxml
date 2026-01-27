@@ -1,0 +1,196 @@
+<!--
+  经纪人工作台
+  功能:
+  1. 查看待签约候选人(status=rated)
+  2. 查看已签约主播
+  3. 面试评价入口
+  4. 合同上传入口
+-->
+<view class="agent-home">
+  <!-- 顶部用户信息 -->
+  <view class="header">
+    <view class="user-info">
+      <text class="role-badge">🌟 经纪人</text>
+      <text class="username">{{userInfo.profile.name}}</text>
+    </view>
+  </view>
+
+  <!-- 数据统计卡片 -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <view class="stat-item primary">
+        <text class="stat-value">{{stats.totalManaged}}</text>
+        <text class="stat-label">管理总数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.pendingContract}}</text>
+        <text class="stat-label">待签约</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.pendingEvaluation}}</text>
+        <text class="stat-label">待评价</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.signed}}</text>
+        <text class="stat-label">已签约</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待评价候选人列表 -->
+  <view class="tasks-section" wx:if="{{pendingEvaluationCandidates.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">待评价候选人</text>
+      <text class="section-count">{{pendingEvaluationCandidates.length}}</text>
+    </view>
+
+    <view class="candidate-list">
+      <view
+        wx:for="{{pendingEvaluationCandidates}}"
+        wx:key="id"
+        class="candidate-card urgent"
+      >
+        <view class="candidate-header">
+          <view class="candidate-info">
+            <text class="candidate-name">{{item.basicInfo.name}}</text>
+            <text class="candidate-id">ID: {{item.id}}</text>
+          </view>
+          <view class="urgent-badge">
+            <text class="badge-text">待评价</text>
+          </view>
+        </view>
+
+        <view class="candidate-details">
+          <view class="detail-item">
+            <text class="detail-label">状态：</text>
+            <text class="detail-value">已完成线上测试</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">基本信息：</text>
+            <text class="detail-value">{{item.basicInfo.age}}岁 / {{item.basicInfo.height}}cm</text>
+          </view>
+        </view>
+
+        <view class="action-btn" catchtap="onEvaluateCandidate" data-id="{{item.id}}">
+          <text class="btn-text">去评价 →</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待签约候选人列表 -->
+  <view class="tasks-section">
+    <view class="section-header">
+      <text class="section-title">待签约候选人</text>
+      <text class="section-count">{{pendingContractCandidates.length}}</text>
+    </view>
+
+    <view wx:if="{{pendingContractCandidates.length === 0}}" class="empty-state">
+      <text class="empty-icon">✨</text>
+      <text class="empty-text">暂无待签约候选人</text>
+    </view>
+
+    <view wx:else class="candidate-list">
+      <view
+        wx:for="{{pendingContractCandidates}}"
+        wx:key="id"
+        class="candidate-card"
+        bindtap="onViewCandidate"
+        data-id="{{item.id}}"
+      >
+        <view class="candidate-header">
+          <view class="candidate-info">
+            <text class="candidate-name">{{item.basicInfo.name}}</text>
+            <text class="candidate-id">ID: {{item.id}}</text>
+          </view>
+          <view class="status-badge rated">
+            <text class="badge-text">已评级</text>
+          </view>
+        </view>
+
+        <view class="candidate-details">
+          <view class="detail-item">
+            <text class="detail-label">综合评分：</text>
+            <text class="detail-value highlight">{{item.rating.finalScore}}分</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">评级：</text>
+            <text class="detail-value highlight">{{item.rating.finalRating}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">基本信息：</text>
+            <text class="detail-value">{{item.basicInfo.age}}岁 / {{item.basicInfo.height}}cm</text>
+          </view>
+        </view>
+
+        <view class="action-btn primary" catchtap="onSignContract" data-id="{{item.id}}">
+          <text class="btn-text">去签约 →</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 我的主播列表(最近5个) -->
+  <view class="completed-section">
+    <view class="section-header">
+      <text class="section-title">我的主播</text>
+      <text class="section-count">{{stats.signed}}</text>
+    </view>
+
+    <view wx:if="{{signedStreamers.length === 0}}" class="empty-state">
+      <text class="empty-icon">👥</text>
+      <text class="empty-text">暂无签约主播</text>
+    </view>
+
+    <view wx:else class="streamer-list">
+      <view
+        wx:for="{{signedStreamers}}"
+        wx:key="id"
+        class="streamer-card"
+        bindtap="onViewStreamer"
+        data-id="{{item.id}}"
+      >
+        <view class="streamer-header">
+          <view class="streamer-info">
+            <text class="streamer-name">{{item.basicInfo.name}}</text>
+            <text class="streamer-id">ID: {{item.id}}</text>
+          </view>
+          <view class="live-status {{item.streamerInfo.liveStatus}}">
+            <text class="status-text">{{item.liveStatusLabel}}</text>
+          </view>
+        </view>
+
+        <view class="streamer-details">
+          <view class="detail-row">
+            <view class="detail-item">
+              <text class="detail-label">培训：</text>
+              <text class="detail-value">{{item.trainingStatusLabel}}</text>
+            </view>
+            <view class="detail-item">
+              <text class="detail-label">进度：</text>
+              <text class="detail-value">{{item.streamerInfo.trainingProgress}}%</text>
+            </view>
+          </view>
+          <view class="detail-row">
+            <view class="detail-item">
+              <text class="detail-label">底薪：</text>
+              <text class="detail-value highlight">{{item.streamerInfo.salary}}元/月</text>
+            </view>
+            <view class="detail-item">
+              <text class="detail-label">提成：</text>
+              <text class="detail-value highlight">{{item.streamerInfo.commission}}%</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="quick-actions">
+    <view class="action-item" bindtap="onRefresh">
+      <text class="action-icon">🔄</text>
+      <text class="action-text">刷新列表</text>
+    </view>
+  </view>
+</view>

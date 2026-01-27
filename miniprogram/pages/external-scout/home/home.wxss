@@ -1,0 +1,315 @@
+/* pages/external-scout/home/home.wxss */
+/* 星探工作台 - 街头运动风格 - 红色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding: 0 0 120rpx;
+}
+
+/* ==================== 顶部横幅 ==================== */
+.header-banner {
+  background: #000000;
+  padding: 48rpx 32rpx 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slash {
+  position: absolute;
+  top: 0;
+  right: -40rpx;
+  width: 200rpx;
+  height: 100%;
+  background: #FF6B6B;
+  transform: skewX(-15deg);
+}
+
+.banner-text {
+  font-size: 48rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
+  display: block;
+  text-transform: uppercase;
+}
+
+.banner-subtitle {
+  font-size: 24rpx;
+  color: #999999;
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 8rpx;
+}
+
+/* ==================== 欢迎卡片 ==================== */
+.welcome-card {
+  background: #FFFFFF;
+  margin: 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.welcome-icon {
+  font-size: 64rpx;
+  flex-shrink: 0;
+}
+
+.welcome-content {
+  flex: 1;
+}
+
+.welcome-title {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 8rpx;
+}
+
+.welcome-desc {
+  font-size: 22rpx;
+  color: #666666;
+  font-weight: 600;
+}
+
+/* ==================== 统计块 ==================== */
+.stats-block {
+  background: #000000;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+}
+
+.block-label {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 32rpx;
+}
+
+.label-slash {
+  width: 6rpx;
+  height: 32rpx;
+  background: #FF6B6B;
+}
+
+.label-text {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 3rpx;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx;
+}
+
+.stat-item {
+  background: #1A1A1A;
+  padding: 32rpx 24rpx;
+  text-align: center;
+  border: 3rpx solid #333333;
+}
+
+.stat-item.highlight {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  border-color: #FF6B6B;
+}
+
+.stat-value {
+  font-size: 48rpx;
+  font-weight: 900;
+  color: #FF6B6B;
+  margin-bottom: 12rpx;
+  line-height: 1;
+}
+
+.stat-item.highlight .stat-value {
+  color: #FFFFFF;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  color: #999999;
+  font-weight: 600;
+}
+
+.stat-item.highlight .stat-label {
+  color: #FFFFFF;
+  opacity: 0.9;
+}
+
+/* ==================== 快捷功能 ==================== */
+.actions-block {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-item {
+  background: #F8F8F8;
+  border: 3rpx solid #E0E0E0;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.action-item:active {
+  transform: scale(0.98);
+}
+
+.item-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6rpx;
+  height: 100%;
+}
+
+.item-icon {
+  width: 72rpx;
+  height: 72rpx;
+  background: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 6rpx;
+  border: 3rpx solid #E0E0E0;
+}
+
+.icon-text {
+  font-size: 40rpx;
+}
+
+.item-content {
+  flex: 1;
+}
+
+.item-title {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 6rpx;
+}
+
+.item-desc {
+  font-size: 22rpx;
+  color: #666666;
+}
+
+.item-arrow {
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+/* ==================== 最近推荐 ==================== */
+.recent-block {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.candidate-item {
+  background: #F8F8F8;
+  padding: 20rpx 24rpx;
+  border: 2rpx solid #E0E0E0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.candidate-item:active {
+  transform: scale(0.98);
+}
+
+.candidate-name {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #000000;
+  flex: 1;
+}
+
+.candidate-status {
+  font-size: 22rpx;
+  font-weight: 600;
+  padding: 6rpx 16rpx;
+  border-radius: 4rpx;
+}
+
+.candidate-status.status-pending {
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFA000;
+}
+
+.candidate-status.status-interview {
+  background: rgba(19, 232, 221, 0.2);
+  color: #00BCD4;
+}
+
+.candidate-status.status-signed,
+.candidate-status.status-active {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+/* ==================== 温馨提示 ==================== */
+.tips-block {
+  margin: 24rpx;
+  padding: 24rpx;
+  background: rgba(255, 107, 107, 0.1);
+  border-left: 6rpx solid #FF6B6B;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.tip-item:last-child {
+  margin-bottom: 0;
+}
+
+.tip-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.tip-text {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.6;
+  flex: 1;
+}

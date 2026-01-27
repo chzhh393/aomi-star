@@ -1,0 +1,75 @@
+<!--
+  经纪人合同上传页面
+-->
+<view class="contract-upload-page">
+  <view class="candidate-info">
+    <text class="info-title">{{candidate.basicInfo.name}}</text>
+    <text class="info-subtitle">评级：{{candidate.rating.label}} ({{candidate.rating.score}}分)</text>
+  </view>
+
+  <view class="rating-info">
+    <text class="rating-title">录用信息</text>
+    <view class="info-row">
+      <text class="label">建议薪资：</text>
+      <text class="value">{{candidate.rating.suggestedSalary}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">培训周期：</text>
+      <text class="value">{{candidate.rating.trainingDuration}}周</text>
+    </view>
+  </view>
+
+  <view class="contract-form">
+    <text class="form-title">合同信息</text>
+
+    <view class="form-item">
+      <text class="item-label">合同类型</text>
+      <picker mode="selector" range="{{contractTypes}}" value="{{contractTypeIndex}}" bindchange="onContractTypeChange">
+        <view class="picker">{{contractTypes[contractTypeIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="item-label">合同期限（月）</text>
+      <input
+        class="input"
+        type="number"
+        placeholder="请输入合同期限"
+        value="{{formData.duration}}"
+        bindinput="onDurationInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="item-label">薪资（元/月）</text>
+      <input
+        class="input"
+        type="number"
+        placeholder="请输入薪资"
+        value="{{formData.salary}}"
+        bindinput="onSalaryInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="item-label">提成比例（%）</text>
+      <input
+        class="input"
+        type="number"
+        placeholder="请输入提成比例"
+        value="{{formData.commission}}"
+        bindinput="onCommissionInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="item-label">合同文件 (Mock)</text>
+      <button class="upload-btn" bindtap="onMockUploadContract">
+        {{formData.contractPath ? '已选择' : '选择文件'}}
+      </button>
+      <text wx:if="{{formData.contractPath}}" class="file-path">{{formData.contractPath}}</text>
+    </view>
+  </view>
+
+  <button class="submit-btn" bindtap="onSubmit">提交合同</button>
+</view>

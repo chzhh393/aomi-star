@@ -1,0 +1,74 @@
+<!--pages/recruit/index/index.wxml-->
+<!--主播招聘首页-->
+<view class="container">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">START YOUR CAREER</text>
+    <text class="banner-subtitle">加入我们，开启直播之旅</text>
+  </view>
+
+  <!-- 岗位介绍卡片 -->
+  <view class="intro-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">岗位介绍</text>
+    </view>
+    <view class="intro-content">
+      <view class="intro-item">
+        <text class="intro-label">工作内容</text>
+        <text class="intro-value">通过直播与粉丝互动，展示才艺，推广产品</text>
+      </view>
+      <view class="intro-item">
+        <text class="intro-label">基本要求</text>
+        <text class="intro-value">18岁以上，形象气质佳，有才艺特长</text>
+      </view>
+      <view class="intro-item">
+        <text class="intro-label">薪资待遇</text>
+        <text class="intro-value">底薪 5000-8000 + 提成，月入过万</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 福利待遇 -->
+  <view class="benefits-section">
+    <view class="section-header">
+      <view class="header-slash"></view>
+      <text class="section-title">福利待遇</text>
+    </view>
+
+    <view class="benefits-grid">
+      <view class="benefit-card" wx:for="{{benefits}}" wx:key="title">
+        <view class="benefit-icon">{{item.icon}}</view>
+        <text class="benefit-title">{{item.title}}</text>
+        <text class="benefit-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- CTA区域 -->
+  <view class="cta-section">
+    <view class="cta-card">
+      <view class="cta-icon">🎯</view>
+      <view class="cta-text">
+        <text class="cta-title">准备好了吗？</text>
+        <text class="cta-subtitle">立即报名，开始你的直播事业</text>
+      </view>
+    </view>
+
+    <button class="btn-primary" bindtap="goToApply">
+      立即报名 →
+    </button>
+
+    <view class="link-row">
+      <text class="link-text" bindtap="checkStatus">查询报名状态 →</text>
+    </view>
+  </view>
+
+  <!-- 底部标语 -->
+  <view class="footer-motto">
+    <text class="motto-text">KEEP STREAMING. STAY WINNING.</text>
+  </view>
+
+</view>

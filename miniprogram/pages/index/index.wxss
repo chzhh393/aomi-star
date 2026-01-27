@@ -1,0 +1,184 @@
+/* pages/index/index.wxss */
+/* 游客首页 - 街头运动风格 - 双色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #000000;
+  padding: 80rpx 24rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== 品牌区域 ==================== */
+.brand-section {
+  text-align: center;
+  margin-bottom: 80rpx;
+  position: relative;
+}
+
+.brand-slash {
+  position: absolute;
+  top: -30rpx;
+  right: 15%;
+  width: 140rpx;
+  height: 140rpx;
+  background: #13E8DD;
+  transform: rotate(15deg) skewX(-10deg);
+  opacity: 0.15;
+}
+
+.brand-title {
+  font-size: 72rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  display: block;
+  letter-spacing: 6rpx;
+  margin-bottom: 20rpx;
+  text-shadow: 4rpx 4rpx 0 rgba(19, 232, 221, 0.3);
+}
+
+.brand-subtitle {
+  font-size: 32rpx;
+  color: #13E8DD;
+  font-weight: 700;
+  letter-spacing: 3rpx;
+  display: block;
+}
+
+/* ==================== 入口卡片区域 ==================== */
+.entry-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+  flex: 1;
+}
+
+.entry-card {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  padding: 40rpx;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.entry-card:active {
+  transform: scale(0.97);
+}
+
+.recruit-card {
+  border-color: #13E8DD;
+  box-shadow: 10rpx 10rpx 0 rgba(19, 232, 221, 0.4);
+}
+
+.recruit-card:active {
+  box-shadow: 6rpx 6rpx 0 rgba(19, 232, 221, 0.4);
+}
+
+.employee-card {
+  border-color: #F8D55D;
+  box-shadow: 10rpx 10rpx 0 rgba(248, 213, 93, 0.4);
+}
+
+.employee-card:active {
+  box-shadow: 6rpx 6rpx 0 rgba(248, 213, 93, 0.4);
+}
+
+.card-icon {
+  font-size: 72rpx;
+  line-height: 1;
+  margin-bottom: 24rpx;
+}
+
+.card-content {
+  margin-bottom: 28rpx;
+}
+
+.card-title {
+  font-size: 44rpx;
+  font-weight: 900;
+  color: #000000;
+  display: block;
+  margin-bottom: 16rpx;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+}
+
+.card-desc {
+  font-size: 26rpx;
+  color: #666666;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  display: block;
+}
+
+.card-button {
+  background: #000000;
+  padding: 24rpx 32rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: opacity 0.2s;
+}
+
+.recruit-card .card-button {
+  background: #13E8DD;
+}
+
+.employee-card .card-button {
+  background: #F8D55D;
+}
+
+.button-text {
+  font-size: 34rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 2rpx;
+}
+
+.button-arrow {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #000000;
+  transition: transform 0.3s;
+}
+
+.entry-card:active .button-arrow {
+  transform: translateX(8rpx);
+}
+
+.card-accent {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 70rpx;
+  height: 70rpx;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+
+.recruit-card .card-accent {
+  background: #13E8DD;
+}
+
+.employee-card .card-accent {
+  background: #F8D55D;
+}
+
+/* ==================== 底部标语 ==================== */
+.footer-motto {
+  margin-top: 60rpx;
+  padding: 32rpx;
+  background: transparent;
+  text-align: center;
+  border-top: 2rpx solid #333333;
+}
+
+.motto-text {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+  opacity: 0.6;
+}

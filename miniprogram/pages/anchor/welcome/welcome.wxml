@@ -1,0 +1,82 @@
+<!--
+  主播欢迎页面
+-->
+<view class="welcome-page">
+  <!-- 欢迎横幅 -->
+  <view class="welcome-banner">
+    <view class="banner-icon">🎉</view>
+    <text class="banner-title">{{welcomeMessage}}</text>
+    <text class="banner-subtitle">您已成功签约成为平台主播</text>
+  </view>
+
+  <!-- 主播信息卡片 -->
+  <view class="info-card">
+    <view class="card-header">
+      <text class="card-title">主播信息</text>
+    </view>
+    <view class="info-content">
+      <view class="info-row">
+        <text class="label">姓名：</text>
+        <text class="value">{{streamer.basicInfo.name}}</text>
+      </view>
+      <view class="info-row">
+        <text class="label">底薪：</text>
+        <text class="value highlight">{{streamer.streamerInfo.salary}}元/月</text>
+      </view>
+      <view class="info-row">
+        <text class="label">提成比例：</text>
+        <text class="value highlight">{{streamer.streamerInfo.commission}}%</text>
+      </view>
+      <view class="info-row">
+        <text class="label">签约日期：</text>
+        <text class="value">{{streamer.streamerInfo.signedDate}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 经纪人信息卡片 -->
+  <view class="info-card">
+    <view class="card-header">
+      <text class="card-title">您的经纪人</text>
+    </view>
+    <view class="agent-content">
+      <view class="agent-info">
+        <view class="agent-avatar">{{agent.profile.name[0]}}</view>
+        <view class="agent-details">
+          <text class="agent-name">{{agent.profile.name}}</text>
+          <text class="agent-role">专属经纪人</text>
+        </view>
+      </view>
+      <button class="contact-btn" bindtap="onContactAgent">
+        联系TA
+      </button>
+    </view>
+  </view>
+
+  <!-- 下一步指引 -->
+  <view class="steps-card">
+    <view class="card-header">
+      <text class="card-title">接下来要做什么？</text>
+    </view>
+    <view class="steps-list">
+      <view
+        wx:for="{{nextSteps}}"
+        wx:key="title"
+        class="step-item"
+      >
+        <view class="step-icon">{{item.icon}}</view>
+        <view class="step-content">
+          <text class="step-title">{{item.title}}</text>
+          <text class="step-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 进入工作台按钮 -->
+  <view class="action-section">
+    <button class="enter-btn" bindtap="onEnterWorkstation">
+      进入主播工作台
+    </button>
+  </view>
+</view>

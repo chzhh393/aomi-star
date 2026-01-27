@@ -1,0 +1,258 @@
+/* pages/register/scout/scout.wxss */
+/* 星探注册页 - 街头运动风格 - 红色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding: 0 0 120rpx;
+}
+
+/* ==================== 顶部横幅 ==================== */
+.header-banner {
+  background: #000000;
+  padding: 48rpx 32rpx 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slash {
+  position: absolute;
+  top: 0;
+  right: -40rpx;
+  width: 200rpx;
+  height: 100%;
+  background: #FF6B6B;
+  transform: skewX(-15deg);
+}
+
+.banner-text {
+  font-size: 48rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
+  display: block;
+  text-transform: uppercase;
+}
+
+.banner-subtitle {
+  font-size: 24rpx;
+  color: #999999;
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 8rpx;
+}
+
+/* ==================== 表单容器 ==================== */
+.form-container {
+  padding: 24rpx;
+}
+
+.form-section {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 32rpx;
+}
+
+.label-slash {
+  width: 6rpx;
+  height: 32rpx;
+  background: #FF6B6B;
+}
+
+.label-text {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 3rpx;
+}
+
+/* ==================== 表单字段 ==================== */
+.field-item {
+  margin-bottom: 24rpx;
+}
+
+.field-item:last-child {
+  margin-bottom: 0;
+}
+
+.field-label {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 12rpx;
+}
+
+.field-input {
+  width: 100%;
+  min-height: 80rpx;
+  padding: 16rpx 18rpx;
+  background: #F8F8F8;
+  border: 3rpx solid #E0E0E0;
+  font-size: 26rpx;
+  line-height: 1.5;
+  color: #000000;
+}
+
+.field-input::placeholder {
+  color: #999999;
+  opacity: 0.6;
+}
+
+.field-input:focus {
+  border-color: #FF6B6B;
+  background: #FFFFFF;
+}
+
+/* ==================== 邀请码验证行 ==================== */
+.field-row {
+  display: flex;
+  gap: 16rpx;
+  align-items: stretch;
+}
+
+.field-row .field-item {
+  margin-bottom: 0;
+}
+
+.field-row .field-item.flex {
+  flex: 1;
+}
+
+.verify-btn {
+  width: 160rpx;
+  height: auto;
+  padding: 0;
+  background: #FF6B6B;
+  color: #FFFFFF;
+  border: 4rpx solid #000000;
+  font-size: 26rpx;
+  font-weight: 900;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.verify-btn.verified {
+  background: #4CAF50;
+  color: #FFFFFF;
+  border-color: #4CAF50;
+}
+
+.verify-btn:active {
+  opacity: 0.8;
+}
+
+.verify-btn[disabled] {
+  opacity: 1;
+}
+
+/* ==================== 邀请码信息 ==================== */
+.code-info {
+  margin-top: 16rpx;
+  padding: 16rpx;
+  background: rgba(76, 175, 80, 0.1);
+  border-left: 6rpx solid #4CAF50;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.info-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.info-text {
+  font-size: 24rpx;
+  color: #333333;
+  font-weight: 600;
+  flex: 1;
+}
+
+/* ==================== 操作按钮 ==================== */
+.actions-block {
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-btn {
+  width: 100%;
+  height: 88rpx;
+  border: none;
+  font-size: 28rpx;
+  font-weight: 900;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: #FF6B6B;
+  color: #FFFFFF;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #000000;
+  border: 4rpx solid #000000;
+}
+
+.btn-primary:active {
+  opacity: 0.9;
+}
+
+.btn-ghost:active {
+  opacity: 0.8;
+}
+
+.btn-text {
+  font-size: 28rpx;
+  font-weight: 900;
+}
+
+/* ==================== 温馨提示 ==================== */
+.tips-block {
+  margin: 24rpx;
+  padding: 24rpx;
+  background: rgba(255, 107, 107, 0.1);
+  border-left: 6rpx solid #FF6B6B;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.tip-item:last-child {
+  margin-bottom: 0;
+}
+
+.tip-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.tip-text {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.6;
+  flex: 1;
+}

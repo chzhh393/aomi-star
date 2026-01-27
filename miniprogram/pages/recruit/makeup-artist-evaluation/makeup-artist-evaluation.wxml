@@ -1,0 +1,52 @@
+<!--
+  化妆师评价页面
+-->
+<view class="makeup-evaluation-page">
+  <view class="candidate-info">
+    <text class="info-title">候选人：{{candidate.basicInfo.name}}</text>
+    <text class="info-subtitle">在线测试得分：{{candidate.onlineTest.score}}分</text>
+  </view>
+
+  <view class="evaluation-form">
+    <text class="form-title">妆容适配度评分</text>
+    <text class="form-subtitle">每项满分10分</text>
+
+    <view wx:for="{{dimensions}}" wx:key="key" class="score-item">
+      <view class="dimension-header">
+        <text class="dimension-name">{{item.name}}</text>
+        <text class="dimension-score">{{scores[item.key]}}分</text>
+      </view>
+      <slider
+        class="slider"
+        min="0"
+        max="10"
+        step="0.5"
+        value="{{scores[item.key]}}"
+        show-value="{{false}}"
+        bindchange="onScoreChange"
+        data-key="{{item.key}}"
+        activeColor="#F8D55D"
+        backgroundColor="#E0E0E0"
+      />
+    </view>
+
+    <view class="total-score">
+      <text class="total-label">综合评分：</text>
+      <text class="total-value">{{totalScore}}/10</text>
+    </view>
+
+    <view class="notes-section">
+      <text class="notes-label">评价备注 *</text>
+      <textarea
+        class="textarea"
+        placeholder="请输入对候选人妆容适配度的评价，包括肤质、五官特点、适合的妆容风格等"
+        value="{{notes}}"
+        bindinput="onNotesInput"
+        maxlength="500"
+      />
+      <text class="char-count">{{notes.length}}/500</text>
+    </view>
+  </view>
+
+  <button class="submit-btn" bindtap="onSubmit">提交评价</button>
+</view>

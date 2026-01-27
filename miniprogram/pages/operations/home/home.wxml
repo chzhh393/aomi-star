@@ -1,0 +1,86 @@
+<!--pages/operations/home/home.wxml-->
+<!--运营工作台 - 街头运动风格-->
+<view class="container">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">OPERATIONS</text>
+    <text class="banner-subtitle">运营工作台</text>
+  </view>
+
+  <!-- 欢迎卡片 -->
+  <view class="welcome-card">
+    <view class="welcome-icon">👋</view>
+    <view class="welcome-content">
+      <view class="welcome-title">你好，{{user.profile.nickname || user.profile.name}}</view>
+      <view class="welcome-desc">运营专员</view>
+    </view>
+  </view>
+
+  <!-- 统计数据 -->
+  <view class="stats-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">DATA OVERVIEW</text>
+    </view>
+
+    <view class="stats-grid">
+      <view class="stat-item">
+        <view class="stat-value">{{stats.totalCandidates}}</view>
+        <view class="stat-label">候选人总数</view>
+      </view>
+
+      <view class="stat-item">
+        <view class="stat-value">{{stats.pendingReview}}</view>
+        <view class="stat-label">待审核</view>
+      </view>
+
+      <view class="stat-item">
+        <view class="stat-value">{{stats.interviewing}}</view>
+        <view class="stat-label">面试中</view>
+      </view>
+
+      <view class="stat-item">
+        <view class="stat-value">{{stats.activeAnchors}}</view>
+        <view class="stat-label">活跃主播</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="actions-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">QUICK ACCESS</text>
+    </view>
+
+    <view class="actions-grid">
+      <block wx:for="{{quickActions}}" wx:key="id">
+        <view
+          class="action-card"
+          data-route="{{item.route}}"
+          bindtap="onActionTap"
+        >
+          <view class="card-accent" style="background: {{item.color}};"></view>
+
+          <view class="card-icon">
+            <text class="icon-text">{{item.icon}}</text>
+          </view>
+
+          <view class="card-title">{{item.title}}</view>
+          <view class="card-desc">{{item.desc}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 温馨提示 -->
+  <view class="tips-block">
+    <view class="tip-item">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">运营人员可以查看所有数据和管理功能</text>
+    </view>
+  </view>
+
+</view>

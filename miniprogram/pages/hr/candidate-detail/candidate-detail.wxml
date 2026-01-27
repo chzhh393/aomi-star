@@ -1,0 +1,408 @@
+<!--pages/hr/candidate-detail/candidate-detail.wxml-->
+<view class="container" wx:if="{{candidate}}">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">CANDIDATE DETAIL</text>
+  </view>
+
+  <!-- AI评分卡片 -->
+  <view class="score-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">AI EVALUATION</text>
+    </view>
+
+    <view class="score-main">
+      <view class="score-circle">
+        <text class="score-number">{{candidate.aiScore.overallScore}}</text>
+        <text class="score-label">综合评分</text>
+      </view>
+
+      <view class="score-details">
+        <view class="score-item">
+          <text class="item-label">形象分</text>
+          <text class="item-value">{{candidate.aiScore.faceScore}}</text>
+        </view>
+        <view class="score-item">
+          <text class="item-label">才艺分</text>
+          <text class="item-value">{{candidate.aiScore.talentScore}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="tags-row">
+      <view class="tag" wx:for="{{candidate.aiScore.tags}}" wx:key="index">
+        {{item}}
+      </view>
+    </view>
+
+    <view class="recommendation">
+      <text class="rec-label">AI建议：</text>
+      <text class="rec-text">{{candidate.aiScore.recommendation}}</text>
+    </view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="info-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">BASIC INFO</text>
+    </view>
+
+    <view class="info-grid">
+      <view class="info-item">
+        <text class="info-label">真实姓名</text>
+        <text class="info-value">{{candidate.basicInfo.name}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">艺名</text>
+        <text class="info-value">{{candidate.basicInfo.artName}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">年龄</text>
+        <text class="info-value">{{candidate.basicInfo.age}}岁</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">性别</text>
+        <text class="info-value">{{candidate.basicInfo.gender}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">身高</text>
+        <text class="info-value">{{candidate.basicInfo.height}}cm</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">体重</text>
+        <text class="info-value">{{candidate.basicInfo.weight}}kg</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">手机</text>
+        <text class="info-value">{{candidate.basicInfo.phone}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">城市</text>
+        <text class="info-value">{{candidate.basicInfo.city}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 照片展示 -->
+  <view class="photos-card" wx:if="{{candidate.images}}">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">PHOTOS</text>
+    </view>
+
+    <view class="photos-grid">
+      <image
+        class="photo-item"
+        src="{{candidate.images.face}}"
+        mode="aspectFill"
+        data-url="{{candidate.images.face}}"
+        bindtap="previewImage"
+        wx:if="{{candidate.images.face}}"
+      />
+      <image
+        class="photo-item"
+        src="{{candidate.images.fullBody}}"
+        mode="aspectFill"
+        data-url="{{candidate.images.fullBody}}"
+        bindtap="previewImage"
+        wx:if="{{candidate.images.fullBody}}"
+      />
+    </view>
+  </view>
+
+  <!-- 才艺信息 -->
+  <view class="info-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">TALENT INFO</text>
+    </view>
+
+    <view class="info-grid">
+      <view class="info-item">
+        <text class="info-label">主修才艺</text>
+        <text class="info-value">{{candidate.talent.mainTalent}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">才艺等级</text>
+        <text class="info-value">Lv.{{candidate.talent.level}}</text>
+      </view>
+    </view>
+
+    <view class="works-section" wx:if="{{candidate.talent.works && candidate.talent.works.length > 0}}">
+      <text class="works-label">代表作品：</text>
+      <text class="works-text">{{candidate.talent.works[0]}}</text>
+    </view>
+  </view>
+
+  <!-- 经验信息 -->
+  <view class="info-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">EXPERIENCE</text>
+    </view>
+
+    <view class="info-grid">
+      <view class="info-item">
+        <text class="info-label">直播经验</text>
+        <text class="info-value">{{candidate.experience.hasExperience ? '有' : '无'}}</text>
+      </view>
+      <view class="info-item" wx:if="{{candidate.experience.maxFans > 0}}">
+        <text class="info-label">最高粉丝</text>
+        <text class="info-value">{{candidate.experience.maxFans}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 期望信息 -->
+  <view class="info-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">EXPECTATION</text>
+    </view>
+
+    <view class="info-grid">
+      <view class="info-item">
+        <text class="info-label">期望薪资</text>
+        <text class="info-value">{{candidate.expectation.salaryRange}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">投入时间</text>
+        <text class="info-value">{{candidate.expectation.timeCommitment}}</text>
+      </view>
+    </view>
+
+    <view class="goals-section" wx:if="{{candidate.personality.goals}}">
+      <text class="goals-label">职业目标：</text>
+      <text class="goals-text">{{candidate.personality.goals}}</text>
+    </view>
+  </view>
+
+  <!-- HR审核表单 -->
+  <view class="review-form">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">HR REVIEW</text>
+    </view>
+
+    <view class="form-field">
+      <text class="field-label">审核结果 *</text>
+      <picker
+        mode="selector"
+        range="{{resultOptions}}"
+        range-key="label"
+        value="{{resultIndex}}"
+        bindchange="onResultChange"
+      >
+        <view class="picker-display">
+          {{resultOptions[resultIndex].label}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-field">
+      <text class="field-label">审核意见 *</text>
+      <textarea
+        class="field-textarea"
+        placeholder="请输入审核意见"
+        value="{{reviewForm.comment}}"
+        data-field="comment"
+        bindinput="onInput"
+      />
+    </view>
+
+    <view class="form-field">
+      <text class="field-label">建议薪资</text>
+      <input
+        class="field-input"
+        placeholder="如：5000-8000"
+        value="{{reviewForm.suggestedSalary}}"
+        data-field="suggestedSalary"
+        bindinput="onInput"
+      />
+    </view>
+
+    <!-- 面试安排（仅当审核通过时显示） -->
+    <view class="interview-section" wx:if="{{reviewForm.result === 'pass'}}">
+      <view class="section-divider">
+        <view class="divider-line"></view>
+        <text class="divider-text">面试安排</text>
+        <view class="divider-line"></view>
+      </view>
+
+      <!-- 面试官选择 -->
+      <view class="form-field">
+        <text class="field-label">分配面试官 *</text>
+        <text class="field-hint">请为候选人分配5位面试官</text>
+      </view>
+
+      <!-- 摄像师 -->
+      <view class="interviewer-group">
+        <view class="interviewer-label">
+          <text class="label-icon">📸</text>
+          <text class="label-text">摄像师 *</text>
+        </view>
+        <picker
+          mode="selector"
+          range="{{photographerList}}"
+          range-key="name"
+          value="{{photographerIndex}}"
+          bindchange="onInterviewerChange"
+          data-role="photographer"
+        >
+          <view class="interviewer-picker">
+            {{photographerIndex >= 0 ? photographerList[photographerIndex].name : '请选择摄像师'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 舞蹈导师 -->
+      <view class="interviewer-group">
+        <view class="interviewer-label">
+          <text class="label-icon">💃</text>
+          <text class="label-text">舞蹈导师 *</text>
+        </view>
+        <picker
+          mode="selector"
+          range="{{danceTeacherList}}"
+          range-key="name"
+          value="{{danceTeacherIndex}}"
+          bindchange="onInterviewerChange"
+          data-role="dance_teacher"
+        >
+          <view class="interviewer-picker">
+            {{danceTeacherIndex >= 0 ? danceTeacherList[danceTeacherIndex].name : '请选择舞蹈导师'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 化妆师 -->
+      <view class="interviewer-group">
+        <view class="interviewer-label">
+          <text class="label-icon">💄</text>
+          <text class="label-text">化妆师 *</text>
+        </view>
+        <picker
+          mode="selector"
+          range="{{makeupArtistList}}"
+          range-key="name"
+          value="{{makeupArtistIndex}}"
+          bindchange="onInterviewerChange"
+          data-role="makeup_artist"
+        >
+          <view class="interviewer-picker">
+            {{makeupArtistIndex >= 0 ? makeupArtistList[makeupArtistIndex].name : '请选择化妆师'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 造型师 -->
+      <view class="interviewer-group">
+        <view class="interviewer-label">
+          <text class="label-icon">✨</text>
+          <text class="label-text">造型师 *</text>
+        </view>
+        <picker
+          mode="selector"
+          range="{{stylistList}}"
+          range-key="name"
+          value="{{stylistIndex}}"
+          bindchange="onInterviewerChange"
+          data-role="stylist"
+        >
+          <view class="interviewer-picker">
+            {{stylistIndex >= 0 ? stylistList[stylistIndex].name : '请选择造型师'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 经纪人 -->
+      <view class="interviewer-group">
+        <view class="interviewer-label">
+          <text class="label-icon">🤝</text>
+          <text class="label-text">经纪人 *</text>
+        </view>
+        <picker
+          mode="selector"
+          range="{{agentList}}"
+          range-key="name"
+          value="{{agentIndex}}"
+          bindchange="onInterviewerChange"
+          data-role="agent"
+        >
+          <view class="interviewer-picker">
+            {{agentIndex >= 0 ? agentList[agentIndex].name : '请选择经纪人'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 面试日期时间 -->
+      <view class="form-field">
+        <text class="field-label">面试日期 *</text>
+        <picker
+          mode="date"
+          value="{{reviewForm.interviewDate}}"
+          start="{{todayDate}}"
+          bindchange="onDateChange"
+        >
+          <view class="picker-display">
+            {{reviewForm.interviewDate || '请选择面试日期'}}
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">面试时间 *</text>
+        <picker
+          mode="time"
+          value="{{reviewForm.interviewTime}}"
+          bindchange="onTimeChange"
+        >
+          <view class="picker-display">
+            {{reviewForm.interviewTime || '请选择面试时间'}}
+          </view>
+        </picker>
+      </view>
+
+      <!-- 面试地点 -->
+      <view class="form-field">
+        <text class="field-label">面试地点 *</text>
+        <input
+          class="field-input"
+          placeholder="如：公司A会议室"
+          value="{{reviewForm.interviewLocation}}"
+          data-field="interviewLocation"
+          bindinput="onInput"
+        />
+      </view>
+
+      <!-- 面试要求 -->
+      <view class="form-field">
+        <text class="field-label">面试要求</text>
+        <textarea
+          class="field-textarea"
+          placeholder="如：请准备3分钟才艺展示"
+          value="{{reviewForm.interviewRequirements}}"
+          data-field="interviewRequirements"
+          bindinput="onInput"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="footer-actions">
+    <button class="btn-submit" bindtap="submitReview">
+      提交审核
+    </button>
+  </view>
+
+</view>
+
+<!-- 加载中 -->
+<view class="empty-state" wx:if="{{!candidate}}">
+  <text class="empty-text">加载中...</text>
+</view>

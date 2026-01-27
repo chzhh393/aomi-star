@@ -1,0 +1,45 @@
+<!--
+  舞蹈导师评分页面
+-->
+<view class="dance-evaluation-page">
+  <view class="candidate-info">
+    <text class="info-title">候选人：{{candidate.basicInfo.name}}</text>
+    <text class="info-subtitle">在线测试得分：{{candidate.onlineTest.score}}分</text>
+  </view>
+
+  <view class="evaluation-form">
+    <text class="form-title">舞蹈能力评分</text>
+    <text class="form-subtitle">每项满分10分</text>
+
+    <view wx:for="{{dimensions}}" wx:key="key" class="score-item">
+      <text class="dimension-name">{{item.name}}</text>
+      <slider
+        class="slider"
+        min="0"
+        max="10"
+        step="0.5"
+        value="{{scores[item.key]}}"
+        show-value
+        bindchange="onScoreChange"
+        data-key="{{item.key}}"
+      />
+    </view>
+
+    <view class="total-score">
+      <text class="total-label">综合评分：</text>
+      <text class="total-value">{{totalScore}}/10</text>
+    </view>
+
+    <view class="notes-section">
+      <text class="notes-label">评价备注</text>
+      <textarea
+        class="textarea"
+        placeholder="请输入评价备注"
+        value="{{notes}}"
+        bindinput="onNotesInput"
+      />
+    </view>
+  </view>
+
+  <button class="submit-btn" bindtap="onSubmit">提交评分</button>
+</view>

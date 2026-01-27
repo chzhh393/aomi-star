@@ -1,0 +1,177 @@
+<!--
+  HR面试官分配页面
+  功能：为候选人分配面试官、设置面试时间地点
+-->
+<view class="assign-interviewers-page">
+  <!-- 来自HR审核的提示横幅 -->
+  <view wx:if="{{fromHRReview}}" class="tip-banner">
+    <view class="tip-icon">✓</view>
+    <view class="tip-content">
+      <text class="tip-title">HR审核已通过</text>
+      <text class="tip-desc">请为候选人安排面试时间和面试官</text>
+    </view>
+  </view>
+
+  <!-- 候选人信息卡片 -->
+  <view class="candidate-card">
+    <view class="card-header">
+      <text class="card-title">候选人信息</text>
+    </view>
+    <view class="candidate-info">
+      <view class="info-row">
+        <text class="label">姓名：</text>
+        <text class="value">{{candidate.basicInfo.name}}</text>
+      </view>
+      <view class="info-row">
+        <text class="label">年龄：</text>
+        <text class="value">{{candidate.basicInfo.age}}岁</text>
+      </view>
+      <view class="info-row">
+        <text class="label">身高：</text>
+        <text class="value">{{candidate.basicInfo.height}}cm</text>
+      </view>
+      <view class="info-row">
+        <text class="label">当前状态：</text>
+        <text class="value status">{{candidate.statusLabel}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 面试日程设置 -->
+  <view class="schedule-section">
+    <view class="section-header">
+      <text class="section-title">面试日程</text>
+    </view>
+
+    <view class="form-item">
+      <text class="item-label">面试日期</text>
+      <picker mode="date" value="{{formData.date}}" start="{{todayDate}}" bindchange="onDateChange">
+        <view class="picker">
+          {{formData.date || '请选择日期'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="item-label">面试时间</text>
+      <picker mode="time" value="{{formData.time}}" bindchange="onTimeChange">
+        <view class="picker">
+          {{formData.time || '请选择时间'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="item-label">面试地点</text>
+      <input
+        class="input"
+        placeholder="请输入面试地点"
+        value="{{formData.location}}"
+        bindinput="onLocationInput"
+      />
+    </view>
+  </view>
+
+  <!-- 面试官选择 -->
+  <view class="interviewers-section">
+    <view class="section-header">
+      <text class="section-title">选择面试官</text>
+      <text class="section-subtitle">至少选择1位</text>
+    </view>
+
+    <!-- 摄像师 -->
+    <view class="interviewer-group">
+      <view class="group-label">
+        <text class="label-icon">📸</text>
+        <text class="label-text">摄像师</text>
+      </view>
+      <view class="interviewer-list">
+        <view
+          wx:for="{{photographers}}"
+          wx:key="id"
+          class="interviewer-item {{formData.selectedInterviewers[item.id] ? 'selected' : ''}}"
+          bindtap="onToggleInterviewer"
+          data-id="{{item.id}}"
+          data-role="photographer"
+          data-name="{{item.profile.name}}"
+        >
+          <text class="interviewer-name">{{item.profile.name}}</text>
+          <text class="check-icon">{{formData.selectedInterviewers[item.id] ? '✓' : ''}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 舞蹈导师 -->
+    <view class="interviewer-group">
+      <view class="group-label">
+        <text class="label-icon">💃</text>
+        <text class="label-text">舞蹈导师</text>
+      </view>
+      <view class="interviewer-list">
+        <view
+          wx:for="{{danceTeachers}}"
+          wx:key="id"
+          class="interviewer-item {{formData.selectedInterviewers[item.id] ? 'selected' : ''}}"
+          bindtap="onToggleInterviewer"
+          data-id="{{item.id}}"
+          data-role="dance_teacher"
+          data-name="{{item.profile.name}}"
+        >
+          <text class="interviewer-name">{{item.profile.name}}</text>
+          <text class="check-icon">{{formData.selectedInterviewers[item.id] ? '✓' : ''}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 化妆师 -->
+    <view class="interviewer-group">
+      <view class="group-label">
+        <text class="label-icon">💄</text>
+        <text class="label-text">化妆师</text>
+      </view>
+      <view class="interviewer-list">
+        <view
+          wx:for="{{makeupArtists}}"
+          wx:key="id"
+          class="interviewer-item {{formData.selectedInterviewers[item.id] ? 'selected' : ''}}"
+          bindtap="onToggleInterviewer"
+          data-id="{{item.id}}"
+          data-role="makeup_artist"
+          data-name="{{item.profile.name}}"
+        >
+          <text class="interviewer-name">{{item.profile.name}}</text>
+          <text class="check-icon">{{formData.selectedInterviewers[item.id] ? '✓' : ''}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 造型师 -->
+    <view class="interviewer-group">
+      <view class="group-label">
+        <text class="label-icon">✨</text>
+        <text class="label-text">造型师</text>
+      </view>
+      <view class="interviewer-list">
+        <view
+          wx:for="{{stylists}}"
+          wx:key="id"
+          class="interviewer-item {{formData.selectedInterviewers[item.id] ? 'selected' : ''}}"
+          bindtap="onToggleInterviewer"
+          data-id="{{item.id}}"
+          data-role="stylist"
+          data-name="{{item.profile.name}}"
+        >
+          <text class="interviewer-name">{{item.profile.name}}</text>
+          <text class="check-icon">{{formData.selectedInterviewers[item.id] ? '✓' : ''}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button class="submit-btn" bindtap="onSubmit">
+      确认分配
+    </button>
+  </view>
+</view>

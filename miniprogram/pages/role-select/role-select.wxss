@@ -1,0 +1,108 @@
+/* pages/role-select/role-select.wxss */
+/* 角色选择页 - 街头运动风格 */
+
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding: 80rpx 32rpx 120rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== 标题区 ==================== */
+.header {
+  text-align: center;
+  margin-bottom: 80rpx;
+}
+
+.title {
+  font-size: 64rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 4rpx;
+  display: block;
+  margin-bottom: 16rpx;
+  font-family: 'Arial Black', sans-serif;
+}
+
+.subtitle {
+  font-size: 24rpx;
+  color: #666666;
+  letter-spacing: 2rpx;
+  display: block;
+}
+
+/* ==================== 角色卡片 ==================== */
+.roles-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.role-card {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  border-radius: 0;
+  padding: 32rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.role-card:active {
+  transform: scale(0.98);
+}
+
+.card-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8rpx;
+}
+
+.card-content {
+  flex: 1;
+  padding-left: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.role-icon {
+  font-size: 56rpx;
+  margin-bottom: 8rpx;
+}
+
+.role-name {
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 1rpx;
+}
+
+.role-desc {
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.card-arrow {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #000000;
+  padding-left: 16rpx;
+}
+
+/* ==================== 底部 ==================== */
+.footer {
+  margin-top: 60rpx;
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 22rpx;
+  color: #999999;
+  letter-spacing: 1rpx;
+}

@@ -19,17 +19,17 @@
     "checkSiteMap": true,
     "uploadWithSourceMap": true,
     "compileHotReLoad": false,
-    "useMultiFrameRuntime": true,
+    "useMultiFrameRuntime": false,
     "useApiHook": true,
-    "useApiHostProcess": true,
+    "useApiHostProcess": false,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
     },
     "enableEngineNative": false,
-    "useIsolateContext": true,
-    "useCompilerModule": true,
+    "useIsolateContext": false,
+    "useCompilerModule": false,
     "userConfirmedUseCompilerModuleSwitch": false,
     "userConfirmedBundleSwitch": false,
     "packNpmManually": false,
@@ -46,7 +46,7 @@
   },
   "appid": "wxde8dc6be8c5d2d96",
   "projectname": "aomi-star",
-  "libVersion": "2.20.1",
+  "libVersion": "2.33.0",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {
     "search": {

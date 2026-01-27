@@ -1,0 +1,43 @@
+<!--
+  经纪人面试评价页面
+-->
+<view class="agent-evaluation-page">
+  <view class="candidate-info">
+    <text class="info-title">{{candidate.basicInfo.name}}</text>
+    <text class="info-subtitle">舞蹈评分：{{candidate.evaluations.danceTeacher.score}}/10</text>
+  </view>
+
+  <view class="evaluation-form">
+    <text class="form-title">经纪人评价</text>
+
+    <view wx:for="{{dimensions}}" wx:key="key" class="score-item">
+      <text class="dimension-name">{{item.name}}</text>
+      <slider
+        min="0"
+        max="10"
+        step="0.5"
+        value="{{scores[item.key]}}"
+        show-value
+        bindchange="onScoreChange"
+        data-key="{{item.key}}"
+      />
+    </view>
+
+    <view class="total-score">
+      <text class="total-label">综合评分：</text>
+      <text class="total-value">{{totalScore}}/10</text>
+    </view>
+
+    <view class="notes-section">
+      <text class="notes-label">评价备注</text>
+      <textarea
+        class="textarea"
+        placeholder="请输入对候选人的综合评价"
+        value="{{notes}}"
+        bindinput="onNotesInput"
+      />
+    </view>
+  </view>
+
+  <button class="submit-btn" bindtap="onSubmit">提交评价</button>
+</view>

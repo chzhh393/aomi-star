@@ -1,0 +1,145 @@
+<!--
+  HR审核页面
+  功能: 查看候选人信息并进行审核
+-->
+<view class="hr-review">
+  <view wx:if="{{!candidate}}" class="loading">
+    <text>加载中...</text>
+  </view>
+
+  <view wx:else class="content">
+    <!-- 候选人基本信息 -->
+    <view class="info-section">
+      <view class="section-title">
+        <text class="title-icon">👤</text>
+        <text class="title-text">候选人信息</text>
+      </view>
+
+      <view class="info-card">
+        <!-- 照片展示 -->
+        <view wx:if="{{candidate.basicInfo.photos && candidate.basicInfo.photos.length > 0}}" class="photos-section">
+          <view class="photos-grid">
+            <image
+              wx:for="{{candidate.basicInfo.photos}}"
+              wx:key="index"
+              class="photo-item"
+              src="{{item}}"
+              mode="aspectFill"
+              bindtap="onViewPhoto"
+              data-url="{{item}}"
+            />
+          </view>
+        </view>
+
+        <!-- 基本信息 -->
+        <view class="info-group">
+          <view class="info-row">
+            <text class="info-label">姓名</text>
+            <text class="info-value">{{candidate.basicInfo.name}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">性别</text>
+            <text class="info-value">{{candidate.basicInfo.gender === 'female' ? '女' : '男'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">年龄</text>
+            <text class="info-value">{{candidate.basicInfo.age}}岁</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">身高</text>
+            <text class="info-value">{{candidate.basicInfo.height}}cm</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">体重</text>
+            <text class="info-value">{{candidate.basicInfo.weight}}kg</text>
+          </view>
+        </view>
+
+        <!-- 联系方式 -->
+        <view class="info-group">
+          <view class="group-header">
+            <text class="group-title">联系方式</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">手机号</text>
+            <text class="info-value">{{candidate.basicInfo.phone}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">微信号</text>
+            <text class="info-value">{{candidate.basicInfo.wechat || '未填写'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">所在地</text>
+            <text class="info-value">{{candidate.basicInfo.location || '未填写'}}</text>
+          </view>
+        </view>
+
+        <!-- 教育背景 -->
+        <view class="info-group" wx:if="{{candidate.basicInfo.education}}">
+          <view class="group-header">
+            <text class="group-title">教育背景</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">学历</text>
+            <text class="info-value">{{candidate.basicInfo.education}}</text>
+          </view>
+        </view>
+
+        <!-- 工作经验 -->
+        <view class="info-group" wx:if="{{candidate.basicInfo.experience}}">
+          <view class="group-header">
+            <text class="group-title">工作经验</text>
+          </view>
+          <view class="info-row full">
+            <text class="info-value">{{candidate.basicInfo.experience}}</text>
+          </view>
+        </view>
+
+        <!-- 申请时间 -->
+        <view class="info-group">
+          <view class="info-row">
+            <text class="info-label">申请时间</text>
+            <text class="info-value minor">{{candidate.createdAt}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">候选人ID</text>
+            <text class="info-value minor">{{candidate.id}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 审核备注 -->
+    <view class="notes-section">
+      <view class="section-title">
+        <text class="title-icon">📝</text>
+        <text class="title-text">审核备注</text>
+        <text class="optional">(可选)</text>
+      </view>
+
+      <view class="notes-card">
+        <textarea
+          class="notes-input"
+          placeholder="请输入审核备注..."
+          value="{{reviewNotes}}"
+          bindinput="onNotesInput"
+          maxlength="200"
+          auto-height
+        />
+        <view class="notes-count">{{reviewNotes.length}}/200</view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="actions">
+      <button class="action-btn reject-btn" bindtap="onReject">
+        <text class="btn-icon">✕</text>
+        <text class="btn-text">拒绝</text>
+      </button>
+      <button class="action-btn approve-btn" bindtap="onApprove">
+        <text class="btn-icon">✓</text>
+        <text class="btn-text">通过</text>
+      </button>
+    </view>
+  </view>
+</view>

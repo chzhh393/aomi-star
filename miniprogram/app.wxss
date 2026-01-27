@@ -1,2 +1,8 @@
 /**app.wxss**/
+@import "/styles/theme.wxss";
+
 /* 全局样式 */
+page {
+  background: #000;
+  color: #fff;
+}

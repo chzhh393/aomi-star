@@ -1,0 +1,539 @@
+/* pages/anchor/apply/apply.wxss */
+/* 主播报名表单 - 蓝色主题 #13E8DD */
+
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding-bottom: 160rpx;
+}
+
+/* ==================== 进度条 ==================== */
+.progress-header {
+  background: #000000;
+  padding: 32rpx 24rpx;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+}
+
+.step-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  position: relative;
+}
+
+.step-item::after {
+  content: '';
+  position: absolute;
+  top: 20rpx;
+  left: 60%;
+  right: -40%;
+  height: 4rpx;
+  background: #333333;
+}
+
+.step-item:last-child::after {
+  display: none;
+}
+
+.step-item.active::after {
+  background: #13E8DD;
+}
+
+.step-number {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #333333;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 900;
+  position: relative;
+  z-index: 2;
+}
+
+.step-item.active .step-number {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.step-text {
+  font-size: 22rpx;
+  color: #666666;
+}
+
+.step-item.active .step-text {
+  color: #13E8DD;
+  font-weight: 600;
+}
+
+/* ==================== 表单内容 ==================== */
+.form-content {
+  padding: 24rpx;
+}
+
+.form-step {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  padding: 32rpx;
+  border-radius: 0;
+}
+
+.step-title {
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 32rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 4rpx solid #13E8DD;
+}
+
+/* ==================== 表单字段 ==================== */
+.form-field {
+  margin-bottom: 32rpx;
+}
+
+.form-field.half {
+  width: 48%;
+}
+
+.form-field.no-margin {
+  margin-bottom: 0;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.field-label {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.field-input,
+.field-textarea,
+.picker-display {
+  width: 100%;
+  min-height: 80rpx;
+  padding: 16rpx 18rpx;
+  background: #F5F5F5;
+  border: 2rpx solid #E0E0E0;
+  font-size: 26rpx;
+  line-height: 1.5;
+  color: #000000;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+.field-input:focus,
+.field-textarea:focus {
+  border-color: #13E8DD;
+  background: #FFFFFF;
+}
+
+.field-textarea {
+  min-height: 140rpx;
+}
+
+/* Placeholder 样式 */
+.field-input::placeholder,
+.field-textarea::placeholder {
+  color: #999999;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.picker-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.picker-display::after {
+  content: '▼';
+  font-size: 20rpx;
+  color: #666666;
+}
+
+/* ==================== 照片上传 ==================== */
+.photo-upload-area {
+  display: flex;
+  gap: 24rpx;
+}
+
+.photo-item {
+  flex: 1;
+}
+
+.photo-box {
+  width: 100%;
+  height: 240rpx;
+  background: #F5F5F5;
+  border: 2rpx dashed #CCCCCC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.photo-box.has-photo {
+  border-style: solid;
+  border-color: #13E8DD;
+}
+
+.photo-icon {
+  font-size: 60rpx;
+  color: #999999;
+  line-height: 1;
+}
+
+.photo-tip {
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 8rpx;
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+}
+
+.photo-delete {
+  position: absolute;
+  top: -16rpx;
+  right: -16rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: #FF4D4F;
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+
+.photo-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #FFFFFF;
+  font-size: 20rpx;
+  text-align: center;
+  padding: 6rpx 0;
+}
+
+.photo-hint {
+  display: block;
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 12rpx;
+}
+
+/* ==================== 兴趣爱好多选 ==================== */
+.hobby-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.hobby-tag {
+  padding: 14rpx 28rpx;
+  background: #F5F5F5;
+  border: 2rpx solid #E0E0E0;
+  font-size: 26rpx;
+  color: #333333;
+  border-radius: 8rpx;
+}
+
+.hobby-tag.selected {
+  background: #13E8DD;
+  border-color: #13E8DD;
+  color: #000000;
+  font-weight: 600;
+}
+
+.hobby-tag:active {
+  opacity: 0.8;
+}
+
+.other-hobby-input {
+  margin-top: 16rpx;
+  width: 100%;
+  height: 72rpx;
+  padding: 0 20rpx;
+  background: #F5F5F5;
+  border: 2rpx solid #E0E0E0;
+  font-size: 26rpx;
+  box-sizing: border-box;
+}
+
+.other-hobby-input:focus {
+  border-color: #13E8DD;
+  background: #FFFFFF;
+}
+
+/* ==================== 直播经验选项 ==================== */
+.experience-options {
+  display: flex;
+  gap: 24rpx;
+}
+
+.experience-tag {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F5F5F5;
+  border: 2rpx solid #E0E0E0;
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.experience-tag.selected {
+  background: #13E8DD;
+  border-color: #13E8DD;
+  color: #000000;
+  font-weight: 600;
+}
+
+/* ==================== 视频上传 ==================== */
+.video-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.video-list {
+  display: inline-flex;
+  gap: 16rpx;
+}
+
+.video-item {
+  position: relative;
+  width: 200rpx;
+  height: 200rpx;
+  flex-shrink: 0;
+}
+
+.video-thumb {
+  width: 100%;
+  height: 100%;
+  background: #000000;
+}
+
+.video-delete {
+  position: absolute;
+  top: -12rpx;
+  right: -12rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: #FF4D4F;
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  z-index: 10;
+}
+
+.video-add {
+  width: 200rpx;
+  height: 200rpx;
+  background: #F5F5F5;
+  border: 2rpx dashed #CCCCCC;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.video-add-icon {
+  font-size: 60rpx;
+  color: #999999;
+  line-height: 1;
+}
+
+.video-add-text {
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 8rpx;
+}
+
+.video-hint {
+  display: block;
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 12rpx;
+}
+
+/* ==================== 才艺多选（手风琴） ==================== */
+.talent-categories {
+  border: 2rpx solid #E0E0E0;
+}
+
+.talent-category {
+  border-bottom: 2rpx solid #E0E0E0;
+}
+
+.talent-category:last-child {
+  border-bottom: none;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 20rpx;
+  background: #F5F5F5;
+}
+
+.category-header.expanded {
+  background: #000000;
+}
+
+.category-header.expanded .category-name {
+  color: #FFFFFF;
+}
+
+.category-header.expanded .category-arrow {
+  color: #13E8DD;
+}
+
+.category-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.category-arrow {
+  font-size: 20rpx;
+  color: #999999;
+}
+
+.category-options {
+  padding: 20rpx;
+  background: #FFFFFF;
+}
+
+.talent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.talent-tag {
+  padding: 16rpx 32rpx;
+  background: #F5F5F5;
+  border: 2rpx solid #E0E0E0;
+  font-size: 28rpx;
+  color: #333333;
+  transition: all 0.2s;
+}
+
+.talent-tag.selected {
+  background: #13E8DD;
+  border-color: #13E8DD;
+  color: #000000;
+  font-weight: 600;
+}
+
+.talent-tag:active {
+  opacity: 0.8;
+}
+
+.other-input {
+  width: 100%;
+  height: 72rpx;
+  padding: 0 20rpx;
+  background: #F5F5F5;
+  border: 2rpx solid #E0E0E0;
+  font-size: 26rpx;
+  box-sizing: border-box;
+}
+
+.other-input:focus {
+  border-color: #13E8DD;
+  background: #FFFFFF;
+}
+
+/* ==================== 滑块 ==================== */
+.slider {
+  margin-top: 16rpx;
+}
+
+.slider-tips {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #999999;
+}
+
+/* ==================== 底部按钮 ==================== */
+.form-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx;
+  background: #FFFFFF;
+  border-top: 2rpx solid #E0E0E0;
+  display: flex;
+  gap: 16rpx;
+  z-index: 100;
+}
+
+.btn-secondary,
+.btn-primary,
+.btn-submit {
+  flex: 1;
+  height: 88rpx;
+  border: none;
+  font-size: 32rpx;
+  font-weight: 900;
+  border-radius: 0;
+}
+
+.btn-secondary {
+  background: #FFFFFF;
+  color: #000000;
+  border: 4rpx solid #000000;
+}
+
+.btn-primary {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+.btn-submit {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.btn-secondary:active {
+  opacity: 0.8;
+}
+
+.btn-primary:active,
+.btn-submit:active {
+  opacity: 0.9;
+}

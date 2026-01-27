@@ -1,0 +1,339 @@
+/* 舞蹈导师工作台样式 - 街头运动风格 */
+
+.dance-teacher-home {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  padding: 20rpx;
+}
+
+/* ========== 顶部用户信息 ========== */
+.header {
+  margin-bottom: 30rpx;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 30rpx;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20rpx;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.role-badge {
+  font-size: 28rpx;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 10rpx 20rpx;
+  border-radius: 30rpx;
+  font-weight: bold;
+}
+
+.username {
+  font-size: 32rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* ========== 数据统计 ========== */
+.stats-section {
+  margin-bottom: 30rpx;
+}
+
+.stats-card {
+  display: flex;
+  justify-content: space-around;
+  padding: 40rpx 20rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.15);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.stat-item.primary .stat-value {
+  color: #f5576c;
+  font-size: 48rpx;
+}
+
+.stat-value {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* ========== 待评分任务 ========== */
+.tasks-section {
+  margin-bottom: 30rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+  padding: 0 10rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 2rpx;
+}
+
+.section-count {
+  font-size: 28rpx;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20rpx;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ========== 候选人卡片 ========== */
+.candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.candidate-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.candidate-card:active {
+  transform: scale(0.98);
+}
+
+.candidate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.candidate-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.candidate-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.candidate-id {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.test-score-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  padding: 10rpx 20rpx;
+  border-radius: 10rpx;
+  gap: 5rpx;
+}
+
+.badge-label {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.badge-value {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+.candidate-details {
+  padding: 20rpx 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 20rpx;
+}
+
+.detail-item {
+  display: flex;
+  margin-bottom: 10rpx;
+  font-size: 26rpx;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  color: #999;
+  width: 180rpx;
+}
+
+.detail-value {
+  color: #333;
+  flex: 1;
+}
+
+.materials-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5rpx;
+  padding: 15rpx 20rpx;
+  background: #f8f8f8;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+}
+
+.materials-label {
+  font-size: 24rpx;
+  color: #333;
+}
+
+.materials-time {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.action-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rpx;
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  border-radius: 15rpx;
+}
+
+.btn-text {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* ========== 已完成列表 ========== */
+.completed-section {
+  margin-bottom: 30rpx;
+}
+
+.completed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+}
+
+.completed-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25rpx 30rpx;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 15rpx;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.completed-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.completed-name {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+.completed-score {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.completed-status {
+  width: 50rpx;
+  height: 50rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon {
+  font-size: 28rpx;
+  color: #fff;
+}
+
+/* ========== 快捷功能 ========== */
+.quick-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+.action-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  padding: 30rpx 20rpx;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 15rpx;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s;
+}
+
+.action-item:active {
+  transform: scale(0.95);
+}
+
+.action-icon {
+  font-size: 40rpx;
+}
+
+.action-text {
+  font-size: 24rpx;
+  color: #fff;
+}

@@ -1,0 +1,177 @@
+<!--pages/anchor/home/home.wxml-->
+<!--主播管理模块 - 街头运动风格-->
+<view class="container">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">LIVE STREAM</text>
+  </view>
+
+  <!-- 主播信息卡片 - 大头像突出 -->
+  <view class="profile-block">
+    <view class="profile-main">
+      <image class="avatar-bold" src="{{anchor.avatar}}" />
+      <view class="profile-info">
+        <text class="name-bold">{{anchor.artName}}</text>
+        <view class="badges-row">
+          <view class="level-tag level-{{anchor.levelLowerCase}}">{{anchor.level}}</view>
+          <text class="agent-tag">{{anchor.agentName}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="profile-corner-accent"></view>
+  </view>
+
+  <!-- 今日任务卡片 - 运动风倒计时 -->
+  <view class="mission-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">TODAY'S MISSION</text>
+    </view>
+    <view class="mission-content">
+      <view class="time-row">
+        <text class="time-huge">{{schedule.startTime}}</text>
+        <text class="time-separator">-</text>
+        <text class="time-huge">{{schedule.endTime}}</text>
+      </view>
+      <view class="platform-info">
+        <text class="platform-name">{{schedule.platform}}</text>
+        <text class="slot-dot">●</text>
+        <text class="slot-name">{{schedule.slotName}}</text>
+      </view>
+    </view>
+    <!-- 倒计时块 -->
+    <view class="countdown-block">
+      <text class="countdown-label">STARTS IN</text>
+      <text class="countdown-huge">2:30</text>
+      <view class="countdown-accent"></view>
+    </view>
+  </view>
+
+  <!-- 数据面板 - 运动数据风格 -->
+  <view class="stats-grid">
+    <view class="stat-card stat-primary">
+      <text class="stat-label">REVENUE</text>
+      <view class="stat-value-row">
+        <text class="stat-number-huge">{{anchor.monthRevenueK}}</text>
+        <text class="stat-unit">K</text>
+      </view>
+      <view class="stat-change-row">
+        <view class="change-arrow">↑</view>
+        <text class="change-percent">{{anchor.revenueGrowthPercent}}%</text>
+      </view>
+      <view class="card-accent-line"></view>
+    </view>
+
+    <view class="stat-card">
+      <text class="stat-label">NEW FANS</text>
+      <view class="stat-value-row">
+        <text class="stat-number-large">+{{anchor.newFans}}</text>
+      </view>
+      <text class="stat-period">THIS MONTH</text>
+    </view>
+
+    <view class="stat-card">
+      <text class="stat-label">LIVE HOURS</text>
+      <view class="stat-value-row">
+        <text class="stat-number-large">{{anchor.liveHours}}</text>
+        <text class="stat-unit-small">H</text>
+      </view>
+      <view class="stat-change-row">
+        <text class="change-text">+{{anchor.hoursChange}}H</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 培训状态 - 仅签约主播可见 -->
+  <view wx:if="{{isStreamer}}" class="training-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">TRAINING STATUS</text>
+    </view>
+    <view class="training-content">
+      <view class="training-progress">
+        <text class="training-label">Progress</text>
+        <text class="training-percent">{{trainingInfo.progress}}%</text>
+      </view>
+      <view class="progress-bar-wrapper">
+        <view class="progress-bar-bold" style="width: {{trainingInfo.progress}}%">
+          <view class="progress-stripe"></view>
+        </view>
+      </view>
+      <view class="training-status-row">
+        <text class="training-status-label">Status:</text>
+        <text class="training-status-value">{{trainingInfo.statusLabel}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 经纪人信息 - 仅签约主播可见 -->
+  <view wx:if="{{isStreamer && agent}}" class="agent-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">YOUR AGENT</text>
+    </view>
+    <view class="agent-content">
+      <view class="agent-info-row">
+        <text class="agent-label">Name:</text>
+        <text class="agent-value">{{agent.profile.name}}</text>
+      </view>
+      <view class="agent-info-row">
+        <text class="agent-label">Phone:</text>
+        <text class="agent-value">{{agent.profile.phone || '暂无'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 目标追踪 - 进度条运动风 -->
+  <view class="goals-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">WEEKLY GOALS</text>
+    </view>
+
+    <view class="goal-item">
+      <view class="goal-header">
+        <text class="goal-name">Revenue Target</text>
+        <text class="goal-percent">80%</text>
+      </view>
+      <view class="progress-bar-wrapper">
+        <view class="progress-bar-bold" style="width: 80%">
+          <view class="progress-stripe"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="goal-item">
+      <view class="goal-header">
+        <text class="goal-name">Live Hours</text>
+        <text class="goal-percent">60%</text>
+      </view>
+      <view class="progress-bar-wrapper">
+        <view class="progress-bar-bold" style="width: 60%">
+          <view class="progress-stripe"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="goal-item">
+      <view class="goal-header">
+        <text class="goal-name">Fans Growth</text>
+        <text class="goal-percent">90%</text>
+      </view>
+      <view class="progress-bar-wrapper">
+        <view class="progress-bar-bold" style="width: 90%">
+          <view class="progress-stripe"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部标语 -->
+  <view class="footer-motto">
+    <text class="motto-text">KEEP STREAMING. STAY WINNING.</text>
+  </view>
+
+</view>

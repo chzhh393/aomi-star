@@ -1,0 +1,144 @@
+<!--
+  HR工作台
+  功能:
+  1. 查看待审核候选人(status=pending)
+  2. 查看各阶段候选人统计
+  3. 查看最近通过审核的候选人
+-->
+<view class="hr-home">
+  <!-- 顶部用户信息 -->
+  <view class="header">
+    <view class="user-info">
+      <text class="role-badge">👔 HR管理员</text>
+      <text class="username">{{userInfo.profile.name}}</text>
+    </view>
+  </view>
+
+  <!-- 数据统计卡片 -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <view class="stat-item primary">
+        <text class="stat-value">{{stats.total}}</text>
+        <text class="stat-label">候选人总数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.pending}}</text>
+        <text class="stat-label">待审核</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.interviewing}}</text>
+        <text class="stat-label">面试中</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.signed}}</text>
+        <text class="stat-label">已签约</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待审核候选人列表 -->
+  <view class="tasks-section">
+    <view class="section-header">
+      <text class="section-title">待审核候选人</text>
+      <text class="section-count">{{pendingCandidates.length}}</text>
+    </view>
+
+    <view wx:if="{{pendingCandidates.length === 0}}" class="empty-state">
+      <text class="empty-icon">✨</text>
+      <text class="empty-text">暂无待审核候选人</text>
+    </view>
+
+    <view wx:else class="candidate-list">
+      <view
+        wx:for="{{pendingCandidates}}"
+        wx:key="id"
+        class="candidate-card urgent"
+        bindtap="onViewCandidate"
+        data-id="{{item.id}}"
+      >
+        <view class="candidate-header">
+          <view class="candidate-info">
+            <text class="candidate-name">{{item.basicInfo.name}}</text>
+            <text class="candidate-id">ID: {{item.id}}</text>
+          </view>
+          <view class="urgent-badge">
+            <text class="badge-text">待审核</text>
+          </view>
+        </view>
+
+        <view class="candidate-details">
+          <view class="detail-item">
+            <text class="detail-label">性别：</text>
+            <text class="detail-value">{{item.basicInfo.gender === 'female' ? '女' : '男'}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">年龄/身高：</text>
+            <text class="detail-value">{{item.basicInfo.age}}岁 / {{item.basicInfo.height}}cm</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">联系电话：</text>
+            <text class="detail-value">{{item.basicInfo.phone}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">申请时间：</text>
+            <text class="detail-value">{{item.createdAt}}</text>
+          </view>
+        </view>
+
+        <view class="action-btn" catchtap="onReviewCandidate" data-id="{{item.id}}">
+          <text class="btn-text">去审核 →</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近通过审核的候选人 -->
+  <view class="completed-section">
+    <view class="section-header">
+      <text class="section-title">最近通过审核</text>
+    </view>
+
+    <view wx:if="{{recentApproved.length === 0}}" class="empty-state">
+      <text class="empty-text">暂无记录</text>
+    </view>
+
+    <view wx:else class="completed-list">
+      <view
+        wx:for="{{recentApproved}}"
+        wx:key="id"
+        class="completed-card"
+        bindtap="onViewCandidate"
+        data-id="{{item.id}}"
+      >
+        <view class="completed-info">
+          <text class="completed-name">{{item.basicInfo.name}}</text>
+          <text class="completed-status">
+            {{item.status === 'interview_scheduled' ? '面试已排期' :
+              item.status === 'online_test_completed' ? '线上测试完成' :
+              item.status === 'rated' ? '已评级' :
+              item.status === 'signed' ? '已签约' : '进行中'}}
+          </text>
+        </view>
+        <view class="completed-arrow">
+          <text class="arrow-icon">→</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="quick-actions">
+    <view class="action-item" bindtap="onViewAllCandidates">
+      <text class="action-icon">📋</text>
+      <text class="action-text">全部候选人</text>
+    </view>
+    <view class="action-item" bindtap="onViewStatistics">
+      <text class="action-icon">📊</text>
+      <text class="action-text">数据统计</text>
+    </view>
+    <view class="action-item" bindtap="onRefresh">
+      <text class="action-icon">🔄</text>
+      <text class="action-text">刷新列表</text>
+    </view>
+  </view>
+</view>

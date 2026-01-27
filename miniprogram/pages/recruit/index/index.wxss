@@ -1,0 +1,244 @@
+/* pages/recruit/index/index.wxss */
+/* 主播招聘首页 - 街头运动风格 - 蓝色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding-bottom: 40rpx;
+}
+
+/* ==================== 顶部横幅 ==================== */
+.header-banner {
+  background: #000000;
+  padding: 60rpx 32rpx 48rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slash {
+  position: absolute;
+  top: 0;
+  right: -40rpx;
+  width: 200rpx;
+  height: 100%;
+  background: #13E8DD;
+  transform: skewX(-15deg);
+}
+
+.banner-text {
+  font-size: 56rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.banner-subtitle {
+  font-size: 28rpx;
+  color: #13E8DD;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+/* ==================== 通用卡片样式 ==================== */
+.intro-card,
+.cta-card {
+  background: #FFFFFF;
+  margin: 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+  box-shadow: 6rpx 6rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.card-header,
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.header-slash {
+  width: 6rpx;
+  height: 32rpx;
+  background: #13E8DD;
+}
+
+.header-title,
+.section-title {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+}
+
+/* ==================== 岗位介绍 ==================== */
+.intro-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.intro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  padding: 20rpx;
+  background: #F5F5F5;
+  border-left: 4rpx solid #13E8DD;
+}
+
+.intro-label {
+  font-size: 22rpx;
+  font-weight: 900;
+  color: #666666;
+  letter-spacing: 1rpx;
+  text-transform: uppercase;
+}
+
+.intro-value {
+  font-size: 28rpx;
+  color: #000000;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* ==================== 福利待遇 ==================== */
+.benefits-section {
+  margin: 0 24rpx 24rpx;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  margin-top: 24rpx;
+}
+
+.benefit-card {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  padding: 28rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12rpx;
+  box-shadow: 4rpx 4rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.benefit-icon {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.benefit-title {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 1rpx;
+}
+
+.benefit-desc {
+  font-size: 22rpx;
+  color: #666666;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ==================== CTA区域 ==================== */
+.cta-section {
+  margin: 0 24rpx 24rpx;
+}
+
+.cta-card {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+  background: #13E8DD;
+  border-color: #000000;
+}
+
+.cta-icon {
+  font-size: 64rpx;
+  line-height: 1;
+}
+
+.cta-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.cta-title {
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 2rpx;
+  display: block;
+}
+
+.cta-subtitle {
+  font-size: 24rpx;
+  color: #000000;
+  font-weight: 600;
+  opacity: 0.7;
+  display: block;
+}
+
+.btn-primary {
+  width: 100%;
+  height: 96rpx;
+  background: #000000;
+  color: #FFFFFF;
+  border: none;
+  font-size: 36rpx;
+  font-weight: 900;
+  letter-spacing: 2rpx;
+  border-radius: 0;
+  margin-bottom: 16rpx;
+}
+
+.btn-primary:active {
+  opacity: 0.9;
+}
+
+.link-row {
+  text-align: center;
+  padding: 16rpx 0;
+}
+
+.link-text {
+  font-size: 26rpx;
+  color: #13E8DD;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+}
+
+/* ==================== 底部标语 ==================== */
+.footer-motto {
+  margin: 24rpx;
+  padding: 32rpx;
+  background: #000000;
+  text-align: center;
+  border: 4rpx solid #13E8DD;
+}
+
+.motto-text {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+}

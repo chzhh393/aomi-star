@@ -1,0 +1,453 @@
+<!--pages/anchor/apply/apply.wxml-->
+<view class="container">
+
+  <!-- 顶部进度条 -->
+  <view class="progress-header">
+    <view class="progress-steps">
+      <view
+        class="step-item {{index <= currentStep ? 'active' : ''}}"
+        wx:for="{{steps}}"
+        wx:key="index"
+      >
+        <view class="step-number">{{index + 1}}</view>
+        <text class="step-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 表单内容 -->
+  <view class="form-content">
+
+    <!-- 步骤1: 基础信息 -->
+    <view class="form-step" wx:if="{{currentStep === 0}}">
+      <view class="step-title">📝 基础信息</view>
+
+      <view class="form-row">
+        <view class="form-field half">
+          <text class="field-label">真实姓名 *</text>
+          <input
+            class="field-input"
+            placeholder="真实姓名"
+            value="{{formData.basicInfo.name}}"
+            data-field="basicInfo.name"
+            bindinput="onInput"
+          />
+        </view>
+        <view class="form-field half">
+          <text class="field-label">艺名/直播名</text>
+          <input
+            class="field-input"
+            placeholder="艺名/直播名"
+            value="{{formData.basicInfo.artName}}"
+            data-field="basicInfo.artName"
+            bindinput="onInput"
+          />
+        </view>
+      </view>
+
+      <view class="form-row">
+        <view class="form-field half">
+          <text class="field-label">年龄 *</text>
+          <input
+            class="field-input"
+            type="number"
+            placeholder="年龄"
+            value="{{formData.basicInfo.age}}"
+            data-field="basicInfo.age"
+            bindinput="onInput"
+          />
+        </view>
+        <view class="form-field half">
+          <text class="field-label">性别</text>
+          <picker
+            mode="selector"
+            range="{{genderOptions}}"
+            value="{{genderOptions.indexOf(formData.basicInfo.gender)}}"
+            data-field="basicInfo.gender"
+            data-options="genderOptions"
+            bindchange="onPickerChange"
+          >
+            <view class="picker-display">{{formData.basicInfo.gender}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="form-row">
+        <view class="form-field half">
+          <text class="field-label">身高(cm)</text>
+          <input
+            class="field-input"
+            type="number"
+            placeholder="身高"
+            value="{{formData.basicInfo.height}}"
+            data-field="basicInfo.height"
+            bindinput="onInput"
+          />
+        </view>
+        <view class="form-field half">
+          <text class="field-label">体重(kg)</text>
+          <input
+            class="field-input"
+            type="number"
+            placeholder="体重"
+            value="{{formData.basicInfo.weight}}"
+            data-field="basicInfo.weight"
+            bindinput="onInput"
+          />
+        </view>
+      </view>
+
+      <view class="form-row">
+        <view class="form-field half">
+          <text class="field-label">手机号 *</text>
+          <input
+            class="field-input"
+            type="number"
+            placeholder="手机号"
+            value="{{formData.basicInfo.phone}}"
+            data-field="basicInfo.phone"
+            bindinput="onInput"
+          />
+        </view>
+        <view class="form-field half">
+          <text class="field-label">微信号 *</text>
+          <input
+            class="field-input"
+            placeholder="微信号"
+            value="{{formData.basicInfo.wechat}}"
+            data-field="basicInfo.wechat"
+            bindinput="onInput"
+          />
+        </view>
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">MBTI人格</text>
+        <picker
+          mode="selector"
+          range="{{mbtiOptions}}"
+          value="{{mbtiOptions.indexOf(formData.basicInfo.mbti)}}"
+          data-field="basicInfo.mbti"
+          data-options="mbtiOptions"
+          bindchange="onPickerChange"
+        >
+          <view class="picker-display">{{formData.basicInfo.mbti || '请选择MBTI人格'}}</view>
+        </picker>
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">兴趣爱好（可多选）</text>
+        <view class="hobby-grid">
+          <view
+            wx:for="{{hobbyOptions}}"
+            wx:key="*this"
+            class="hobby-tag {{formData.basicInfo.selectedHobbies[item] ? 'selected' : ''}}"
+            data-hobby="{{item}}"
+            bindtap="onHobbyToggle"
+          >
+            {{item}}
+          </view>
+          <view
+            class="hobby-tag {{formData.basicInfo.hasOtherHobby ? 'selected' : ''}}"
+            bindtap="onOtherHobbyToggle"
+          >
+            其他
+          </view>
+        </view>
+        <input
+          wx:if="{{formData.basicInfo.hasOtherHobby}}"
+          class="other-hobby-input"
+          placeholder="请输入其他兴趣爱好"
+          value="{{formData.basicInfo.otherHobby}}"
+          data-field="basicInfo.otherHobby"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">抖音账号</text>
+        <view class="form-row">
+          <view class="form-field half no-margin">
+            <input
+              class="field-input"
+              placeholder="抖音账号（选填）"
+              value="{{formData.basicInfo.douyin}}"
+              data-field="basicInfo.douyin"
+              bindinput="onInput"
+            />
+          </view>
+          <view class="form-field half no-margin">
+            <input
+              class="field-input"
+              type="number"
+              placeholder="粉丝数量"
+              value="{{formData.basicInfo.douyinFans}}"
+              data-field="basicInfo.douyinFans"
+              bindinput="onInput"
+            />
+          </view>
+        </view>
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">小红书账号</text>
+        <view class="form-row">
+          <view class="form-field half no-margin">
+            <input
+              class="field-input"
+              placeholder="小红书账号（选填）"
+              value="{{formData.basicInfo.xiaohongshu}}"
+              data-field="basicInfo.xiaohongshu"
+              bindinput="onInput"
+            />
+          </view>
+          <view class="form-field half no-margin">
+            <input
+              class="field-input"
+              type="number"
+              placeholder="粉丝数量"
+              value="{{formData.basicInfo.xiaohongshuFans}}"
+              data-field="basicInfo.xiaohongshuFans"
+              bindinput="onInput"
+            />
+          </view>
+        </view>
+      </view>
+
+      <!-- 照片上传 -->
+      <view class="form-field">
+        <text class="field-label">照片上传 *</text>
+        <view class="photo-upload-area">
+          <!-- 素颜正面照 -->
+          <view class="photo-item">
+            <view class="photo-box" wx:if="{{!formData.basicInfo.facePhoto}}" data-type="face" bindtap="onChoosePhoto">
+              <text class="photo-icon">+</text>
+              <text class="photo-tip">素颜正面照</text>
+            </view>
+            <view class="photo-box has-photo" wx:else>
+              <image class="photo-preview" src="{{formData.basicInfo.facePhoto}}" mode="aspectFill" data-url="{{formData.basicInfo.facePhoto}}" bindtap="onPreviewPhoto" />
+              <view class="photo-delete" data-type="face" catchtap="onDeletePhoto">×</view>
+              <text class="photo-label">正面照</text>
+            </view>
+          </view>
+
+          <!-- 生活照1 -->
+          <view class="photo-item">
+            <view class="photo-box" wx:if="{{!formData.basicInfo.lifePhoto1}}" data-type="life1" bindtap="onChoosePhoto">
+              <text class="photo-icon">+</text>
+              <text class="photo-tip">生活照</text>
+            </view>
+            <view class="photo-box has-photo" wx:else>
+              <image class="photo-preview" src="{{formData.basicInfo.lifePhoto1}}" mode="aspectFill" data-url="{{formData.basicInfo.lifePhoto1}}" bindtap="onPreviewPhoto" />
+              <view class="photo-delete" data-type="life1" catchtap="onDeletePhoto">×</view>
+              <text class="photo-label">生活照</text>
+            </view>
+          </view>
+
+          <!-- 生活照2 -->
+          <view class="photo-item">
+            <view class="photo-box" wx:if="{{!formData.basicInfo.lifePhoto2}}" data-type="life2" bindtap="onChoosePhoto">
+              <text class="photo-icon">+</text>
+              <text class="photo-tip">生活照</text>
+            </view>
+            <view class="photo-box has-photo" wx:else>
+              <image class="photo-preview" src="{{formData.basicInfo.lifePhoto2}}" mode="aspectFill" data-url="{{formData.basicInfo.lifePhoto2}}" bindtap="onPreviewPhoto" />
+              <view class="photo-delete" data-type="life2" catchtap="onDeletePhoto">×</view>
+              <text class="photo-label">生活照</text>
+            </view>
+          </view>
+
+          <!-- 生活照3 -->
+          <view class="photo-item">
+            <view class="photo-box" wx:if="{{!formData.basicInfo.lifePhoto3}}" data-type="life3" bindtap="onChoosePhoto">
+              <text class="photo-icon">+</text>
+              <text class="photo-tip">生活照</text>
+            </view>
+            <view class="photo-box has-photo" wx:else>
+              <image class="photo-preview" src="{{formData.basicInfo.lifePhoto3}}" mode="aspectFill" data-url="{{formData.basicInfo.lifePhoto3}}" bindtap="onPreviewPhoto" />
+              <view class="photo-delete" data-type="life3" catchtap="onDeletePhoto">×</view>
+              <text class="photo-label">生活照</text>
+            </view>
+          </view>
+        </view>
+        <text class="photo-hint">正面照：素颜、五官清晰；生活照：近期全身照、舞台照或能展现个人特点的照片</text>
+      </view>
+    </view>
+
+    <!-- 步骤2: 才艺信息 -->
+    <view class="form-step" wx:if="{{currentStep === 1}}">
+      <view class="step-title">🎭 才艺信息</view>
+
+      <view class="form-field">
+        <text class="field-label">主播才艺（可多选）</text>
+
+        <!-- 一级分类列表 -->
+        <view class="talent-categories">
+          <!-- 唱歌舞蹈、乐曲乐器 -->
+          <view
+            wx:for="{{talentCategories}}"
+            wx:key="name"
+            class="talent-category"
+          >
+            <!-- 一级标题 -->
+            <view
+              class="category-header {{expandedCategories[item.name] ? 'expanded' : ''}}"
+              data-category="{{item.name}}"
+              bindtap="onCategoryToggle"
+            >
+              <text class="category-name">{{item.name}}</text>
+              <text class="category-arrow">{{expandedCategories[item.name] ? '▲' : '▼'}}</text>
+            </view>
+
+            <!-- 二级选项（展开时显示） -->
+            <view
+              class="category-options"
+              wx:if="{{expandedCategories[item.name]}}"
+            >
+              <view class="talent-grid">
+                <view
+                  wx:for="{{item.options}}"
+                  wx:for-item="option"
+                  wx:key="*this"
+                  class="talent-tag {{formData.talent.selectedTalents[option] ? 'selected' : ''}}"
+                  data-talent="{{option}}"
+                  catchtap="onTalentToggle"
+                >
+                  {{option}}
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 其他 -->
+          <view class="talent-category">
+            <view
+              class="category-header {{formData.talent.hasOther ? 'expanded' : ''}}"
+              bindtap="onOtherToggle"
+            >
+              <text class="category-name">其他</text>
+              <text class="category-arrow">{{formData.talent.hasOther ? '▲' : '▼'}}</text>
+            </view>
+
+            <view class="category-options" wx:if="{{formData.talent.hasOther}}">
+              <input
+                class="other-input"
+                placeholder="请输入您的才艺"
+                value="{{formData.talent.otherTalent}}"
+                data-field="talent.otherTalent"
+                bindinput="onInput"
+              />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 才艺视频上传 -->
+      <view class="form-field">
+        <text class="field-label">才艺视频（选填，最多5个）</text>
+        <scroll-view class="video-scroll" scroll-x="true">
+          <view class="video-list">
+            <!-- 已上传的视频 -->
+            <view
+              wx:for="{{formData.talent.videos}}"
+              wx:key="url"
+              class="video-item"
+            >
+              <video
+                class="video-thumb"
+                src="{{item.url}}"
+                poster="{{item.thumb}}"
+                show-center-play-btn="{{true}}"
+                show-play-btn="{{false}}"
+                controls="{{false}}"
+                object-fit="cover"
+                data-url="{{item.url}}"
+                bindtap="onPreviewVideo"
+              ></video>
+              <view class="video-delete" data-index="{{index}}" catchtap="onDeleteVideo">×</view>
+            </view>
+
+            <!-- 添加按钮 -->
+            <view
+              class="video-add"
+              wx:if="{{!formData.talent.videos || formData.talent.videos.length < 5}}"
+              bindtap="onChooseVideo"
+            >
+              <text class="video-add-icon">+</text>
+              <text class="video-add-text">添加视频</text>
+            </view>
+          </view>
+        </scroll-view>
+        <text class="video-hint">支持上传才艺展示、舞蹈、唱歌等视频，单个视频不超过60秒</text>
+      </view>
+
+      <!-- 直播经验 -->
+      <view class="form-field">
+        <text class="field-label">是否有直播经验</text>
+        <view class="hobby-grid">
+          <view
+            class="hobby-tag {{!formData.experience.hasExperience ? 'selected' : ''}}"
+            data-value="false"
+            bindtap="onExperienceChange"
+          >无</view>
+          <view
+            class="hobby-tag {{formData.experience.hasExperience ? 'selected' : ''}}"
+            data-value="true"
+            bindtap="onExperienceChange"
+          >有</view>
+        </view>
+      </view>
+
+      <!-- 有直播经验时显示 -->
+      <view wx:if="{{formData.experience.hasExperience}}">
+        <view class="form-field">
+          <text class="field-label">之前所在工会 *</text>
+          <input
+            class="field-input"
+            placeholder="请输入之前直播的工会名称"
+            value="{{formData.experience.guild}}"
+            data-field="experience.guild"
+            bindinput="onInput"
+          />
+        </view>
+        <view class="form-field">
+          <text class="field-label">直播账号名 *</text>
+          <input
+            class="field-input"
+            placeholder="请输入之前的直播账号名"
+            value="{{formData.experience.accountName}}"
+            data-field="experience.accountName"
+            bindinput="onInput"
+          />
+        </view>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="form-footer">
+    <button
+      class="btn-secondary"
+      wx:if="{{currentStep > 0}}"
+      bindtap="prevStep"
+    >
+      上一步
+    </button>
+    <button
+      class="btn-primary"
+      wx:if="{{currentStep < steps.length - 1}}"
+      bindtap="nextStep"
+    >
+      下一步
+    </button>
+    <button
+      class="btn-submit"
+      wx:if="{{currentStep === steps.length - 1}}"
+      bindtap="submitApply"
+    >
+      提交报名
+    </button>
+  </view>
+
+</view>

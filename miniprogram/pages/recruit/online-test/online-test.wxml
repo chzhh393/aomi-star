@@ -1,0 +1,63 @@
+<!--
+  候选人在线测试页面 (Mock版)
+  功能：生成Mock测试结果
+-->
+<view class="online-test-page">
+  <view class="header">
+    <text class="title">性格测试</text>
+    <text class="subtitle">基于MBTI人格理论</text>
+  </view>
+
+  <view class="test-intro">
+    <text class="intro-text">本测试将评估您的性格特征，帮助我们更好地了解您的特质。</text>
+  </view>
+
+  <view class="mock-notice">
+    <text class="notice-icon">ℹ️</text>
+    <text class="notice-text">当前为演示版本，点击按钮将自动生成测试结果</text>
+  </view>
+
+  <view class="action-section">
+    <button class="start-btn" bindtap="onGenerateMockResult">
+      生成测试结果
+    </button>
+  </view>
+
+  <!-- 测试结果展示 -->
+  <view wx:if="{{testResult}}" class="result-section">
+    <view class="result-header">
+      <text class="result-title">测试结果</text>
+    </view>
+
+    <view class="result-content">
+      <view class="score-display">
+        <text class="score-value">{{testResult.score}}</text>
+        <text class="score-label">综合得分</text>
+      </view>
+
+      <view class="personality-type">
+        <text class="type-label">性格类型：</text>
+        <text class="type-value">{{testResult.personalityType}}</text>
+      </view>
+
+      <view class="traits-list">
+        <text class="traits-title">特质评估：</text>
+        <view
+          wx:for="{{testResult.traits}}"
+          wx:key="name"
+          class="trait-item"
+        >
+          <text class="trait-name">{{item.name}}</text>
+          <view class="trait-bar-bg">
+            <view class="trait-bar" style="width: {{item.score}}%"></view>
+          </view>
+          <text class="trait-score">{{item.score}}分</text>
+        </view>
+      </view>
+    </view>
+
+    <button class="submit-btn" bindtap="onSubmit">
+      提交测试结果
+    </button>
+  </view>
+</view>

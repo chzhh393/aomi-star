@@ -1,0 +1,292 @@
+/* pages/candidate/home/home.wxss */
+/* 候选人工作台 - 街头运动风格 - 蓝色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding: 0 0 120rpx;
+}
+
+/* ==================== 顶部横幅 ==================== */
+.header-banner {
+  background: #000000;
+  padding: 48rpx 32rpx 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slash {
+  position: absolute;
+  top: 0;
+  right: -40rpx;
+  width: 200rpx;
+  height: 100%;
+  background: #13E8DD;
+  transform: skewX(-15deg);
+}
+
+.banner-text {
+  font-size: 48rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
+  display: block;
+  text-transform: uppercase;
+}
+
+.banner-subtitle {
+  font-size: 24rpx;
+  color: #999999;
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 8rpx;
+}
+
+/* ==================== 状态卡片 ==================== */
+.status-card {
+  background: #FFFFFF;
+  margin: 24rpx;
+  padding: 40rpx 32rpx;
+  border: 4rpx solid #000000;
+  text-align: center;
+  position: relative;
+}
+
+.status-icon-wrapper {
+  margin-bottom: 20rpx;
+}
+
+.status-icon {
+  font-size: 80rpx;
+}
+
+.status-title {
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 16rpx;
+}
+
+.status-desc {
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* ==================== 进度块 ==================== */
+.progress-block {
+  background: #000000;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+}
+
+.block-label {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 32rpx;
+}
+
+.label-slash {
+  width: 6rpx;
+  height: 32rpx;
+  background: #13E8DD;
+}
+
+.label-text {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 3rpx;
+}
+
+.progress-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.step-icon-box {
+  width: 72rpx;
+  height: 72rpx;
+  background: #333333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 4rpx solid #333333;
+}
+
+.step-item.active .step-icon-box {
+  background: #13E8DD;
+  border-color: #13E8DD;
+}
+
+.step-icon {
+  font-size: 36rpx;
+}
+
+.step-label {
+  font-size: 22rpx;
+  color: #666666;
+  font-weight: 600;
+}
+
+.step-item.active .step-label {
+  color: #13E8DD;
+  font-weight: 900;
+}
+
+.step-line {
+  flex: 1;
+  height: 4rpx;
+  background: #333333;
+  position: relative;
+  margin: 0 16rpx;
+}
+
+.step-line-fill {
+  height: 100%;
+  width: 0;
+  background: #13E8DD;
+  transition: width 0.5s ease;
+}
+
+.step-line-fill.active {
+  width: 100%;
+}
+
+/* ==================== 审核信息块 ==================== */
+.review-block {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #E0E0E0;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-label {
+  font-size: 26rpx;
+  color: #666666;
+  font-weight: 600;
+}
+
+.review-value {
+  font-size: 26rpx;
+  color: #000000;
+  font-weight: 700;
+  max-width: 60%;
+  text-align: right;
+}
+
+/* ==================== 操作按钮 ==================== */
+.actions-block {
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-btn {
+  width: 100%;
+  height: 88rpx;
+  border: none;
+  font-size: 28rpx;
+  font-weight: 900;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.btn-secondary {
+  background: #FFFFFF;
+  color: #000000;
+  border: 4rpx solid #000000;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #000000;
+  border: 4rpx solid #000000;
+}
+
+.btn-primary:active {
+  opacity: 0.9;
+}
+
+.btn-secondary:active,
+.btn-ghost:active {
+  opacity: 0.8;
+}
+
+.action-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-row .action-btn {
+  flex: 1;
+}
+
+.btn-text {
+  font-size: 28rpx;
+  font-weight: 900;
+}
+
+/* ==================== 温馨提示 ==================== */
+.tips-block {
+  margin: 24rpx;
+  padding: 24rpx;
+  background: rgba(19, 232, 221, 0.1);
+  border-left: 6rpx solid #13E8DD;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.tip-item:last-child {
+  margin-bottom: 0;
+}
+
+.tip-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.tip-text {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.6;
+  flex: 1;
+}

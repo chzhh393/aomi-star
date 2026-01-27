@@ -1,0 +1,69 @@
+<!--
+  测试登录页面 - 快速切换测试账号
+-->
+<view class="test-login-page">
+  <!-- 页面标题 -->
+  <view class="header">
+    <text class="title">🧪 测试账号切换</text>
+    <text class="subtitle">点击按钮快速切换角色</text>
+  </view>
+
+  <!-- 当前登录信息 -->
+  <view class="current-user" wx:if="{{currentUser}}">
+    <view class="current-label">当前登录</view>
+    <view class="current-info">
+      <text class="current-role">{{currentUser.roleLabel}}</text>
+      <text class="current-name">{{currentUser.profile.name}}</text>
+      <text class="current-id">ID: {{currentUser.id}}</text>
+    </view>
+  </view>
+
+  <!-- 测试账号列表 -->
+  <view class="accounts-section">
+    <text class="section-title">选择测试账号</text>
+
+    <view class="accounts-grid">
+      <view
+        wx:for="{{testAccounts}}"
+        wx:key="id"
+        class="account-card {{currentUser && currentUser.id === item.id ? 'active' : ''}}"
+        bindtap="onSwitchAccount"
+        data-account="{{item}}"
+      >
+        <text class="account-icon">{{item.emoji}}</text>
+        <text class="account-label">{{item.label}}</text>
+        <text class="account-id">{{item.id}}</text>
+        <view wx:if="{{currentUser && currentUser.id === item.id}}" class="active-badge">
+          <text class="badge-text">✓</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="actions-section">
+    <button class="action-btn secondary" bindtap="onResetData">
+      🔄 重置测试数据
+    </button>
+    <button class="action-btn secondary" bindtap="onViewTestData">
+      📊 查看测试数据
+    </button>
+    <button class="action-btn primary" bindtap="onGoRecruitPage">
+      📝 前往招聘首页
+    </button>
+    <button class="action-btn primary" bindtap="onGoHome">
+      🏠 返回首页
+    </button>
+  </view>
+
+  <!-- 说明 -->
+  <view class="tips-section">
+    <text class="tips-title">💡 使用说明</text>
+    <view class="tips-list">
+      <text class="tip-item">• 点击账号卡片即可切换角色</text>
+      <text class="tip-item">• 切换后会自动跳转到对应工作台</text>
+      <text class="tip-item">• 测试数据已包含6个不同阶段的候选人</text>
+      <text class="tip-item">• 重置数据可恢复初始测试环境</text>
+    </view>
+  </view>
+</view>

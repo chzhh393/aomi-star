@@ -1,0 +1,122 @@
+<!--
+  造型师工作台
+  功能：查看待造型候选人、记录工作安排
+-->
+<view class="stylist-home">
+  <!-- 顶部用户信息 -->
+  <view class="header">
+    <view class="user-info">
+      <text class="role-badge">✨ 造型师</text>
+      <text class="username">{{userInfo.profile.name}}</text>
+    </view>
+  </view>
+
+  <!-- 数据统计卡片 -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <view class="stat-item primary">
+        <text class="stat-value">{{stats.totalAssigned}}</text>
+        <text class="stat-label">分配总数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.upcoming}}</text>
+        <text class="stat-label">待服务</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.completed}}</text>
+        <text class="stat-label">已完成</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待服务任务列表 -->
+  <view class="tasks-section">
+    <view class="section-header">
+      <text class="section-title">待服务候选人</text>
+      <text class="section-count">{{upcomingCandidates.length}}</text>
+    </view>
+
+    <view wx:if="{{upcomingCandidates.length === 0}}" class="empty-state">
+      <text class="empty-icon">✨</text>
+      <text class="empty-text">暂无待服务任务</text>
+    </view>
+
+    <view wx:else class="candidate-list">
+      <view
+        wx:for="{{upcomingCandidates}}"
+        wx:key="id"
+        class="candidate-card"
+        bindtap="onViewCandidate"
+        data-id="{{item.id}}"
+      >
+        <view class="candidate-header">
+          <view class="candidate-info">
+            <text class="candidate-name">{{item.basicInfo.name}}</text>
+            <text class="candidate-id">ID: {{item.id}}</text>
+          </view>
+          <view class="schedule-badge">
+            <text class="badge-text">{{item.interviewSchedule.date}}</text>
+          </view>
+        </view>
+
+        <view class="candidate-details">
+          <view class="detail-item">
+            <text class="detail-label">面试时间：</text>
+            <text class="detail-value">{{item.interviewSchedule.date}} {{item.interviewSchedule.time}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">面试地点：</text>
+            <text class="detail-value">{{item.interviewSchedule.location}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">基本信息：</text>
+            <text class="detail-value">{{item.basicInfo.age}}岁 / {{item.basicInfo.height}}cm</text>
+          </view>
+        </view>
+
+        <view class="action-btn" catchtap="onEvaluate" data-id="{{item.id}}">
+          <text class="btn-text">去评价 →</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 已完成列表（最近5个） -->
+  <view class="completed-section">
+    <view class="section-header">
+      <text class="section-title">最近完成</text>
+    </view>
+
+    <view wx:if="{{completedCandidates.length === 0}}" class="empty-state">
+      <text class="empty-text">暂无记录</text>
+    </view>
+
+    <view wx:else class="completed-list">
+      <view
+        wx:for="{{completedCandidates}}"
+        wx:key="id"
+        class="completed-card"
+      >
+        <view class="completed-info">
+          <text class="completed-name">{{item.basicInfo.name}}</text>
+          <text class="completed-time">{{item.interviewSchedule.date}}</text>
+        </view>
+        <view class="completed-status">
+          <text class="status-icon">✓</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="quick-actions">
+    <view class="action-item" bindtap="onRefresh">
+      <text class="action-icon">🔄</text>
+      <text class="action-text">刷新列表</text>
+    </view>
+    <view class="action-item" bindtap="onViewSchedule">
+      <text class="action-icon">📅</text>
+      <text class="action-text">查看日程</text>
+    </view>
+  </view>
+</view>

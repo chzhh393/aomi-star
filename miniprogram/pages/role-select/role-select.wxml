@@ -1,0 +1,34 @@
+<!--pages/role-select/role-select.wxml-->
+<view class="container">
+
+  <!-- 标题 -->
+  <view class="header">
+    <text class="title">OMI STAR</text>
+    <text class="subtitle">主播全生命周期管理系统</text>
+  </view>
+
+  <!-- 角色卡片列表 -->
+  <view class="roles-list">
+    <view
+      class="role-card"
+      wx:for="{{roles}}"
+      wx:key="id"
+      data-role="{{item.id}}"
+      bindtap="selectRole"
+    >
+      <view class="card-accent" style="background: {{item.color}}"></view>
+      <view class="card-content">
+        <text class="role-icon">{{item.icon}}</text>
+        <text class="role-name">{{item.name}}</text>
+        <text class="role-desc">{{item.desc}}</text>
+      </view>
+      <view class="card-arrow">→</view>
+    </view>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="footer">
+    <text class="footer-text">MVP测试版本 · 选择角色进入系统</text>
+  </view>
+
+</view>

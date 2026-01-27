@@ -1,0 +1,138 @@
+<!--pages/register/scout/scout.wxml-->
+<!--星探注册页 - 街头运动风格-->
+<view class="container">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">SCOUT</text>
+    <text class="banner-subtitle">星探注册</text>
+  </view>
+
+  <!-- 注册表单 -->
+  <view class="form-container">
+
+    <!-- 邀请码验证 -->
+    <view class="form-section">
+      <view class="section-label">
+        <view class="label-slash"></view>
+        <text class="label-text">INVITE CODE</text>
+      </view>
+
+      <view class="field-row">
+        <view class="field-item flex">
+          <input
+            class="field-input"
+            type="text"
+            placeholder="请输入邀请码"
+            value="{{formData.inviteCode}}"
+            bindinput="onInviteCodeInput"
+            maxlength="20"
+          />
+        </view>
+        <button
+          class="verify-btn {{codeVerified ? 'verified' : ''}}"
+          bindtap="verifyInviteCode"
+          disabled="{{codeVerified}}"
+        >
+          {{codeVerified ? '✓ 已验证' : '验证'}}
+        </button>
+      </view>
+
+      <!-- 验证成功提示 -->
+      <view class="code-info" wx:if="{{codeVerified && codeInfo}}">
+        <text class="info-icon">✅</text>
+        <text class="info-text">邀请码有效 | 欢迎成为星探</text>
+      </view>
+    </view>
+
+    <!-- 基本信息 -->
+    <view class="form-section" wx:if="{{codeVerified}}">
+      <view class="section-label">
+        <view class="label-slash"></view>
+        <text class="label-text">BASIC INFO</text>
+      </view>
+
+      <view class="field-item">
+        <view class="field-label">真实姓名 *</view>
+        <input
+          class="field-input"
+          type="text"
+          placeholder="请输入真实姓名"
+          value="{{formData.name}}"
+          data-field="name"
+          bindinput="onInput"
+          maxlength="20"
+        />
+      </view>
+
+      <view class="field-item">
+        <view class="field-label">联系电话 *</view>
+        <input
+          class="field-input"
+          type="number"
+          placeholder="请输入11位手机号"
+          value="{{formData.phone}}"
+          data-field="phone"
+          bindinput="onInput"
+          maxlength="11"
+        />
+      </view>
+
+      <view class="field-item">
+        <view class="field-label">昵称 *</view>
+        <input
+          class="field-input"
+          type="text"
+          placeholder="请输入昵称"
+          value="{{formData.nickname}}"
+          data-field="nickname"
+          bindinput="onInput"
+          maxlength="20"
+        />
+      </view>
+
+      <view class="field-item">
+        <view class="field-label">微信号（选填）</view>
+        <input
+          class="field-input"
+          type="text"
+          placeholder="便于联系和发放奖励"
+          value="{{formData.wechatId}}"
+          data-field="wechatId"
+          bindinput="onInput"
+          maxlength="30"
+        />
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="actions-block" wx:if="{{codeVerified}}">
+    <button class="action-btn btn-primary" bindtap="submitRegister">
+      <text class="btn-text">完成注册</text>
+    </button>
+
+    <button class="action-btn btn-ghost" bindtap="backToGuide">
+      <text class="btn-text">返回</text>
+    </button>
+  </view>
+
+  <!-- 温馨提示 -->
+  <view class="tips-block">
+    <view class="tip-item">
+      <text class="tip-icon">🔐</text>
+      <text class="tip-text">请使用公司提供的邀请码进行注册</text>
+    </view>
+    <view class="tip-item">
+      <text class="tip-icon">💰</text>
+      <text class="tip-text">成功推荐主播签约后，可获得推荐奖励</text>
+    </view>
+    <view class="tip-item">
+      <text class="tip-icon">📱</text>
+      <text class="tip-text">请填写真实信息，便于联系和结算</text>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,48 @@
+<!--
+  摄像师素材上传页面 (Mock版)
+  功能：Mock上传面试素材
+-->
+<view class="materials-upload-page">
+  <view class="candidate-info">
+    <text class="info-title">候选人信息</text>
+    <view class="info-row">
+      <text class="label">姓名：</text>
+      <text class="value">{{candidate.basicInfo.name}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">面试时间：</text>
+      <text class="value">{{candidate.interviewSchedule.date}} {{candidate.interviewSchedule.time}}</text>
+    </view>
+  </view>
+
+  <view class="upload-section">
+    <text class="section-title">上传面试素材</text>
+
+    <view class="upload-item">
+      <text class="item-label">视频文件</text>
+      <button class="upload-btn" bindtap="onMockUploadVideo">
+        {{formData.videoPath ? '已选择' : '选择视频'}}
+      </button>
+      <text wx:if="{{formData.videoPath}}" class="file-path">{{formData.videoPath}}</text>
+    </view>
+
+    <view class="upload-item">
+      <text class="item-label">照片文件</text>
+      <button class="upload-btn" bindtap="onMockUploadPhotos">
+        {{formData.photosPaths.length > 0 ? '已选择 ' + formData.photosPaths.length + ' 张' : '选择照片'}}
+      </button>
+    </view>
+
+    <view class="upload-item">
+      <text class="item-label">备注说明</text>
+      <textarea
+        class="textarea"
+        placeholder="请输入备注信息"
+        value="{{formData.notes}}"
+        bindinput="onNotesInput"
+      />
+    </view>
+  </view>
+
+  <button class="submit-btn" bindtap="onSubmit">提交素材</button>
+</view>

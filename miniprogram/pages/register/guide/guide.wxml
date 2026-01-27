@@ -1,0 +1,56 @@
+<!--pages/register/guide/guide.wxml-->
+<!--注册引导页 - 身份选择 - 街头运动风格-->
+<view class="container">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">WELCOME</text>
+    <text class="banner-subtitle">选择您的身份</text>
+  </view>
+
+  <!-- 身份选择卡片 -->
+  <view class="identity-list">
+    <block wx:for="{{identities}}" wx:key="id">
+      <view
+        class="identity-card"
+        data-id="{{item.id}}"
+        data-route="{{item.route}}"
+        bindtap="selectIdentity"
+      >
+        <view class="card-accent" style="background: {{item.color}};"></view>
+
+        <view class="card-icon">
+          <text class="icon-text">{{item.icon}}</text>
+        </view>
+
+        <view class="card-content">
+          <view class="card-title">{{item.title}}</view>
+          <view class="card-desc">{{item.desc}}</view>
+        </view>
+
+        <view class="card-arrow">→</view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 返回首页 -->
+  <view class="footer-actions">
+    <button class="action-btn btn-ghost" bindtap="backToHome">
+      <text class="btn-text">返回首页</text>
+    </button>
+  </view>
+
+  <!-- 温馨提示 -->
+  <view class="tips-block">
+    <view class="tip-item">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">请根据您的实际身份选择对应的注册入口</text>
+    </view>
+    <view class="tip-item">
+      <text class="tip-icon">🔐</text>
+      <text class="tip-text">员工和星探注册需要邀请码</text>
+    </view>
+  </view>
+
+</view>

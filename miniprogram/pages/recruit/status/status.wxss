@@ -1,0 +1,460 @@
+/* pages/anchor/apply-status/apply-status.wxss */
+/* 报名状态页 - 街头运动风格 - 蓝色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding-bottom: 160rpx;
+}
+
+/* ==================== 顶部横幅 ==================== */
+.header-banner {
+  background: #000000;
+  padding: 48rpx 32rpx 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slash {
+  position: absolute;
+  top: 0;
+  right: -40rpx;
+  width: 200rpx;
+  height: 100%;
+  background: #13E8DD;
+  transform: skewX(-15deg);
+}
+
+.banner-text {
+  font-size: 44rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
+  text-transform: uppercase;
+}
+
+/* ==================== 进度条 ==================== */
+.progress-section {
+  background: #FFFFFF;
+  margin: 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+.progress-steps::before {
+  content: '';
+  position: absolute;
+  top: 20rpx;
+  left: 10%;
+  right: 10%;
+  height: 4rpx;
+  background: #E0E0E0;
+  z-index: 0;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.step-circle {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #E0E0E0;
+  color: #999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 900;
+  border: 3rpx solid #FFFFFF;
+}
+
+.step-item.active .step-circle {
+  background: #13E8DD;
+  color: #000000;
+  border-color: #000000;
+}
+
+.step-text {
+  font-size: 22rpx;
+  color: #999999;
+  font-weight: 600;
+}
+
+.step-item.active .step-text {
+  color: #000000;
+  font-weight: 900;
+}
+
+/* ==================== 状态卡片 ==================== */
+.status-card {
+  background: #13E8DD;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  position: relative;
+  box-shadow: 8rpx 8rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.status-icon {
+  font-size: 64rpx;
+  line-height: 1;
+}
+
+.status-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.status-label {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #000000;
+  opacity: 0.7;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+}
+
+.status-value {
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 2rpx;
+}
+
+.status-accent {
+  position: absolute;
+  bottom: -4rpx;
+  right: -4rpx;
+  width: 60rpx;
+  height: 60rpx;
+  background: #000000;
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+}
+
+/* ==================== 评分卡片 ==================== */
+.score-card {
+  background: #000000;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #13E8DD;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.header-slash {
+  width: 6rpx;
+  height: 32rpx;
+  background: #13E8DD;
+}
+
+.header-title {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  letter-spacing: 3rpx;
+  text-transform: uppercase;
+}
+
+.score-grid {
+  margin-bottom: 24rpx;
+}
+
+.score-item {
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.score-label {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  display: block;
+  margin-bottom: 16rpx;
+  letter-spacing: 2rpx;
+}
+
+.score-number-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.score-number-huge {
+  font-size: 96rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  font-family: 'Arial Black', sans-serif;
+  line-height: 1;
+}
+
+.score-unit {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #13E8DD;
+}
+
+.score-row {
+  display: flex;
+  gap: 20rpx;
+}
+
+.score-sub-item {
+  flex: 1;
+  background: rgba(19, 232, 221, 0.1);
+  padding: 20rpx;
+  text-align: center;
+  border: 2rpx solid #13E8DD;
+}
+
+.score-sub-label {
+  font-size: 22rpx;
+  color: #13E8DD;
+  display: block;
+  margin-bottom: 8rpx;
+  font-weight: 900;
+}
+
+.score-sub-number {
+  font-size: 48rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  font-family: 'Arial Black', sans-serif;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.tag {
+  padding: 8rpx 16rpx;
+  background: #13E8DD;
+  color: #000000;
+  font-size: 22rpx;
+  font-weight: 900;
+  border-radius: 0;
+}
+
+.recommendation {
+  padding: 20rpx;
+  background: rgba(19, 232, 221, 0.1);
+  border-left: 4rpx solid #13E8DD;
+}
+
+.recommendation-label {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.recommendation-text {
+  font-size: 26rpx;
+  color: #FFFFFF;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+/* ==================== 信息卡片 ==================== */
+.info-card {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 26rpx;
+  font-weight: 900;
+  color: #666666;
+  letter-spacing: 1rpx;
+}
+
+.info-value {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #000000;
+}
+
+/* ==================== 审核卡片 ==================== */
+.review-card {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.review-result {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.review-label {
+  font-size: 26rpx;
+  font-weight: 900;
+  color: #000000;
+}
+
+.review-status {
+  padding: 8rpx 20rpx;
+  font-size: 24rpx;
+  font-weight: 900;
+  border: 3rpx solid #000000;
+  border-radius: 0;
+}
+
+.review-status.review-pass {
+  background: #00FF00;
+  color: #000000;
+}
+
+.review-status.review-reject {
+  background: #FF3333;
+  color: #FFFFFF;
+}
+
+.review-status.review-pending {
+  background: #FFD700;
+  color: #000000;
+}
+
+.review-comment {
+  padding: 20rpx;
+  background: #F5F5F5;
+  margin-bottom: 16rpx;
+  border-left: 4rpx solid #13E8DD;
+}
+
+.comment-label {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #666666;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.comment-text {
+  font-size: 26rpx;
+  color: #000000;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.review-time {
+  text-align: right;
+}
+
+.time-text {
+  font-size: 22rpx;
+  color: #999999;
+  font-weight: 600;
+}
+
+/* ==================== 底部按钮 ==================== */
+.footer-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx;
+  background: #FFFFFF;
+  border-top: 4rpx solid #000000;
+  display: flex;
+  gap: 16rpx;
+  z-index: 100;
+}
+
+.btn-secondary,
+.btn-primary,
+.btn-workspace {
+  flex: 1;
+  height: 88rpx;
+  border: none;
+  font-size: 32rpx;
+  font-weight: 900;
+  border-radius: 0;
+}
+
+.btn-secondary {
+  background: #FFFFFF;
+  color: #000000;
+  border: 4rpx solid #000000;
+}
+
+.btn-primary {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.btn-workspace {
+  background: #000000;
+  color: #FFFFFF;
+  border: 4rpx solid #13E8DD;
+}
+
+.btn-secondary:active {
+  opacity: 0.8;
+}
+
+.btn-primary:active {
+  opacity: 0.9;
+}
+
+/* ==================== 空状态 ==================== */
+.empty-state {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F0F0F0;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #999999;
+}

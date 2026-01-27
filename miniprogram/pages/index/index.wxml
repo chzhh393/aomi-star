@@ -1,0 +1,50 @@
+<!--pages/index/index.wxml-->
+<!--游客首页 - 双入口设计-->
+<view class="container">
+
+  <!-- 品牌展示区域 -->
+  <view class="brand-section">
+    <view class="brand-slash"></view>
+    <text class="brand-title">LIVE STREAM</text>
+    <text class="brand-subtitle">开启你的直播事业</text>
+  </view>
+
+  <!-- 双入口卡片区域 -->
+  <view class="entry-section">
+
+    <!-- 主播招募入口 -->
+    <view class="entry-card recruit-card" bindtap="goToRecruit">
+      <view class="card-icon">🎯</view>
+      <view class="card-content">
+        <text class="card-title">主播招募</text>
+        <text class="card-desc">加入我们，成为未来之星</text>
+      </view>
+      <view class="card-button">
+        <text class="button-text">立即报名</text>
+        <text class="button-arrow">→</text>
+      </view>
+      <view class="card-accent"></view>
+    </view>
+
+    <!-- 员工入口 -->
+    <view class="entry-card employee-card" bindtap="goToEmployee">
+      <view class="card-icon">💼</view>
+      <view class="card-content">
+        <text class="card-title">员工入口</text>
+        <text class="card-desc">主播/HR/经纪人工作台</text>
+      </view>
+      <view class="card-button">
+        <text class="button-text">选择角色</text>
+        <text class="button-arrow">→</text>
+      </view>
+      <view class="card-accent"></view>
+    </view>
+
+  </view>
+
+  <!-- 底部标语 -->
+  <view class="footer-motto">
+    <text class="motto-text">KEEP STREAMING. STAY WINNING.</text>
+  </view>
+
+</view>

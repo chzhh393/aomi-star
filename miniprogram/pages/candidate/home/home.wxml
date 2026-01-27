@@ -1,0 +1,126 @@
+<!--pages/candidate/home/home.wxml-->
+<!--候选人工作台 - 街头运动风格-->
+<view class="container">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">CANDIDATE</text>
+    <text class="banner-subtitle">主播候选人</text>
+  </view>
+
+  <!-- 状态卡片 -->
+  <view class="status-card">
+    <view class="status-icon-wrapper">
+      <text class="status-icon">{{statusInfo.title.includes('成功') || statusInfo.title.includes('通过') ? '✅' : statusInfo.title.includes('遗憾') ? '❌' : '⏳'}}</text>
+    </view>
+    <view class="status-title">{{statusInfo.title}}</view>
+    <view class="status-desc">{{statusInfo.desc}}</view>
+  </view>
+
+  <!-- 进度条 -->
+  <view class="progress-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">PROGRESS</text>
+    </view>
+
+    <view class="progress-steps">
+      <block wx:for="{{statusSteps}}" wx:key="key">
+        <view class="step-item {{currentStep >= index + 1 ? 'active' : ''}}">
+          <view class="step-icon-box">
+            <text class="step-icon">{{item.icon}}</text>
+          </view>
+          <text class="step-label">{{item.label}}</text>
+        </view>
+        <view class="step-line" wx:if="{{index < statusSteps.length - 1}}">
+          <view class="step-line-fill {{currentStep > index + 1 ? 'active' : ''}}"></view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 审核信息 -->
+  <view class="review-block" wx:if="{{candidate.hrReview}}">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">REVIEW INFO</text>
+    </view>
+
+    <view class="review-item">
+      <view class="review-label">审核意见</view>
+      <view class="review-value">{{candidate.hrReview.comment}}</view>
+    </view>
+
+    <view class="review-item" wx:if="{{candidate.hrReview.suggestedSalary}}">
+      <view class="review-label">建议薪资</view>
+      <view class="review-value">{{candidate.hrReview.suggestedSalary}}</view>
+    </view>
+
+    <view class="review-item" wx:if="{{candidate.hrReview.interviewDate}}">
+      <view class="review-label">面试时间</view>
+      <view class="review-value">{{candidate.hrReview.interviewDate}}</view>
+    </view>
+
+    <view class="review-item">
+      <view class="review-label">审核人</view>
+      <view class="review-value">{{candidate.hrReview.reviewerName}}</view>
+    </view>
+
+    <view class="review-item">
+      <view class="review-label">审核时间</view>
+      <view class="review-value">{{candidate.hrReview.reviewAt}}</view>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="actions-block">
+    <!-- 根据状态显示操作按钮 -->
+    <button
+      class="action-btn btn-primary"
+      wx:if="{{statusInfo.action}}"
+      bindtap="{{statusInfo.action.handler}}"
+    >
+      <text class="btn-text">{{statusInfo.action.text}} →</text>
+    </button>
+
+    <view class="action-row">
+      <button class="action-btn btn-secondary" bindtap="viewDetails">
+        <text class="btn-text">查看详情</text>
+      </button>
+
+      <button class="action-btn btn-secondary" bindtap="contactHR">
+        <text class="btn-text">联系HR</text>
+      </button>
+    </view>
+
+    <button class="action-btn btn-ghost" bindtap="onRefresh">
+      <text class="btn-text">刷新状态</text>
+    </button>
+  </view>
+
+  <!-- 温馨提示 -->
+  <view class="tips-block">
+    <view class="tip-item" wx:if="{{candidate.status === 'pending'}}">
+      <text class="tip-icon">📋</text>
+      <text class="tip-text">审核期间可随时查看进度，无需重复提交</text>
+    </view>
+    <view class="tip-item" wx:if="{{candidate.status === 'interview_scheduled'}}">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">请尽快完成在线测试，完成后等待面试</text>
+    </view>
+    <view class="tip-item" wx:if="{{candidate.status === 'online_test_completed' || candidate.status === 'pending_rating'}}">
+      <text class="tip-icon">⏳</text>
+      <text class="tip-text">面试官正在评价中，请耐心等待</text>
+    </view>
+    <view class="tip-item" wx:if="{{candidate.status === 'rated'}}">
+      <text class="tip-icon">🎉</text>
+      <text class="tip-text">恭喜通过评级！经纪人将联系您签约</text>
+    </view>
+    <view class="tip-item" wx:if="{{candidate.status === 'signed'}}">
+      <text class="tip-icon">👏</text>
+      <text class="tip-text">欢迎加入！点击按钮进入主播工作台</text>
+    </view>
+  </view>
+
+</view>

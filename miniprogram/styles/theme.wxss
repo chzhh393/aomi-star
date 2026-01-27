@@ -1,0 +1,379 @@
+/**
+ * Star Command Theme - Flat & Vibrant
+ * 扁平活力风格主题
+ * 灵感来源：机场应用的简洁明快设计
+ */
+
+/* ==================== 全局变量 ==================== */
+page {
+  /* 背景色 */
+  --color-bg: #000000;
+  --color-text: #FFFFFF;
+
+  /* 卡片颜色（实色） */
+  --card-gold: #FFD700;      /* 传奇金-S级 */
+  --card-blue: #42A5F5;      /* 天空蓝-A级 */
+  --card-green: #00E676;     /* 成功绿-B级 */
+  --card-dark: #1E1E1E;      /* 深灰-C级 */
+  --card-orange: #FF9500;    /* 活力橙-重要提示 */
+  --card-red: #FF3366;       /* 警报红-警告 */
+  --card-purple: #AB47BC;    /* 温暖紫-特殊 */
+
+  /* 文字颜色 */
+  --text-on-light: #1A1A1A;  /* 浅色卡片上的文字 */
+  --text-on-dark: #FFFFFF;   /* 深色卡片上的文字 */
+  --text-muted: #999999;     /* 辅助文字 */
+
+  /* 阴影 */
+  --shadow-card: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 12rpx 32rpx rgba(0, 0, 0, 0.4);
+
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+/* ==================== 实色卡片系统 ==================== */
+.card-solid {
+  border-radius: 32rpx;
+  padding: 32rpx;
+  margin: 24rpx;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s ease;
+}
+
+.card-solid:active {
+  transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+}
+
+/* 等级卡片颜色 */
+.card-level-s {
+  background: var(--card-gold);
+  color: var(--text-on-light);
+}
+
+.card-level-a {
+  background: var(--card-blue);
+  color: var(--text-on-dark);
+}
+
+.card-level-b {
+  background: var(--card-green);
+  color: var(--text-on-light);
+}
+
+.card-level-c {
+  background: var(--card-dark);
+  color: var(--text-on-dark);
+}
+
+/* 功能卡片颜色 */
+.card-orange {
+  background: var(--card-orange);
+  color: var(--text-on-light);
+}
+
+.card-dark-bg {
+  background: var(--card-dark);
+  color: var(--text-on-dark);
+}
+
+.card-blue {
+  background: var(--card-blue);
+  color: var(--text-on-dark);
+}
+
+.card-green {
+  background: var(--card-green);
+  color: var(--text-on-light);
+}
+
+/* ==================== 标签样式 ==================== */
+.tag-pill {
+  display: inline-block;
+  padding: 12rpx 32rpx;
+  border-radius: 48rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+/* 等级标签 */
+.tag-level-s {
+  background: var(--card-gold);
+  color: var(--text-on-light);
+}
+
+.tag-level-a {
+  background: var(--card-blue);
+  color: var(--text-on-dark);
+}
+
+.tag-level-b {
+  background: var(--card-green);
+  color: var(--text-on-light);
+}
+
+.tag-level-c {
+  background: var(--card-dark);
+  color: var(--text-on-dark);
+}
+
+/* Tab标签（未选中） */
+.tab-inactive {
+  background: rgba(255, 255, 255, 0.1);
+  color: #888;
+}
+
+.tab-inactive:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ==================== 头像样式 ==================== */
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid #FFFFFF;
+  object-fit: cover;
+}
+
+.avatar-small {
+  width: 80rpx;
+  height: 80rpx;
+}
+
+.avatar-large {
+  width: 160rpx;
+  height: 160rpx;
+}
+
+/* ==================== 按钮样式 ==================== */
+.btn-primary {
+  background: var(--card-blue);
+  color: var(--text-on-dark);
+  font-weight: bold;
+  border-radius: 48rpx;
+  padding: 28rpx 56rpx;
+  border: none;
+  box-shadow: var(--shadow-card);
+  font-size: 32rpx;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+}
+
+.btn-gold {
+  background: var(--card-gold);
+  color: var(--text-on-light);
+}
+
+.btn-green {
+  background: var(--card-green);
+  color: var(--text-on-light);
+}
+
+/* ==================== 进度条 ==================== */
+.progress-bar {
+  width: 100%;
+  height: 12rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 6rpx;
+  transition: width 0.6s ease;
+}
+
+.progress-fill-gold {
+  background: var(--card-gold);
+}
+
+.progress-fill-blue {
+  background: var(--card-blue);
+}
+
+.progress-fill-green {
+  background: var(--card-green);
+}
+
+/* ==================== 数据展示 ==================== */
+.data-big {
+  font-size: 80rpx;
+  font-weight: bold;
+  line-height: 1.1;
+  font-family: -apple-system-font, 'SF Pro Display', sans-serif;
+}
+
+.data-medium {
+  font-size: 56rpx;
+  font-weight: bold;
+  font-family: -apple-system-font, 'SF Pro Display', sans-serif;
+}
+
+.data-small {
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+/* ==================== 等级标识 ==================== */
+.level-s {
+  color: var(--card-gold);
+  font-weight: bold;
+}
+
+.level-a {
+  color: var(--card-blue);
+  font-weight: bold;
+}
+
+.level-b {
+  color: var(--card-green);
+  font-weight: bold;
+}
+
+.level-c {
+  color: #888;
+}
+
+/* ==================== 趋势指示 ==================== */
+.trend-up {
+  color: var(--card-green);
+  font-weight: 600;
+}
+
+.trend-down {
+  color: var(--card-red);
+  font-weight: 600;
+}
+
+/* ==================== 分割线 ==================== */
+.divider {
+  height: 1rpx;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 32rpx 0;
+}
+
+.divider-thick {
+  height: 2rpx;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ==================== 容器布局 ==================== */
+.container {
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-bg);
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+/* ==================== 文本样式 ==================== */
+.text-primary {
+  color: var(--card-blue);
+}
+
+.text-success {
+  color: var(--card-green);
+}
+
+.text-warning {
+  color: var(--card-gold);
+}
+
+.text-danger {
+  color: var(--card-red);
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 24rpx;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-large {
+  font-size: 36rpx;
+}
+
+/* ==================== 间距工具类 ==================== */
+.mt-8 { margin-top: 8rpx; }
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mt-32 { margin-top: 32rpx; }
+.mt-48 { margin-top: 48rpx; }
+
+.mb-8 { margin-bottom: 8rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }
+.mb-32 { margin-bottom: 32rpx; }
+
+.ml-8 { margin-left: 8rpx; }
+.ml-16 { margin-left: 16rpx; }
+.ml-24 { margin-left: 24rpx; }
+.ml-32 { margin-left: 32rpx; }
+
+.mr-8 { margin-right: 8rpx; }
+.mr-16 { margin-right: 16rpx; }
+.mr-24 { margin-right: 24rpx; }
+
+.p-16 { padding: 16rpx; }
+.p-24 { padding: 24rpx; }
+.p-32 { padding: 32rpx; }
+
+.px-16 { padding-left: 16rpx; padding-right: 16rpx; }
+.px-24 { padding-left: 24rpx; padding-right: 24rpx; }
+.px-32 { padding-left: 32rpx; padding-right: 32rpx; }
+
+.py-16 { padding-top: 16rpx; padding-bottom: 16rpx; }
+.py-24 { padding-top: 24rpx; padding-bottom: 24rpx; }
+.py-32 { padding-top: 32rpx; padding-bottom: 32rpx; }
+
+/* ==================== 圆角工具类 ==================== */
+.rounded { border-radius: 16rpx; }
+.rounded-lg { border-radius: 24rpx; }
+.rounded-xl { border-radius: 32rpx; }
+.rounded-full { border-radius: 50%; }
+
+/* ==================== 阴影工具类 ==================== */
+.shadow { box-shadow: var(--shadow-card); }
+.shadow-lg { box-shadow: var(--shadow-card-hover); }
+.shadow-none { box-shadow: none; }

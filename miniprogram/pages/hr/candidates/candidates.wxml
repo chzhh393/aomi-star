@@ -1,0 +1,125 @@
+<!--pages/hr/candidates/candidates.wxml-->
+<view class="container">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">CANDIDATES</text>
+  </view>
+
+  <!-- 统计卡片 -->
+  <view class="stats-card">
+    <view class="stat-item">
+      <text class="stat-number">{{stats.total}}</text>
+      <text class="stat-label">总数</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-number">{{stats.pending}}</text>
+      <text class="stat-label">待审核</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-number">{{stats.interview_scheduled}}</text>
+      <text class="stat-label">面试中</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-number">{{stats.signed}}</text>
+      <text class="stat-label">已签约</text>
+    </view>
+  </view>
+
+  <!-- 筛选标签 -->
+  <view class="filter-section">
+    <scroll-view class="filter-scroll" scroll-x>
+      <view class="filter-tabs">
+        <view
+          class="filter-tab {{activeFilter === item.value ? 'active' : ''}}"
+          wx:for="{{filterOptions}}"
+          wx:key="value"
+          data-filter="{{item.value}}"
+          bindtap="switchFilter"
+        >
+          <text class="tab-text">{{item.label}}</text>
+          <view class="tab-count" wx:if="{{activeFilter === item.value}}">
+            {{item.value === 'all' ? stats.total : stats[item.value]}}
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 候选人列表 -->
+  <view class="candidates-list">
+    <view
+      class="candidate-card"
+      wx:for="{{filteredCandidates}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="viewDetail"
+    >
+      <!-- 状态角标 -->
+      <view class="card-corner status-{{item.status}}"></view>
+
+      <view class="card-content">
+        <!-- 左侧头像和信息 -->
+        <view class="candidate-info">
+          <image class="avatar" src="{{item.images.face || '/assets/default-avatar.png'}}" mode="aspectFill" />
+          <view class="info-text">
+            <text class="name">{{item.basicInfo.artName}}</text>
+            <view class="meta-row">
+              <text class="meta-item">{{item.basicInfo.age}}岁</text>
+              <text class="meta-dot">●</text>
+              <text class="meta-item">{{item.basicInfo.city}}</text>
+            </view>
+            <view class="talent-row">
+              <text class="talent-label">{{item.talent.mainTalent}}</text>
+              <text class="level-text">Lv.{{item.talent.level}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 右侧评分 -->
+        <view class="score-section">
+          <view class="score-badge">
+            <text class="score-number">{{item.aiScore.overallScore}}</text>
+            <text class="score-label">AI分</text>
+          </view>
+          <view class="status-badge status-{{item.status}}">
+            <text wx:if="{{item.status === 'pending'}}">待审核</text>
+            <text wx:if="{{item.status === 'interview_scheduled'}}">已安排面试</text>
+            <text wx:if="{{item.status === 'online_test_completed'}}">已完成测试</text>
+            <text wx:if="{{item.status === 'pending_rating'}}">待评级</text>
+            <text wx:if="{{item.status === 'rated'}}">已评级</text>
+            <text wx:if="{{item.status === 'signed'}}">已签约</text>
+            <text wx:if="{{item.status === 'training'}}">培训中</text>
+            <text wx:if="{{item.status === 'active'}}">正式主播</text>
+            <text wx:if="{{item.status === 'rejected'}}">未通过</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部信息 -->
+      <view class="card-footer">
+        <!-- 面试时间（仅当状态为已安排面试时显示） -->
+        <text class="footer-info" wx:if="{{item.status === 'interview_scheduled' && item.interviewSchedule}}">
+          面试时间：{{item.interviewSchedule.date}} {{item.interviewSchedule.time}}
+        </text>
+        <!-- HR审核时间（已审核状态显示） -->
+        <text class="footer-info" wx:elif="{{item.hrReview}}">
+          审核时间：{{item.hrReview.reviewAt}}
+        </text>
+        <!-- 申请时间（默认显示） -->
+        <text class="footer-info" wx:else>
+          申请时间：{{item.createdAt}}
+        </text>
+        <text class="view-arrow">→</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredCandidates.length === 0}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">暂无候选人</text>
+  </view>
+
+</view>

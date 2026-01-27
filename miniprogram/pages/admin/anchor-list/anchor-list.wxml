@@ -1,0 +1,77 @@
+<!--pages/admin/anchor-list/anchor-list.wxml-->
+<view class="container">
+  <!-- 顶栏 -->
+  <view class="header">
+    <view class="header-title">
+      <text class="text-bold">⚡ STAR COMMAND</text>
+    </view>
+    <view class="header-icons">
+      <text class="icon">🔍</text>
+      <text class="icon">🔔</text>
+      <text class="icon">👤</text>
+    </view>
+  </view>
+
+  <!-- Tab切换 -->
+  <view class="tabs">
+    <view class="tab-pill tag-pill {{currentTab === 'all' ? 'tag-level-c' : 'tab-inactive'}}" bindtap="switchTab" data-tab="all">
+      <text>全部</text>
+    </view>
+    <view class="tab-pill tag-pill {{currentTab === 'S' ? 'tag-level-s' : 'tab-inactive'}}" bindtap="switchTab" data-tab="S">
+      <text>💫 S级</text>
+    </view>
+    <view class="tab-pill tag-pill {{currentTab === 'A' ? 'tag-level-a' : 'tab-inactive'}}" bindtap="switchTab" data-tab="A">
+      <text>⭐ A级</text>
+    </view>
+    <view class="tab-pill tag-pill {{currentTab === 'B' ? 'tag-level-b' : 'tab-inactive'}}" bindtap="switchTab" data-tab="B">
+      <text>🌙 B级</text>
+    </view>
+    <view class="tab-pill tag-pill {{currentTab === 'C' ? 'tag-level-c' : 'tab-inactive'}}" bindtap="switchTab" data-tab="C">
+      <text>⚪ C级</text>
+    </view>
+  </view>
+
+  <!-- 主播列表 -->
+  <scroll-view scroll-y class="anchor-list">
+    <view wx:for="{{filteredAnchors}}" wx:key="id" class="anchor-card card-solid card-level-{{item.levelLowerCase}}" bindtap="goToDetail" data-id="{{item.id}}">
+      <view class="card-header flex-between mb-24">
+        <view class="flex-row">
+          <image class="avatar" src="{{item.avatar}}" />
+          <view class="name-section ml-24">
+            <text class="name text-bold">{{item.artName}}</text>
+            <text class="agent-name text-muted mt-8">经纪人: {{item.agentName}}</text>
+          </view>
+        </view>
+        <text class="level-badge tag-pill tag-level-{{item.levelLowerCase}}">{{item.level}}</text>
+      </view>
+
+      <view class="card-data">
+        <view class="data-item">
+          <text class="data-icon">💰</text>
+          <view>
+            <text class="data-value data-small text-bold">{{item.revenueText}}</text>
+            <text class="data-change {{item.revenueChange >= 0 ? 'trend-up' : 'trend-down'}}">
+              {{item.revenueChangeText}}
+            </text>
+          </view>
+        </view>
+        <view class="data-item">
+          <text class="data-icon">👥</text>
+          <view>
+            <text class="data-value data-small text-bold">{{item.fansText}}</text>
+            <text class="data-change trend-up">+{{item.newFans}}</text>
+          </view>
+        </view>
+        <view class="data-item">
+          <text class="data-icon">⏱️</text>
+          <view>
+            <text class="data-value data-small text-bold">{{item.liveHours}}h</text>
+            <text class="data-change {{item.hoursChange >= 0 ? 'trend-up' : 'trend-down'}}">
+              {{item.hoursChangeText}}
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

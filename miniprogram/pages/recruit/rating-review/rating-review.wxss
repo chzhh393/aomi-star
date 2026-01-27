@@ -1,0 +1,131 @@
+.rating-review-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 20rpx;
+}
+
+.candidate-card,
+.evaluation-summary,
+.rating-result {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.card-title,
+.summary-title,
+.result-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-bottom: 15rpx;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.info-row {
+  display: flex;
+  font-size: 28rpx;
+}
+
+.label {
+  color: #999;
+  width: 150rpx;
+}
+
+.value {
+  color: #333;
+}
+
+.eval-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.eval-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.eval-score {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.grade-display {
+  text-align: center;
+  padding: 40rpx;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 15rpx;
+  margin-bottom: 30rpx;
+}
+
+.grade-label {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 10rpx;
+}
+
+.grade-score {
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.rating-details {
+  margin-bottom: 30rpx;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 15rpx 0;
+  font-size: 28rpx;
+}
+
+.detail-label {
+  color: #666;
+}
+
+.detail-value {
+  color: #333;
+  font-weight: bold;
+}
+
+.action-section {
+  display: flex;
+  gap: 20rpx;
+}
+
+.approve-btn,
+.reject-btn,
+.generate-btn {
+  flex: 1;
+  height: 90rpx;
+  line-height: 90rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  border-radius: 45rpx;
+}
+
+.approve-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+}
+
+.reject-btn {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.generate-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+}

@@ -1,0 +1,551 @@
+/* pages/anchor/home/home.wxss */
+/* 主播管理模块 - 街头运动风格 - 蓝色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding: 0 0 120rpx;
+}
+
+/* ==================== 顶部横幅 ==================== */
+.header-banner {
+  background: #000000;
+  padding: 48rpx 32rpx 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slash {
+  position: absolute;
+  top: 0;
+  right: -40rpx;
+  width: 200rpx;
+  height: 100%;
+  background: #13E8DD;
+  transform: skewX(-15deg);
+}
+
+.banner-text {
+  font-size: 48rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
+  text-transform: uppercase;
+}
+
+/* ==================== 主播信息块 ==================== */
+.profile-block {
+  background: #FFFFFF;
+  margin: 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+  position: relative;
+  box-shadow: 8rpx 8rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.profile-corner-accent {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 60rpx;
+  height: 60rpx;
+  background: #13E8DD;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+
+.profile-main {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.avatar-bold {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 12rpx;
+  border: 4rpx solid #000000;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.name-bold {
+  font-size: 44rpx;
+  font-weight: 900;
+  color: #000000;
+  display: block;
+  margin-bottom: 16rpx;
+  letter-spacing: 1rpx;
+}
+
+.badges-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.level-tag {
+  padding: 8rpx 20rpx;
+  font-size: 22rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 2rpx;
+}
+
+.level-tag.level-s {
+  background: #FFD700;
+  color: #000000;
+}
+
+.level-tag.level-a {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+.level-tag.level-b {
+  background: #13E8DD;
+  color: #FFFFFF;
+}
+
+.level-tag.level-c {
+  background: #888888;
+  color: #FFFFFF;
+}
+
+.agent-tag {
+  font-size: 24rpx;
+  color: #666666;
+  font-weight: 600;
+}
+
+/* ==================== 任务块 ==================== */
+.mission-block {
+  background: #000000;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  position: relative;
+}
+
+.block-label {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.label-slash {
+  width: 6rpx;
+  height: 32rpx;
+  background: #13E8DD;
+}
+
+.label-text {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 3rpx;
+}
+
+.mission-content {
+  margin-bottom: 24rpx;
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.time-huge {
+  font-size: 56rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  font-family: 'Arial Black', sans-serif;
+}
+
+.time-separator {
+  font-size: 40rpx;
+  color: #666666;
+  font-weight: bold;
+}
+
+.platform-info {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.platform-name {
+  font-size: 26rpx;
+  color: #CCCCCC;
+  font-weight: 600;
+}
+
+.slot-dot {
+  font-size: 16rpx;
+  color: #13E8DD;
+}
+
+.slot-name {
+  font-size: 26rpx;
+  color: #CCCCCC;
+  font-weight: 600;
+}
+
+/* 倒计时块 */
+.countdown-block {
+  background: #13E8DD;
+  padding: 24rpx 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.countdown-accent {
+  position: absolute;
+  right: -20rpx;
+  top: -20rpx;
+  width: 100rpx;
+  height: 100rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.countdown-label {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 2rpx;
+}
+
+.countdown-huge {
+  font-size: 64rpx;
+  font-weight: 900;
+  color: #000000;
+  font-family: 'Arial Black', sans-serif;
+  letter-spacing: 4rpx;
+}
+
+/* ==================== 数据网格 ==================== */
+.stats-grid {
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  padding: 28rpx 32rpx;
+  position: relative;
+}
+
+.stat-primary {
+  background: #000000;
+  border: none;
+}
+
+.stat-primary .stat-label {
+  color: #13E8DD;
+}
+
+.stat-primary .stat-number-huge {
+  color: #FFFFFF;
+}
+
+.stat-primary .stat-unit {
+  color: #FFFFFF;
+}
+
+.stat-primary .change-arrow {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.stat-primary .change-percent {
+  color: #FFFFFF;
+}
+
+.card-accent-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 8rpx;
+  background: #13E8DD;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  font-weight: 900;
+  color: #666666;
+  letter-spacing: 2rpx;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  margin-bottom: 12rpx;
+}
+
+.stat-number-huge {
+  font-size: 72rpx;
+  font-weight: 900;
+  color: #000000;
+  font-family: 'Arial Black', sans-serif;
+  line-height: 1;
+}
+
+.stat-number-large {
+  font-size: 56rpx;
+  font-weight: 900;
+  color: #000000;
+  font-family: 'Arial Black', sans-serif;
+  line-height: 1;
+}
+
+.stat-unit {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #000000;
+}
+
+.stat-unit-small {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+}
+
+.stat-change-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.change-arrow {
+  width: 32rpx;
+  height: 32rpx;
+  background: #000000;
+  color: #13E8DD;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: bold;
+}
+
+.change-percent {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+}
+
+.change-text {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #13E8DD;
+}
+
+.stat-period {
+  font-size: 22rpx;
+  color: #999999;
+  font-weight: 600;
+}
+
+/* ==================== 目标块 ==================== */
+.goals-block {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.goal-item {
+  margin-bottom: 32rpx;
+}
+
+.goal-item:last-child {
+  margin-bottom: 0;
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.goal-name {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 1rpx;
+}
+
+.goal-percent {
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  font-family: 'Arial Black', sans-serif;
+}
+
+.progress-bar-wrapper {
+  height: 20rpx;
+  background: #E0E0E0;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-bold {
+  height: 100%;
+  background: #000000;
+  position: relative;
+  overflow: hidden;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-stripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10rpx,
+    rgba(19, 232, 221, 0.3) 10rpx,
+    rgba(19, 232, 221, 0.3) 20rpx
+  );
+}
+
+/* ==================== 底部标语 ==================== */
+.footer-motto {
+  margin: 0 24rpx;
+  padding: 32rpx;
+  background: #000000;
+  text-align: center;
+  border: 4rpx solid #13E8DD;
+  position: relative;
+}
+
+.motto-text {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  letter-spacing: 3rpx;
+  text-transform: uppercase;
+}
+
+/* ==================== 培训状态块 ==================== */
+.training-block {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.training-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.training-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.training-label {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 1rpx;
+}
+
+.training-percent {
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  font-family: 'Arial Black', sans-serif;
+}
+
+.training-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.training-status-label {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 1rpx;
+}
+
+.training-status-value {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+  padding: 6rpx 16rpx;
+  background: #13E8DD;
+  border-radius: 0;
+}
+
+/* ==================== 经纪人信息块 ==================== */
+.agent-block {
+  background: #000000;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #13E8DD;
+  position: relative;
+}
+
+.agent-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.agent-info-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.agent-label {
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  text-transform: uppercase;
+  letter-spacing: 2rpx;
+  min-width: 120rpx;
+}
+
+.agent-value {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 1rpx;
+}

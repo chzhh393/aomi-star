@@ -1,0 +1,118 @@
+/* pages/admin/anchor-list/anchor-list.wxss */
+
+/* 顶栏 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40rpx 32rpx 32rpx;
+  position: sticky;
+  top: 0;
+  background: #000;
+  z-index: 100;
+}
+
+.header-title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.header-icons {
+  display: flex;
+  gap: 32rpx;
+}
+
+.icon {
+  font-size: 40rpx;
+}
+
+/* Tab切换 */
+.tabs {
+  display: flex;
+  padding: 16rpx 24rpx;
+  gap: 16rpx;
+  overflow-x: auto;
+  position: sticky;
+  top: 112rpx;
+  background: #000;
+  z-index: 99;
+}
+
+.tab-pill {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 主播列表 */
+.anchor-list {
+  height: calc(100vh - 260rpx);
+  padding-bottom: 48rpx;
+}
+
+.anchor-card {
+  margin: 32rpx 24rpx;
+}
+
+.card-header {
+  padding-bottom: 24rpx;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  flex-shrink: 0;
+}
+
+.name-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.name {
+  font-size: 32rpx;
+  line-height: 1.2;
+}
+
+.agent-name {
+  font-size: 24rpx;
+}
+
+.level-badge {
+  font-size: 20rpx;
+  padding: 8rpx 20rpx;
+}
+
+/* 数据展示 */
+.card-data {
+  display: flex;
+  justify-content: space-around;
+  gap: 16rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(0, 0, 0, 0.2);
+}
+
+.data-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  flex: 1;
+}
+
+.data-icon {
+  font-size: 36rpx;
+  margin-bottom: 4rpx;
+}
+
+.data-value {
+  font-size: 32rpx;
+  line-height: 1.1;
+}
+
+.data-change {
+  font-size: 22rpx;
+  margin-top: 4rpx;
+}

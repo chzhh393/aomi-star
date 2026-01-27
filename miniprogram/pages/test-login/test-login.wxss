@@ -1,0 +1,209 @@
+/* 测试登录页面样式 */
+
+.test-login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40rpx 20rpx;
+}
+
+/* ========== 页面标题 ========== */
+.header {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 15rpx;
+}
+
+.subtitle {
+  display: block;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ========== 当前登录信息 ========== */
+.current-user {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.current-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 15rpx;
+}
+
+.current-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.current-role {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.current-name {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.current-id {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ========== 测试账号列表 ========== */
+.accounts-section {
+  margin-bottom: 30rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 20rpx;
+  padding-left: 10rpx;
+}
+
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15rpx;
+}
+
+.account-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  transition: all 0.3s;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.account-card:active {
+  transform: scale(0.95);
+}
+
+.account-card.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: 2px solid #fff;
+}
+
+.account-icon {
+  font-size: 48rpx;
+  margin-bottom: 5rpx;
+}
+
+.account-label {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.account-card.active .account-label,
+.account-card.active .account-id {
+  color: #fff;
+}
+
+.account-id {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.active-badge {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-text {
+  font-size: 24rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* ========== 快捷功能 ========== */
+.actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+  margin-bottom: 30rpx;
+}
+
+.action-btn {
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  border: none;
+}
+
+.action-btn.primary {
+  background: #fff;
+  color: #667eea;
+}
+
+.action-btn.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.action-btn:active {
+  opacity: 0.8;
+}
+
+/* ========== 说明 ========== */
+.tips-section {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.tips-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 20rpx;
+}
+
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.tip-item {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}

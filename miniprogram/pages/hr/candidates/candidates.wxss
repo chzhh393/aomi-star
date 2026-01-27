@@ -1,0 +1,386 @@
+/* pages/hr/candidates/candidates.wxss */
+/* HR候选人列表 - 街头运动风格 - 黄色主题 */
+
+/* ==================== 主容器 ==================== */
+.container {
+  min-height: 100vh;
+  background: #F0F0F0;
+  padding-bottom: 40rpx;
+}
+
+/* ==================== 顶部横幅 ==================== */
+.header-banner {
+  background: #000000;
+  padding: 48rpx 32rpx 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slash {
+  position: absolute;
+  top: 0;
+  right: -40rpx;
+  width: 200rpx;
+  height: 100%;
+  background: #F8D55D;
+  transform: skewX(-15deg);
+}
+
+.banner-text {
+  font-size: 48rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
+  text-transform: uppercase;
+}
+
+/* ==================== 统计卡片 ==================== */
+.stats-card {
+  background: #F8D55D;
+  margin: 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+  display: flex;
+  justify-content: space-around;
+  box-shadow: 8rpx 8rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-number {
+  font-size: 56rpx;
+  font-weight: 900;
+  color: #000000;
+  font-family: 'Arial Black', sans-serif;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  font-weight: 900;
+  color: #000000;
+  opacity: 0.7;
+  letter-spacing: 1rpx;
+}
+
+/* ==================== 筛选标签 ==================== */
+.filter-section {
+  padding: 0 24rpx 24rpx;
+}
+
+.filter-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.filter-tabs {
+  display: inline-flex;
+  gap: 12rpx;
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 28rpx;
+  background: #FFFFFF;
+  border: 3rpx solid #000000;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.filter-tab.active {
+  background: #000000;
+  border-color: #F8D55D;
+}
+
+.tab-text {
+  font-size: 26rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 1rpx;
+}
+
+.filter-tab.active .tab-text {
+  color: #F8D55D;
+}
+
+.tab-count {
+  min-width: 40rpx;
+  height: 32rpx;
+  padding: 0 12rpx;
+  background: #F8D55D;
+  color: #000000;
+  font-size: 20rpx;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+}
+
+/* ==================== 候选人列表 ==================== */
+.candidates-list {
+  padding: 0 24rpx;
+}
+
+.candidate-card {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  margin-bottom: 20rpx;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 6rpx 6rpx 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.candidate-card:active {
+  transform: scale(0.98);
+}
+
+.card-corner {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 60rpx;
+  height: 60rpx;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+
+.card-corner.status-pending {
+  background: #FFD700;
+}
+
+.card-corner.status-interview {
+  background: #13E8DD;
+}
+
+.card-corner.status-training {
+  background: #000000;
+}
+
+.card-corner.status-signed {
+  background: #00FF00;
+}
+
+.card-corner.status-rejected {
+  background: #FF3333;
+}
+
+.card-content {
+  padding: 28rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.candidate-info {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+}
+
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 8rpx;
+  border: 3rpx solid #000000;
+}
+
+.info-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.name {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 1rpx;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.meta-item {
+  font-size: 24rpx;
+  color: #666666;
+  font-weight: 600;
+}
+
+.meta-dot {
+  font-size: 12rpx;
+  color: #F8D55D;
+}
+
+.talent-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.talent-label {
+  padding: 6rpx 16rpx;
+  background: #F8D55D;
+  color: #000000;
+  font-size: 20rpx;
+  font-weight: 900;
+  border-radius: 0;
+}
+
+.level-text {
+  font-size: 22rpx;
+  font-weight: 900;
+  color: #666666;
+}
+
+.score-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+}
+
+.score-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12rpx 20rpx;
+  background: #000000;
+  border: 3rpx solid #F8D55D;
+}
+
+.score-number {
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #F8D55D;
+  font-family: 'Arial Black', sans-serif;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 20rpx;
+  font-weight: 900;
+  color: #F8D55D;
+  margin-top: 4rpx;
+}
+
+.status-badge {
+  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+  font-weight: 900;
+  border: 3rpx solid #000000;
+  border-radius: 0;
+}
+
+.status-badge.status-pending {
+  background: #FFD700;
+  color: #000000;
+}
+
+.status-badge.status-interview_scheduled {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.status-badge.status-online_test_completed {
+  background: #00C9FF;
+  color: #000000;
+}
+
+.status-badge.status-pending_rating {
+  background: #FFA500;
+  color: #000000;
+}
+
+.status-badge.status-rated {
+  background: #32CD32;
+  color: #000000;
+}
+
+.status-badge.status-signed {
+  background: #00FF00;
+  color: #000000;
+}
+
+.status-badge.status-training {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+.status-badge.status-active {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.status-badge.status-rejected {
+  background: #FF3333;
+  color: #FFFFFF;
+}
+
+/* 兼容旧的status-interview（向后兼容） */
+.status-badge.status-interview {
+  background: #13E8DD;
+  color: #000000;
+}
+
+.card-footer {
+  padding: 16rpx 28rpx;
+  background: #F5F5F5;
+  border-top: 2rpx solid #E0E0E0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-info {
+  font-size: 22rpx;
+  color: #999999;
+  font-weight: 600;
+}
+
+.apply-time {
+  font-size: 22rpx;
+  color: #999999;
+  font-weight: 600;
+}
+
+.view-arrow {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #F8D55D;
+}
+
+/* ==================== 空状态 ==================== */
+.empty-state {
+  padding: 120rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.empty-icon {
+  font-size: 96rpx;
+  line-height: 1;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #999999;
+  letter-spacing: 2rpx;
+}
