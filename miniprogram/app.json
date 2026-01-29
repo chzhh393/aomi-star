@@ -1,10 +1,11 @@
 {
   "pages": [
-    "pages/test-login/test-login",
     "pages/index/index",
+    "pages/test-login/test-login",
     "pages/recruit/index/index",
     "pages/recruit/apply/apply",
     "pages/recruit/status/status",
+    "pages/recruit/detail/detail",
     "pages/role-select/role-select",
     "pages/register/guide/guide",
     "pages/register/employee/employee",

@@ -33,13 +33,12 @@
   letter-spacing: 4rpx;
   position: relative;
   z-index: 1;
-  text-transform: uppercase;
   display: block;
   margin-bottom: 16rpx;
 }
 
 .banner-subtitle {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #13E8DD;
   font-weight: 700;
   letter-spacing: 2rpx;
@@ -78,7 +77,19 @@
   font-weight: 900;
   color: #000000;
   letter-spacing: 2rpx;
-  text-transform: uppercase;
+}
+
+/* ==================== 公司介绍 ==================== */
+.company-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.intro-text {
+  font-size: 26rpx;
+  color: #333333;
+  line-height: 1.8;
 }
 
 /* ==================== 岗位介绍 ==================== */
@@ -102,7 +113,6 @@
   font-weight: 900;
   color: #666666;
   letter-spacing: 1rpx;
-  text-transform: uppercase;
 }
 
 .intro-value {
@@ -112,7 +122,18 @@
   line-height: 1.6;
 }
 
-/* ==================== 福利待遇 ==================== */
+.intro-value.highlight {
+  color: #13E8DD;
+  font-size: 30rpx;
+}
+
+.intro-note {
+  font-size: 22rpx;
+  color: #999999;
+  line-height: 1.5;
+}
+
+/* ==================== 核心竞争力 ==================== */
 .benefits-section {
   margin: 0 24rpx 24rpx;
 }
@@ -137,8 +158,9 @@
 }
 
 .benefit-icon {
-  font-size: 56rpx;
-  line-height: 1;
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 16rpx;
 }
 
 .benefit-title {
@@ -155,6 +177,43 @@
   line-height: 1.5;
 }
 
+/* ==================== 公司优势 ==================== */
+.features-section {
+  margin: 0 24rpx 24rpx;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.feature-item {
+  background: #FFFFFF;
+  border: 4rpx solid #000000;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: 4rpx 4rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.feature-title {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #13E8DD;
+  white-space: nowrap;
+  min-width: 140rpx;
+}
+
+.feature-desc {
+  font-size: 26rpx;
+  color: #333333;
+  line-height: 1.5;
+  flex: 1;
+}
+
 /* ==================== CTA区域 ==================== */
 .cta-section {
   margin: 0 24rpx 24rpx;
@@ -163,22 +222,18 @@
 .cta-card {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  justify-content: center;
   margin-bottom: 24rpx;
   background: #13E8DD;
   border-color: #000000;
-}
-
-.cta-icon {
-  font-size: 64rpx;
-  line-height: 1;
+  padding: 40rpx 32rpx;
 }
 
 .cta-text {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  align-items: center;
+  gap: 12rpx;
 }
 
 .cta-title {
@@ -193,7 +248,7 @@
   font-size: 24rpx;
   color: #000000;
   font-weight: 600;
-  opacity: 0.7;
+  opacity: 0.8;
   display: block;
 }
 
@@ -222,7 +277,7 @@
 .link-text {
   font-size: 26rpx;
   color: #13E8DD;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 1rpx;
 }
 
@@ -237,8 +292,8 @@
 
 .motto-text {
   font-size: 24rpx;
-  font-weight: 900;
+  font-weight: 700;
   color: #13E8DD;
-  letter-spacing: 4rpx;
-  text-transform: uppercase;
+  letter-spacing: 2rpx;
+  line-height: 1.6;
 }

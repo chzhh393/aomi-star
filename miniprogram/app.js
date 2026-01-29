@@ -1,11 +1,10 @@
 // app.js
-import { autoLogin, getCurrentUser } from './utils/auth.js';
-import { handleAppLaunch } from './utils/router.js';
+import { getCurrentUser } from './utils/auth.js';
 import { parseSceneParams, saveSceneParams } from './utils/scene-parser.js';
 
 App({
   globalData: {
-    env: "",                  // 云开发环境
+    env: "cloud1-0g9rnpap8488905b",  // 云开发环境
     sceneParams: null,        // 启动场景参数
     scoutShareCode: null      // 星探分享码
   },
@@ -23,11 +22,9 @@ App({
     // 2. 解析场景参数
     this.parseSceneParams(options);
 
-    // 3. 自动登录
-    const loginResult = await autoLogin();
-
-    // 4. 路由决策
-    handleAppLaunch(loginResult);
+    // 不自动登录，让用户先浏览首页
+    // 登录操作在用户点击"立即报名"时触发
+    console.log('[App] 初始化完成，等待用户操作');
   },
 
   /**

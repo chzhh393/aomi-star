@@ -5,44 +5,68 @@
   <!-- 顶部横幅 -->
   <view class="header-banner">
     <view class="banner-slash"></view>
-    <text class="banner-text">START YOUR CAREER</text>
-    <text class="banner-subtitle">加入我们，开启直播之旅</text>
+    <text class="banner-text">未来顶流</text>
+    <text class="banner-subtitle">你负责发光，我们负责让全世界看见</text>
   </view>
 
-  <!-- 岗位介绍卡片 -->
+  <!-- 公司介绍卡片 -->
   <view class="intro-card">
     <view class="card-header">
       <view class="header-slash"></view>
-      <text class="header-title">岗位介绍</text>
+      <text class="header-title">关于{{companyName}}</text>
+    </view>
+    <view class="company-intro">
+      <text class="intro-text">我们是深耕男团IP系统化运营的内容机构，核心团队来自阿里巴巴、字节跳动等一线互联网大厂。</text>
+      <text class="intro-text">我们拒绝传统MCN的"草根作坊"模式，斥巨资打造5000平顶级实景直播基地，只打造具有长期生命力的"品牌资产"。</text>
+    </view>
+  </view>
+
+  <!-- 招募要求卡片 -->
+  <view class="intro-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">招募要求</text>
     </view>
     <view class="intro-content">
       <view class="intro-item">
-        <text class="intro-label">工作内容</text>
-        <text class="intro-value">通过直播与粉丝互动，展示才艺，推广产品</text>
+        <text class="intro-label">任职要求</text>
+        <text class="intro-value">{{jobInfo.age}}，身高{{jobInfo.height}}</text>
+        <text class="intro-note">形象干净有辨识度，{{jobInfo.experience}}</text>
       </view>
       <view class="intro-item">
-        <text class="intro-label">基本要求</text>
-        <text class="intro-value">18岁以上，形象气质佳，有才艺特长</text>
-      </view>
-      <view class="intro-item">
-        <text class="intro-label">薪资待遇</text>
-        <text class="intro-value">底薪 5000-8000 + 提成，月入过万</text>
+        <text class="intro-label">我们看重</text>
+        <text class="intro-value">强烈的事业心 > 学习能力 > 团队精神</text>
       </view>
     </view>
   </view>
 
-  <!-- 福利待遇 -->
+  <!-- 核心竞争力 -->
   <view class="benefits-section">
     <view class="section-header">
       <view class="header-slash"></view>
-      <text class="section-title">福利待遇</text>
+      <text class="section-title">加入即领先</text>
     </view>
 
     <view class="benefits-grid">
-      <view class="benefit-card" wx:for="{{benefits}}" wx:key="title">
-        <view class="benefit-icon">{{item.icon}}</view>
+      <view class="benefit-card" wx:for="{{advantages}}" wx:key="title">
+        <image class="benefit-icon" src="{{item.icon}}" mode="aspectFit"></image>
         <text class="benefit-title">{{item.title}}</text>
         <text class="benefit-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 公司优势 -->
+  <view class="features-section">
+    <view class="section-header">
+      <view class="header-slash"></view>
+      <text class="section-title">为什么选择我们</text>
+    </view>
+
+    <view class="features-list">
+      <view class="feature-item" wx:for="{{companyFeatures}}" wx:key="title">
+        <text class="feature-title">{{item.title}}</text>
+        <text class="feature-desc">{{item.desc}}</text>
       </view>
     </view>
   </view>
@@ -50,25 +74,24 @@
   <!-- CTA区域 -->
   <view class="cta-section">
     <view class="cta-card">
-      <view class="cta-icon">🎯</view>
       <view class="cta-text">
-        <text class="cta-title">准备好了吗？</text>
-        <text class="cta-subtitle">立即报名，开始你的直播事业</text>
+        <text class="cta-title">这次，你是主角</text>
+        <text class="cta-subtitle">你的舞台，从点击报名这一刻开始！</text>
       </view>
     </view>
 
     <button class="btn-primary" bindtap="goToApply">
-      立即报名 →
+      立即报名
     </button>
 
     <view class="link-row">
-      <text class="link-text" bindtap="checkStatus">查询报名状态 →</text>
+      <text class="link-text" bindtap="checkStatus">查询报名状态</text>
     </view>
   </view>
 
   <!-- 底部标语 -->
   <view class="footer-motto">
-    <text class="motto-text">KEEP STREAMING. STAY WINNING.</text>
+    <text class="motto-text">我们要的不是完美履历，而是一颗不甘平凡的心</text>
   </view>
 
 </view>

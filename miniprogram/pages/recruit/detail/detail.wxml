@@ -1,0 +1,186 @@
+<!--pages/recruit/detail/detail.wxml-->
+<!--报名详情页 - 查看已提交的报名信息-->
+<view class="container" wx:if="{{!loading && candidate}}">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">MY APPLICATION</text>
+    <text class="banner-subtitle">我的报名信息</text>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="info-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">基本信息</text>
+    </view>
+
+    <view class="info-row">
+      <text class="info-label">姓名</text>
+      <text class="info-value">{{candidate.basicInfo.name}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.basicInfo.artName}}">
+      <text class="info-label">艺名</text>
+      <text class="info-value">{{candidate.basicInfo.artName}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">性别</text>
+      <text class="info-value">{{candidate.basicInfo.gender}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">年龄</text>
+      <text class="info-value">{{candidate.basicInfo.age}}岁</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.basicInfo.height}}">
+      <text class="info-label">身高</text>
+      <text class="info-value">{{candidate.basicInfo.height}}cm</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.basicInfo.weight}}">
+      <text class="info-label">体重</text>
+      <text class="info-value">{{candidate.basicInfo.weight}}kg</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">手机号</text>
+      <text class="info-value">{{candidate.basicInfo.phone}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">微信号</text>
+      <text class="info-value">{{candidate.basicInfo.wechat}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.basicInfo.mbti}}">
+      <text class="info-label">MBTI</text>
+      <text class="info-value">{{candidate.basicInfo.mbti}}</text>
+    </view>
+  </view>
+
+  <!-- 社交账号 -->
+  <view class="info-card" wx:if="{{candidate.basicInfo.douyin || candidate.basicInfo.xiaohongshu}}">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">社交账号</text>
+    </view>
+
+    <view class="info-row" wx:if="{{candidate.basicInfo.douyin}}">
+      <text class="info-label">抖音号</text>
+      <text class="info-value">{{candidate.basicInfo.douyin}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.basicInfo.douyinFans}}">
+      <text class="info-label">抖音粉丝</text>
+      <text class="info-value">{{candidate.basicInfo.douyinFans}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.basicInfo.xiaohongshu}}">
+      <text class="info-label">小红书号</text>
+      <text class="info-value">{{candidate.basicInfo.xiaohongshu}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.basicInfo.xiaohongshuFans}}">
+      <text class="info-label">小红书粉丝</text>
+      <text class="info-value">{{candidate.basicInfo.xiaohongshuFans}}</text>
+    </view>
+  </view>
+
+  <!-- 兴趣爱好 -->
+  <view class="info-card" wx:if="{{candidate.basicInfo.hobbies.length > 0}}">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">兴趣爱好</text>
+    </view>
+
+    <view class="tags-row">
+      <view class="tag" wx:for="{{candidate.basicInfo.hobbies}}" wx:key="index">{{item}}</view>
+      <view class="tag" wx:if="{{candidate.basicInfo.otherHobby}}">{{candidate.basicInfo.otherHobby}}</view>
+    </view>
+  </view>
+
+  <!-- 照片 -->
+  <view class="info-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">上传照片</text>
+    </view>
+
+    <view class="photo-grid">
+      <view class="photo-item" wx:if="{{candidate.images.facePhoto}}" bindtap="onPreviewPhoto" data-url="{{candidate.images.facePhoto}}">
+        <image class="photo-img" src="{{candidate.images.facePhoto}}" mode="aspectFill"></image>
+        <text class="photo-label">素颜正面照</text>
+      </view>
+      <view class="photo-item" wx:if="{{candidate.images.lifePhoto1}}" bindtap="onPreviewPhoto" data-url="{{candidate.images.lifePhoto1}}">
+        <image class="photo-img" src="{{candidate.images.lifePhoto1}}" mode="aspectFill"></image>
+        <text class="photo-label">生活照1</text>
+      </view>
+      <view class="photo-item" wx:if="{{candidate.images.lifePhoto2}}" bindtap="onPreviewPhoto" data-url="{{candidate.images.lifePhoto2}}">
+        <image class="photo-img" src="{{candidate.images.lifePhoto2}}" mode="aspectFill"></image>
+        <text class="photo-label">生活照2</text>
+      </view>
+      <view class="photo-item" wx:if="{{candidate.images.lifePhoto3}}" bindtap="onPreviewPhoto" data-url="{{candidate.images.lifePhoto3}}">
+        <image class="photo-img" src="{{candidate.images.lifePhoto3}}" mode="aspectFill"></image>
+        <text class="photo-label">生活照3</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 才艺信息 -->
+  <view class="info-card" wx:if="{{candidate.talent.talents.length > 0 || candidate.talent.otherTalent}}">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">才艺信息</text>
+    </view>
+
+    <view class="tags-row">
+      <view class="tag" wx:for="{{candidate.talent.talents}}" wx:key="index">{{item}}</view>
+      <view class="tag" wx:if="{{candidate.talent.otherTalent}}">{{candidate.talent.otherTalent}}</view>
+    </view>
+  </view>
+
+  <!-- 才艺视频 -->
+  <view class="info-card" wx:if="{{candidate.talent.videos.length > 0}}">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">才艺视频</text>
+    </view>
+
+    <view class="video-grid">
+      <view class="video-item" wx:for="{{candidate.talent.videos}}" wx:key="index" bindtap="onPreviewVideo" data-url="{{item.cloudUrl || item.url}}">
+        <view class="video-play-icon">▶</view>
+        <text class="video-label">视频{{index + 1}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 直播经验 -->
+  <view class="info-card">
+    <view class="card-header">
+      <view class="header-slash"></view>
+      <text class="header-title">直播经验</text>
+    </view>
+
+    <view class="info-row">
+      <text class="info-label">是否有经验</text>
+      <text class="info-value">{{candidate.experience.hasExperience ? '有' : '无'}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.experience.hasExperience && candidate.experience.guild}}">
+      <text class="info-label">之前所在工会</text>
+      <text class="info-value">{{candidate.experience.guild}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.experience.hasExperience && candidate.experience.accountName}}">
+      <text class="info-label">直播账号名</text>
+      <text class="info-value">{{candidate.experience.accountName}}</text>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="footer">
+    <button class="btn-back" bindtap="goBack">
+      <text class="btn-text">返回</text>
+    </button>
+    <button class="btn-edit" wx:if="{{candidate.status === 'pending'}}" bindtap="editApply">
+      <text class="btn-text">修改信息</text>
+    </button>
+  </view>
+
+</view>
+
+<!-- 加载中 -->
+<view class="empty-state" wx:if="{{loading}}">
+  <text class="empty-text">加载中...</text>
+</view>

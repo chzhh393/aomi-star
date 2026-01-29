@@ -1,189 +1,160 @@
-<!--pages/anchor/apply-status/apply-status.wxml-->
-<view class="container" wx:if="{{candidate}}">
+<!--pages/recruit/status/status.wxml-->
+<!--报名状态页 - 街头运动风格-->
+<view class="container" wx:if="{{!loading && candidate}}">
 
   <!-- 顶部横幅 -->
   <view class="header-banner">
     <view class="banner-slash"></view>
-    <text class="banner-text">APPLICATION STATUS</text>
+    <text class="banner-text">CANDIDATE</text>
+    <text class="banner-subtitle">主播候选人</text>
   </view>
 
-  <!-- 进度条 (6阶段) -->
-  <view class="progress-section">
-    <view class="progress-steps">
-      <view class="step-item {{currentStep >= 1 ? 'active' : ''}}">
-        <view class="step-circle">1</view>
-        <text class="step-text">待审核</text>
-      </view>
-      <view class="step-item {{currentStep >= 2 ? 'active' : ''}}">
-        <view class="step-circle">2</view>
-        <text class="step-text">已安排面试</text>
-      </view>
-      <view class="step-item {{currentStep >= 3 ? 'active' : ''}}">
-        <view class="step-circle">3</view>
-        <text class="step-text">已完成测试</text>
-      </view>
-      <view class="step-item {{currentStep >= 4 ? 'active' : ''}}">
-        <view class="step-circle">4</view>
-        <text class="step-text">面试评价中</text>
-      </view>
-      <view class="step-item {{currentStep >= 5 ? 'active' : ''}}">
-        <view class="step-circle">5</view>
-        <text class="step-text">已评级</text>
-      </view>
-      <view class="step-item {{currentStep >= 6 ? 'active' : ''}}">
-        <view class="step-circle">6</view>
-        <text class="step-text">已签约</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 当前状态卡片 -->
+  <!-- 状态卡片 -->
   <view class="status-card">
-    <view class="status-icon">{{statusConfig[candidate.status].icon}}</view>
-    <view class="status-info">
-      <text class="status-label">当前状态</text>
-      <text class="status-value">{{statusConfig[candidate.status].text}}</text>
+    <view class="status-icon-wrapper">
+      <text class="status-icon">{{statusInfo.title.includes('成功') || statusInfo.title.includes('通过') || statusInfo.title.includes('恭喜') ? '✅' : statusInfo.title.includes('遗憾') ? '❌' : '⏳'}}</text>
     </view>
-    <view class="status-accent"></view>
+    <view class="status-title">{{statusInfo.title}}</view>
+    <view class="status-desc">{{statusInfo.desc}}</view>
   </view>
 
-  <!-- AI评分卡片 -->
-  <view class="score-card">
-    <view class="card-header">
-      <view class="header-slash"></view>
-      <text class="header-title">AI EVALUATION</text>
+  <!-- 进度条 -->
+  <view class="progress-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">PROGRESS</text>
     </view>
 
-    <view class="score-grid">
-      <view class="score-item">
-        <text class="score-label">综合评分</text>
-        <view class="score-number-wrapper">
-          <text class="score-number-huge">{{candidate.aiScore.overallScore}}</text>
-          <text class="score-unit">/100</text>
+    <view class="progress-steps">
+      <block wx:for="{{statusSteps}}" wx:key="key">
+        <view class="step-item {{currentStep >= index + 1 ? 'active' : ''}}">
+          <view class="step-icon-box">
+            <text class="step-icon">{{item.icon}}</text>
+          </view>
+          <text class="step-label">{{item.label}}</text>
+        </view>
+        <view class="step-line" wx:if="{{index < statusSteps.length - 1}}">
+          <view class="step-line-fill {{currentStep > index + 1 ? 'active' : ''}}"></view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 审核信息 -->
+  <view class="review-block" wx:if="{{candidate.hrReview}}">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">REVIEW INFO</text>
+    </view>
+
+    <view class="review-item">
+      <view class="review-label">审核意见</view>
+      <view class="review-value">{{candidate.hrReview.comment}}</view>
+    </view>
+
+    <view class="review-item" wx:if="{{candidate.hrReview.suggestedSalary}}">
+      <view class="review-label">建议薪资</view>
+      <view class="review-value">{{candidate.hrReview.suggestedSalary}}</view>
+    </view>
+
+    <view class="review-item" wx:if="{{candidate.hrReview.interviewDate}}">
+      <view class="review-label">面试时间</view>
+      <view class="review-value">{{candidate.hrReview.interviewDate}}</view>
+    </view>
+
+    <view class="review-item" wx:if="{{candidate.hrReview.reviewerName}}">
+      <view class="review-label">审核人</view>
+      <view class="review-value">{{candidate.hrReview.reviewerName}}</view>
+    </view>
+
+    <view class="review-item" wx:if="{{candidate.hrReview.reviewAt}}">
+      <view class="review-label">审核时间</view>
+      <view class="review-value">{{candidate.hrReview.reviewAt}}</view>
+    </view>
+  </view>
+
+  <!-- 面试信息 -->
+  <view class="interview-block" wx:if="{{candidate.interview && candidate.status === 'interview_scheduled'}}">
+    <view class="interview-title">面试信息</view>
+    <view class="interview-card">
+      <view class="interview-row">
+        <text class="interview-icon">📅</text>
+        <view class="interview-info">
+          <view class="interview-label">面试日期</view>
+          <view class="interview-value">{{candidate.interview.date}}</view>
         </view>
       </view>
 
-      <view class="score-row">
-        <view class="score-sub-item">
-          <text class="score-sub-label">形象</text>
-          <text class="score-sub-number">{{candidate.aiScore.faceScore}}</text>
+      <view class="interview-row">
+        <text class="interview-icon">🕐</text>
+        <view class="interview-info">
+          <view class="interview-label">面试时间</view>
+          <view class="interview-value">{{candidate.interview.time}}</view>
         </view>
-        <view class="score-sub-item">
-          <text class="score-sub-label">才艺</text>
-          <text class="score-sub-number">{{candidate.aiScore.talentScore}}</text>
+      </view>
+
+      <view class="interview-row" wx:if="{{candidate.interview.location}}">
+        <text class="interview-icon">📍</text>
+        <view class="interview-info">
+          <view class="interview-label">面试地点</view>
+          <view class="interview-value">{{candidate.interview.location}}</view>
+        </view>
+      </view>
+
+      <view class="interview-row" wx:if="{{candidate.interview.interviewers.length > 0}}">
+        <text class="interview-icon">👤</text>
+        <view class="interview-info">
+          <view class="interview-label">面试官</view>
+          <view class="interview-value">{{candidate.interview.interviewers.join('、')}}</view>
+        </view>
+      </view>
+
+      <view class="interview-row" wx:if="{{candidate.interview.notes}}">
+        <text class="interview-icon">📝</text>
+        <view class="interview-info">
+          <view class="interview-label">备注</view>
+          <view class="interview-value">{{candidate.interview.notes}}</view>
         </view>
       </view>
     </view>
+  </view>
 
-    <view class="tags-row">
-      <view class="tag" wx:for="{{candidate.aiScore.tags}}" wx:key="index">
-        {{item}}
-      </view>
-    </view>
+  <!-- 快捷操作 -->
+  <view class="actions-block">
+    <view class="action-row">
+      <button class="action-btn btn-secondary" bindtap="viewDetail">
+        <text class="btn-text">查看详情</text>
+      </button>
 
-    <view class="recommendation">
-      <text class="recommendation-label">AI建议：</text>
-      <text class="recommendation-text">{{candidate.aiScore.recommendation}}</text>
+      <button class="action-btn btn-ghost" bindtap="onRefresh">
+        <text class="btn-text">刷新状态</text>
+      </button>
     </view>
   </view>
 
-  <!-- 基本信息卡片 -->
-  <view class="info-card">
-    <view class="card-header">
-      <view class="header-slash"></view>
-      <text class="header-title">BASIC INFO</text>
+  <!-- 温馨提示 -->
+  <view class="tips-block">
+    <view class="tip-item" wx:if="{{candidate.status === 'pending'}}">
+      <text class="tip-icon">📋</text>
+      <text class="tip-text">审核期间可随时查看进度，无需重复提交</text>
     </view>
-
-    <view class="info-row">
-      <text class="info-label">艺名</text>
-      <text class="info-value">{{candidate.basicInfo.artName}}</text>
+    <view class="tip-item" wx:if="{{candidate.status === 'approved'}}">
+      <text class="tip-icon">🎉</text>
+      <text class="tip-text">审核已通过，HR将尽快为您安排面试，请保持手机畅通</text>
     </view>
-    <view class="info-row">
-      <text class="info-label">年龄</text>
-      <text class="info-value">{{candidate.basicInfo.age}}岁</text>
+    <view class="tip-item" wx:if="{{candidate.status === 'interview_scheduled'}}">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">请按时参加面试，提前做好准备</text>
     </view>
-    <view class="info-row">
-      <text class="info-label">性别</text>
-      <text class="info-value">{{candidate.basicInfo.gender}}</text>
+    <view class="tip-item" wx:if="{{candidate.status === 'signed'}}">
+      <text class="tip-icon">👏</text>
+      <text class="tip-text">欢迎加入！点击按钮进入主播工作台</text>
     </view>
-    <view class="info-row">
-      <text class="info-label">手机</text>
-      <text class="info-value">{{candidate.basicInfo.phone}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-label">城市</text>
-      <text class="info-value">{{candidate.basicInfo.city}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-label">申请时间</text>
-      <text class="info-value">{{candidate.createdAt}}</text>
-    </view>
-  </view>
-
-  <!-- HR审核信息 -->
-  <view class="review-card" wx:if="{{candidate.hrReview}}">
-    <view class="card-header">
-      <view class="header-slash"></view>
-      <text class="header-title">HR REVIEW</text>
-    </view>
-
-    <view class="review-result">
-      <text class="review-label">审核结果：</text>
-      <text class="review-status review-{{candidate.hrReview.result}}">
-        {{candidate.hrReview.result === 'pass' ? '通过' : candidate.hrReview.result === 'reject' ? '未通过' : '待定'}}
-      </text>
-    </view>
-
-    <view class="review-comment" wx:if="{{candidate.hrReview.comment}}">
-      <text class="comment-label">审核意见：</text>
-      <text class="comment-text">{{candidate.hrReview.comment}}</text>
-    </view>
-
-    <view class="review-time">
-      <text class="time-text">审核时间：{{candidate.hrReview.reviewAt}}</text>
-    </view>
-  </view>
-
-  <!-- Agent审核信息 -->
-  <view class="review-card" wx:if="{{candidate.agentReview}}">
-    <view class="card-header">
-      <view class="header-slash"></view>
-      <text class="header-title">AGENT REVIEW</text>
-    </view>
-
-    <view class="review-result">
-      <text class="review-label">审核结果：</text>
-      <text class="review-status review-{{candidate.agentReview.result}}">
-        {{candidate.agentReview.result === 'pass' ? '通过' : candidate.agentReview.result === 'reject' ? '未通过' : '待定'}}
-      </text>
-    </view>
-
-    <view class="review-comment" wx:if="{{candidate.agentReview.comment}}">
-      <text class="comment-label">审核意见：</text>
-      <text class="comment-text">{{candidate.agentReview.comment}}</text>
-    </view>
-
-    <view class="review-time">
-      <text class="time-text">审核时间：{{candidate.agentReview.reviewAt}}</text>
-    </view>
-  </view>
-
-  <!-- 底部按钮 -->
-  <view class="footer-actions">
-    <button class="btn-secondary" bindtap="backToHome">返回首页</button>
-    <button
-      class="btn-workspace"
-      wx:if="{{candidate.status === 'signed' || candidate.status === 'training' || candidate.status === 'active'}}"
-      bindtap="enterWorkspace"
-    >
-      进入工作台 →
-    </button>
-    <button class="btn-primary" bindtap="contactHR">联系HR</button>
   </view>
 
 </view>
 
 <!-- 加载中 -->
-<view class="empty-state" wx:if="{{!candidate}}">
+<view class="empty-state" wx:if="{{loading}}">
   <text class="empty-text">加载中...</text>
 </view>

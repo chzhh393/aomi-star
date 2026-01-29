@@ -3,121 +3,80 @@
  * 处理用户登录、登出、会话管理
  */
 
-import { getUserByOpenId, updateUser } from '../mock/users.js';
-
 // 存储键名
 const AUTH_TOKEN_KEY = 'auth_token';
 const USER_INFO_KEY = 'user_info';
 const OPEN_ID_KEY = 'openId';
 
-// ==================== Mock登录相关 ====================
+// ==================== 云函数登录 ====================
 
 /**
- * Mock微信登录
- * 开发阶段：让用户选择一个测试openId
- * 生产环境：应调用真实的 wx.login()
+ * 调用云函数进行微信登录
+ * 返回 openId 和用户信息
  */
-export async function mockWxLogin() {
+export async function cloudLogin() {
   return new Promise((resolve, reject) => {
-    // 检查是否已有openId
-    const savedOpenId = wx.getStorageSync(OPEN_ID_KEY);
-    if (savedOpenId) {
-      console.log('[Mock登录] 使用已保存的openId:', savedOpenId);
-      resolve(savedOpenId);
-      return;
-    }
+    // 调用云函数（不需要先 wx.login，云函数会自动获取 openId）
+    wx.cloud.callFunction({
+      name: 'login',
+      data: {}
+    }).then(res => {
+      console.log('[云登录] 云函数返回:', res.result);
 
-    // 模拟选择用户登录
-    // 实际开发中，这里应该显示一个选择界面
-    // 或者直接使用 wx.login() 获取code，然后换取openId
+      if (res.result && res.result.success) {
+        const { openId, isNewUser, user } = res.result;
 
-    // 默认使用第一个测试用户（候选人）
-    const testOpenId = 'mock_candidate_001';
+        // 保存 openId
+        wx.setStorageSync(OPEN_ID_KEY, openId);
 
-    wx.setStorageSync(OPEN_ID_KEY, testOpenId);
-    console.log('[Mock登录] 使用测试openId:', testOpenId);
-
-    resolve(testOpenId);
-  });
-}
-
-/**
- * 真实微信登录（生产环境使用）
- * 需要配合后端云函数
- */
-export async function realWxLogin() {
-  return new Promise((resolve, reject) => {
-    wx.login({
-      success: async (res) => {
-        if (res.code) {
-          try {
-            // 调用云函数换取openId
-            const result = await wx.cloud.callFunction({
-              name: 'login',
-              data: { code: res.code }
-            });
-
-            const { openId, sessionKey, token } = result.result;
-
-            // 保存token和openId
-            wx.setStorageSync(AUTH_TOKEN_KEY, token);
-            wx.setStorageSync(OPEN_ID_KEY, openId);
-
-            resolve(openId);
-          } catch (error) {
-            console.error('[登录] 云函数调用失败:', error);
-            reject(error);
-          }
-        } else {
-          reject(new Error('获取code失败'));
+        // 如果有用户信息，保存到本地
+        if (user) {
+          wx.setStorageSync(USER_INFO_KEY, user);
         }
-      },
-      fail: (error) => {
-        console.error('[登录] wx.login失败:', error);
-        reject(error);
+
+        resolve({
+          success: true,
+          openId: openId,
+          isNewUser: isNewUser,
+          user: user
+        });
+      } else {
+        reject(new Error(res.result?.error || '登录失败'));
       }
+    }).catch(err => {
+      console.error('[云登录] 云函数调用失败:', err);
+      reject(err);
     });
   });
 }
 
 /**
  * 自动登录（应用启动时调用）
+ * 使用云函数进行真实登录
  */
 export async function autoLogin() {
   try {
     console.log('[登录] 开始自动登录...');
 
-    // 1. 微信登录获取openId（Mock或真实）
-    const openId = await mockWxLogin(); // 生产环境改为 realWxLogin()
+    // 检查是否已有 openId
+    const savedOpenId = wx.getStorageSync(OPEN_ID_KEY);
+    const savedUser = wx.getStorageSync(USER_INFO_KEY);
 
-    // 2. 查询用户信息
-    const user = getUserByOpenId(openId);
-
-    if (!user) {
-      // 新用户
-      console.log('[登录] 新用户，openId:', openId);
+    if (savedOpenId && savedUser) {
+      console.log('[登录] 使用缓存的登录信息');
       return {
         success: true,
-        isNewUser: true,
-        openId: openId
+        isNewUser: false,
+        openId: savedOpenId,
+        user: savedUser
       };
     }
 
-    // 3. 老用户 - 保存用户信息
-    wx.setStorageSync(USER_INFO_KEY, user);
+    // 调用云函数登录
+    const result = await cloudLogin();
+    console.log('[登录] 云登录结果:', result);
 
-    // 4. 更新最后登录时间
-    updateUser(user.id, {
-      lastLoginAt: new Date().toISOString().split('T')[0]
-    });
-
-    console.log('[登录] 老用户登录成功:', user.id, user.role);
-
-    return {
-      success: true,
-      isNewUser: false,
-      user: user
-    };
+    return result;
 
   } catch (error) {
     console.error('[登录] 失败:', error);
@@ -128,15 +87,85 @@ export async function autoLogin() {
   }
 }
 
+/**
+ * 需要登录时调用
+ * 如果已登录，直接执行回调；未登录则触发登录流程
+ *
+ * @param {Object} options - 配置选项
+ * @param {Function} options.onSuccess - 登录成功回调
+ * @param {Function} options.onCancel - 用户取消回调（可选）
+ * @param {String} options.title - 提示标题（可选）
+ * @param {String} options.content - 提示内容（可选）
+ * @returns {Promise<Boolean>} 是否登录成功
+ */
+export async function requireLogin(options = {}) {
+  const {
+    onSuccess,
+    onCancel,
+    title = '需要登录',
+    content = '该功能需要登录后使用，是否立即登录？'
+  } = options;
+
+  // 1. 检查是否已登录（有 openId 即可）
+  const existingOpenId = getCurrentOpenId();
+  if (existingOpenId) {
+    const user = getCurrentUser();
+    console.log('[requireLogin] 已登录，openId:', existingOpenId);
+    onSuccess && onSuccess({ openId: existingOpenId, user: user });
+    return true;
+  }
+
+  // 2. 未登录，显示确认弹窗
+  return new Promise((resolve) => {
+    wx.showModal({
+      title: title,
+      content: content,
+      confirmText: '立即登录',
+      cancelText: '取消',
+      success: async (res) => {
+        if (res.confirm) {
+          // 用户确认登录
+          try {
+            wx.showLoading({ title: '登录中...' });
+
+            // 执行云函数登录
+            const loginResult = await cloudLogin();
+
+            wx.hideLoading();
+
+            if (loginResult.success) {
+              console.log('[requireLogin] 登录成功');
+              onSuccess && onSuccess(loginResult);
+              resolve(true);
+            } else {
+              wx.showToast({ title: '登录失败，请重试', icon: 'none' });
+              resolve(false);
+            }
+          } catch (error) {
+            wx.hideLoading();
+            console.error('[requireLogin] 登录失败:', error);
+            wx.showToast({ title: '登录失败，请重试', icon: 'none' });
+            resolve(false);
+          }
+        } else {
+          // 用户取消
+          console.log('[requireLogin] 用户取消登录');
+          onCancel && onCancel();
+          resolve(false);
+        }
+      }
+    });
+  });
+}
+
 // ==================== 登录状态检查 ====================
 
 /**
  * 检查是否已登录
  */
 export function isLoggedIn() {
-  const user = getCurrentUser();
   const openId = wx.getStorageSync(OPEN_ID_KEY);
-  return !!user && !!openId;
+  return !!openId;
 }
 
 /**
@@ -196,6 +225,7 @@ export function logout() {
     wx.removeStorageSync(AUTH_TOKEN_KEY);
     wx.removeStorageSync(USER_INFO_KEY);
     wx.removeStorageSync(OPEN_ID_KEY);
+    wx.removeStorageSync('myCandidateId');
 
     console.log('[登出] 成功');
 
@@ -265,7 +295,7 @@ export function isFirstLogin() {
 // ==================== 工具函数 ====================
 
 /**
- * 刷新用户信息（从服务器重新获取）
+ * 刷新用户信息（从云端重新获取）
  */
 export async function refreshUserInfo() {
   try {
@@ -275,12 +305,16 @@ export async function refreshUserInfo() {
       return null;
     }
 
-    // 从mock数据重新获取
-    const user = getUserByOpenId(openId);
-    if (user) {
-      wx.setStorageSync(USER_INFO_KEY, user);
+    // 调用云函数获取用户信息
+    const res = await wx.cloud.callFunction({
+      name: 'user',
+      data: { action: 'get' }
+    });
+
+    if (res.result && res.result.success) {
+      wx.setStorageSync(USER_INFO_KEY, res.result.user);
       console.log('[认证] 用户信息已刷新');
-      return user;
+      return res.result.user;
     }
 
     return null;

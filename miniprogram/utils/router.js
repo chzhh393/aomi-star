@@ -56,19 +56,11 @@ function handleNewUser() {
   // 获取场景参数
   const sceneParams = getSceneParams();
 
-  // 有星探推荐码 → 直接跳转报名页
-  if (sceneParams && sceneParams.scoutShareCode) {
-    console.log('[路由] 新用户-星探推荐，跳转报名页');
-    wx.reLaunch({
-      url: `/pages/recruit/apply/apply?ref=${sceneParams.scoutShareCode}`
-    });
-    return;
-  }
-
-  // 无推荐码 → 注册引导页（角色选择）
-  console.log('[路由] 新用户，跳转注册引导页');
+  // 新用户统一跳转报名页
+  const ref = sceneParams?.scoutShareCode ? `?ref=${sceneParams.scoutShareCode}` : '';
+  console.log('[路由] 新用户，跳转报名页');
   wx.reLaunch({
-    url: '/pages/register/guide/guide'
+    url: `/pages/recruit/apply/apply${ref}`
   });
 }
 

@@ -1,0 +1,15 @@
+// CloudBase JS SDK 单例初始化（生产环境使用）
+let cloudApp = null
+
+export async function getCloudApp() {
+  if (cloudApp) return cloudApp
+  const cloudbase = (await import('@cloudbase/js-sdk')).default
+  cloudApp = cloudbase.init({
+    env: 'cloud1-0g9rnpap8488905b',
+    region: 'ap-shanghai',
+    accessKey: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjlkMWRjMzFlLWI0ZDAtNDQ4Yi1hNzZmLWIwY2M2M2Q4MTQ5OCJ9.eyJpc3MiOiJodHRwczovL2Nsb3VkMS0wZzlybnBhcDg0ODg5MDViLmFwLXNoYW5naGFpLnRjYi1hcGkudGVuY2VudGNsb3VkYXBpLmNvbSIsInN1YiI6ImFub24iLCJhdWQiOiJjbG91ZDEtMGc5cm5wYXA4NDg4OTA1YiIsImV4cCI6NDA3MzM5MjYwOCwiaWF0IjoxNzY5NzA5NDA4LCJub25jZSI6ImV0em9iZHV1UllpTXQ4cFZrSEQzOWciLCJhdF9oYXNoIjoiZXR6b2JkdXVSWWlNdDhwVmtIRDM5ZyIsIm5hbWUiOiJBbm9ueW1vdXMiLCJzY29wZSI6ImFub255bW91cyIsInByb2plY3RfaWQiOiJjbG91ZDEtMGc5cm5wYXA4NDg4OTA1YiIsIm1ldGEiOnsicGxhdGZvcm0iOiJQdWJsaXNoYWJsZUtleSJ9LCJ1c2VyX3R5cGUiOiIiLCJjbGllbnRfdHlwZSI6ImNsaWVudF91c2VyIiwiaXNfc3lzdGVtX2FkbWluIjpmYWxzZX0.UC8OungFuQmAA8Uo66kFb44VBkfzM0kon2ovq7CPSmJ9Wbjb0qpYk7LL3TFZz_kElETfEw7W4srmMfAM7yxz9jLgwtSaDbO6vvoiYaTeObmnPJ21HmpI5GAelndr93tLctPSKx55JTDic9lWqzCouAdoF7IgKE9JHfU2W_aKxLgnCpmkncduYLFu71nA1SL7iVw4zTbflp-wvPCgsAe3eXeJsiEYwCA00Vq-n425Axnu6Er0KiARtfgGBexx9afJT1chthVx2HWFxqvtdTDFgAwopVbykn-MblfmTiJX78bVG_0ZLbOXIcKozGf38BHxw_ZrrzQnAtqsLnRJka7H6A'
+  })
+  const auth = cloudApp.auth()
+  await auth.signInAnonymously()
+  return cloudApp
+}

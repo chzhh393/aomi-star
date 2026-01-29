@@ -93,13 +93,11 @@ Page({
 
     if (!selectedRole) return;
 
-    // 保存角色到全局状态和本地存储
-    app.globalData.currentRole = role;
-    wx.setStorageSync('currentRole', role);
-
-    // 跳转到对应首页并清空页面栈
-    wx.reLaunch({
-      url: selectedRole.homePath
+    wx.showModal({
+      title: '无权限',
+      content: '当前用户没有权限访问该功能',
+      showCancel: false,
+      confirmText: '我知道了'
     });
   }
 });

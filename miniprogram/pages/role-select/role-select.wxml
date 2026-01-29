@@ -26,9 +26,5 @@
     </view>
   </view>
 
-  <!-- 底部提示 -->
-  <view class="footer">
-    <text class="footer-text">MVP测试版本 · 选择角色进入系统</text>
-  </view>
 
 </view>
