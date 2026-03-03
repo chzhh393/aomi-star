@@ -38,15 +38,31 @@ Page({
   },
 
   onLoad(options) {
-    // 获取星探推荐码
-    const { ref } = options;
-    if (ref) {
-      this.setData({ scoutShareCode: ref });
-      console.log('[招募首页] 检测到星探推荐码:', ref);
+    // 获取星探推荐码（query > App全局 > 本地scene缓存）
+    const app = getApp();
+    const refFromQuery = options && (options.ref || options.shareCode);
+    const refFromGlobal = app && typeof app.getScoutShareCode === 'function'
+      ? app.getScoutShareCode()
+      : (app && app.globalData ? app.globalData.scoutShareCode : '');
+    const sceneParams = wx.getStorageSync('scene_params') || {};
+    const refFromScene = sceneParams.scoutShareCode || '';
+    const scoutShareCode = refFromQuery || refFromGlobal || refFromScene;
+
+    if (scoutShareCode) {
+      this.setData({ scoutShareCode });
+      console.log('[招募首页] 检测到星探推荐码:', scoutShareCode);
     }
 
     // 页面加载时不强制登录，让游客可以浏览
     console.log('[招募首页] 页面加载');
+  },
+
+  // 构建报名页链接（携带推荐码）
+  getApplyUrl() {
+    const scoutShareCode = this.data.scoutShareCode;
+    return scoutShareCode
+      ? `/pages/recruit/apply/apply?ref=${encodeURIComponent(scoutShareCode)}`
+      : '/pages/recruit/apply/apply';
   },
 
   // 跳转到报名表单（需要登录）
@@ -71,16 +87,13 @@ Page({
     }
 
     // 需要登录后才能报名
-    const scoutShareCode = this.data.scoutShareCode;
     await requireLogin({
       title: '登录提示',
       content: '报名前需要登录微信账号，以便后续查看报名进度',
       onSuccess: () => {
         console.log('[招募首页] 登录成功，跳转报名页');
         // 传递星探推荐码
-        const url = scoutShareCode
-          ? `/pages/recruit/apply/apply?ref=${scoutShareCode}`
-          : '/pages/recruit/apply/apply';
+        const url = this.getApplyUrl();
         wx.navigateTo({ url });
       },
       onCancel: () => {
@@ -125,7 +138,6 @@ Page({
             });
           } else {
             // 没有报名记录
-            const scoutShareCode = this.data.scoutShareCode;
             wx.showModal({
               title: '提示',
               content: '您还未报名，请先填写报名表单',
@@ -134,9 +146,7 @@ Page({
               success: (modalRes) => {
                 if (modalRes.confirm) {
                   // 传递星探推荐码
-                  const url = scoutShareCode
-                    ? `/pages/recruit/apply/apply?ref=${scoutShareCode}`
-                    : '/pages/recruit/apply/apply';
+                  const url = this.getApplyUrl();
                   wx.navigateTo({ url });
                 }
               }

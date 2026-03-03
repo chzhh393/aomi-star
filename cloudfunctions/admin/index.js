@@ -474,13 +474,21 @@ async function batchUpdateStatus(ids, status, reason) {
 
   for (const id of ids) {
     try {
+      const candidateRes = await db.collection('candidates').doc(id).get();
+      const candidate = candidateRes.data || null;
+      if (!candidate) {
+        console.warn(`[admin] 批量更新候选人不存在 id=${id}`);
+        failCount++;
+        continue;
+      }
+      const oldStatus = candidate.status;
+
       await db.collection('candidates').doc(id).update({ data: updateData });
 
       // 同步更新 users 表
-      const candidate = await db.collection('candidates').doc(id).get();
-      if (candidate.data && candidate.data.openId) {
+      if (candidate.openId) {
         await db.collection('users').where({
-          openId: candidate.data.openId
+          openId: candidate.openId
         }).update({
           data: {
             'candidateInfo.status': status,
@@ -488,6 +496,29 @@ async function batchUpdateStatus(ids, status, reason) {
           }
         });
       }
+
+      // 如果有星探推荐，更新星探统计数据
+      if (
+        candidate.referral &&
+        candidate.referral.scoutId &&
+        oldStatus !== status
+      ) {
+        try {
+          await updateScoutStatsOnStatusChange(candidate.referral.scoutId, oldStatus, status);
+          console.log('[admin] 批量更新星探统计数据成功');
+        } catch (error) {
+          console.error('[admin] 批量更新星探统计数据失败:', error);
+        }
+      }
+
+      if (oldStatus !== status) {
+        try {
+          await sendReviewResultNotification(candidate, status, reason);
+        } catch (error) {
+          console.error('[admin] 批量审核结果通知发送异常:', error);
+        }
+      }
+
       successCount++;
     } catch (err) {
       console.error(`[admin] 批量更新失败 id=${id}:`, err);
