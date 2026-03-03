@@ -8,13 +8,17 @@
       <el-menu
         :default-active="activeMenu"
         router
-        background-color="#001529"
-        text-color="#ffffffb3"
-        active-text-color="#fff"
+        background-color="#000000"
+        text-color="#888888"
+        active-text-color="#000000"
       >
         <el-menu-item index="/candidates">
           <el-icon><User /></el-icon>
           <span>候选人管理</span>
+        </el-menu-item>
+        <el-menu-item index="/scouts">
+          <el-icon><UserFilled /></el-icon>
+          <span>星探管理</span>
         </el-menu-item>
         <el-menu-item index="/dashboard">
           <el-icon><DataAnalysis /></el-icon>
@@ -40,7 +44,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { User, DataAnalysis } from '@element-plus/icons-vue'
+import { User, UserFilled, DataAnalysis } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -59,30 +63,39 @@ function handleLogout() {
 }
 
 .layout-aside {
-  background-color: #001529;
+  background-color: #000000;
+  border-right: 2px solid #333;
   overflow-y: auto;
 }
 
 .logo {
-  padding: 20px;
+  padding: 24px 20px;
   text-align: center;
-  color: #fff;
-  border-bottom: 1px solid #ffffff1a;
+  color: #FFFFFF;
+  border-bottom: 2px solid #333;
+  background: #000;
 }
 
 .logo h2 {
-  font-size: 18px;
+  font-size: 24px;
   margin-bottom: 4px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0 rgba(19, 232, 221, 0.3);
 }
 
 .logo span {
   font-size: 12px;
-  color: #ffffffb3;
+  color: var(--color-cyan);
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .layout-header {
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  background: #1E1E1E;
+  border-bottom: 2px solid #333;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -96,12 +109,29 @@ function handleLogout() {
 }
 
 .admin-name {
-  color: #333;
+  color: #FFFFFF;
+  font-weight: bold;
   font-size: 14px;
 }
 
 .layout-main {
-  background: #f5f5f5;
+  background: #000000;
   padding: 24px;
 }
-</style>
+
+/* Menu Overrides for Street Style */
+:deep(.el-menu) {
+  border-right: none;
+}
+
+:deep(.el-menu-item.is-active) {
+  color: #000000 !important;
+  background: var(--color-cyan) !important;
+  font-weight: 900;
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+}
+
+:deep(.el-menu-item:hover) {
+  color: var(--color-cyan) !important;
+  background: rgba(19, 232, 221, 0.1) !important;
+}</style>

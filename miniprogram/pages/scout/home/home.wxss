@@ -1,0 +1,326 @@
+/* pages/scout/home/home.wxss */
+.container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding-bottom: 40rpx;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.content {
+  padding: 30rpx;
+}
+
+/* 头部卡片 */
+.header-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.welcome {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+  margin-bottom: 30rpx;
+}
+
+.name {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.role {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5rpx 15rpx;
+  border-radius: 20rpx;
+}
+
+/* 推荐码区域 */
+.share-code-section {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 15rpx;
+  padding: 30rpx;
+}
+
+.code-label {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10rpx;
+}
+
+.code-value {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 4rpx;
+  margin-bottom: 25rpx;
+}
+
+.code-actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.action-btn {
+  flex: 1;
+  height: 80rpx;
+  background: #fff;
+  color: #667eea;
+  border: none;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  line-height: 80rpx;
+  padding: 0;
+  margin: 0;
+}
+
+.action-btn.primary {
+  background: #fff;
+  color: #667eea;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+}
+
+.action-btn::after {
+  border: none;
+}
+
+.code-hint {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-top: 15rpx;
+}
+
+/* 统计数据 */
+.stats-section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25rpx;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20rpx;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #667eea;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 筛选器 */
+.filter-section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 15rpx;
+  margin-top: 20rpx;
+}
+
+.filter-tab {
+  flex: 1;
+  height: 60rpx;
+  background: #f5f7fa;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.filter-tab.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-weight: bold;
+}
+
+/* 候选人列表 */
+.referrals-section {
+  margin-bottom: 30rpx;
+}
+
+.empty-state {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 80rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 15rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #ccc;
+  display: block;
+}
+
+.referral-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.referral-item {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+}
+
+.referral-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.candidate-info {
+  flex: 1;
+}
+
+.candidate-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.candidate-meta {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.status-badge {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.status-pending {
+  background: #fff3e0;
+  color: #ff9800;
+}
+
+.status-approved {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.status-interview_scheduled {
+  background: #f3e5f5;
+  color: #9c27b0;
+}
+
+.status-signed {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.status-rejected {
+  background: #ffebee;
+  color: #f44336;
+}
+
+.referral-details {
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 20rpx;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15rpx;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.detail-value {
+  font-size: 26rpx;
+  color: #333;
+}
+
+/* 刷新按钮 */
+.refresh-section {
+  text-align: center;
+}
+
+.refresh-btn {
+  width: 100%;
+  height: 80rpx;
+  background: #fff;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 40rpx;
+  color: #666;
+  font-size: 28rpx;
+  line-height: 80rpx;
+  padding: 0;
+  margin: 0;
+}
+
+.refresh-btn::after {
+  border: none;
+}

@@ -2,6 +2,20 @@
 import { getCurrentUser } from './utils/auth.js';
 import { parseSceneParams, saveSceneParams } from './utils/scene-parser.js';
 
+// 全局开启转发功能
+const originalPage = Page;
+Page = function(config) {
+  if (!config.onShareAppMessage) {
+    config.onShareAppMessage = function() {
+      return {
+        title: '奥米光年',
+        path: '/pages/index/index'
+      };
+    };
+  }
+  originalPage(config);
+};
+
 App({
   globalData: {
     env: "cloud1-0g9rnpap8488905b",  // 云开发环境

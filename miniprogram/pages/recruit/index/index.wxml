@@ -29,7 +29,7 @@
     </view>
     <view class="intro-content">
       <view class="intro-item">
-        <text class="intro-label">任职要求</text>
+        <text class="intro-label">报名条件</text>
         <text class="intro-value">{{jobInfo.age}}，身高{{jobInfo.height}}</text>
         <text class="intro-note">形象干净有辨识度，{{jobInfo.experience}}</text>
       </view>

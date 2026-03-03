@@ -165,12 +165,12 @@
       </view>
 
       <view class="form-field">
-        <text class="field-label">抖音账号</text>
+        <text class="field-label">抖音账号 *</text>
         <view class="form-row">
           <view class="form-field half no-margin">
             <input
               class="field-input"
-              placeholder="抖音账号（选填）"
+              placeholder="抖音账号"
               value="{{formData.basicInfo.douyin}}"
               data-field="basicInfo.douyin"
               bindinput="onInput"
@@ -345,6 +345,7 @@
       <!-- 才艺视频上传 -->
       <view class="form-field">
         <text class="field-label">才艺视频（选填，最多5个）</text>
+        <text class="field-tip">💡 上传更多才艺视频可提升审核通过的机会</text>
         <scroll-view class="video-scroll" scroll-x="true">
           <view class="video-list">
             <!-- 已上传的视频 -->
@@ -419,6 +420,20 @@
             data-field="experience.accountName"
             bindinput="onInput"
           />
+        </view>
+        <view class="form-field">
+          <text class="field-label">流水截图 *</text>
+          <view class="income-screenshot-upload">
+            <view class="screenshot-box" wx:if="{{!formData.experience.incomeScreenshot}}" bindtap="onChooseIncomeScreenshot">
+              <text class="screenshot-icon">+</text>
+              <text class="screenshot-tip">上传流水截图</text>
+            </view>
+            <view class="screenshot-box has-screenshot" wx:else>
+              <image class="screenshot-preview" src="{{formData.experience.incomeScreenshot}}" mode="aspectFill" data-url="{{formData.experience.incomeScreenshot}}" bindtap="onPreviewIncomeScreenshot" />
+              <view class="screenshot-delete" catchtap="onDeleteIncomeScreenshot">×</view>
+            </view>
+          </view>
+          <text class="photo-hint">请上传近期直播流水截图，用于验证直播经验</text>
         </view>
       </view>
     </view>

@@ -1,6 +1,11 @@
 // pages/recruit/apply/apply.js
 import { getCurrentOpenId, requireLogin } from '../../../utils/auth.js';
 
+const RECRUIT_SUBSCRIBE_TEMPLATE_IDS = [
+  'Y0HUyqrKLrK1RWzKeE44xwUmoxU1pp7DCHIrDY1EYYQ', // 授权审核通过通知
+  'hIAElgobOhB20TJwf7TKvxkiR0G9w2m-KCDZRFORCC8'  // 日程提醒
+];
+
 Page({
   data: {
     scoutShareCode: '',   // 星探分享码
@@ -46,7 +51,8 @@ Page({
       experience: {
         hasExperience: false,
         guild: '',
-        accountName: ''
+        accountName: '',
+        incomeScreenshot: ''
       }
     },
 
@@ -168,7 +174,8 @@ Page({
           experience: {
             hasExperience: (c.experience && c.experience.hasExperience) || false,
             guild: (c.experience && c.experience.guild) || '',
-            accountName: (c.experience && c.experience.accountName) || ''
+            accountName: (c.experience && c.experience.accountName) || '',
+            incomeScreenshot: (c.experience && c.experience.incomeScreenshot) || ''
           }
         };
 
@@ -325,7 +332,43 @@ Page({
     this.setData({
       'formData.experience.hasExperience': hasExperience,
       'formData.experience.guild': hasExperience ? this.data.formData.experience.guild : '',
-      'formData.experience.accountName': hasExperience ? this.data.formData.experience.accountName : ''
+      'formData.experience.accountName': hasExperience ? this.data.formData.experience.accountName : '',
+      'formData.experience.incomeScreenshot': hasExperience ? this.data.formData.experience.incomeScreenshot : ''
+    });
+    this.saveDraft();
+  },
+
+  // 选择流水截图
+  onChooseIncomeScreenshot() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        this.setData({
+          'formData.experience.incomeScreenshot': tempFilePath
+        });
+        this.saveDraft();
+      }
+    });
+  },
+
+  // 预览流水截图
+  onPreviewIncomeScreenshot(e) {
+    const { url } = e.currentTarget.dataset;
+    if (url) {
+      wx.previewImage({
+        urls: [url],
+        current: url
+      });
+    }
+  },
+
+  // 删除流水截图
+  onDeleteIncomeScreenshot() {
+    this.setData({
+      'formData.experience.incomeScreenshot': ''
     });
     this.saveDraft();
   },
@@ -478,6 +521,14 @@ Page({
         wx.showToast({ title: '请输入微信号', icon: 'none' });
         return false;
       }
+      if (!formData.basicInfo.douyin) {
+        wx.showToast({ title: '请输入抖音账号', icon: 'none' });
+        return false;
+      }
+      if (!formData.basicInfo.douyinFans) {
+        wx.showToast({ title: '请输入抖音粉丝数', icon: 'none' });
+        return false;
+      }
       if (!formData.basicInfo.facePhoto) {
         wx.showToast({ title: '请上传素颜正面照', icon: 'none' });
         return false;
@@ -498,6 +549,10 @@ Page({
         }
         if (!formData.experience.accountName) {
           wx.showToast({ title: '请填写直播账号名', icon: 'none' });
+          return false;
+        }
+        if (!formData.experience.incomeScreenshot) {
+          wx.showToast({ title: '请上传流水截图', icon: 'none' });
           return false;
         }
       }
@@ -541,6 +596,27 @@ Page({
     } catch (error) {
       console.error('[上传] 视频上传失败:', error);
       throw error;
+    }
+  },
+
+  // 请求订阅消息（报名审核结果 + 面试日程）
+  async requestRecruitmentSubscribe() {
+    if (!wx.requestSubscribeMessage || RECRUIT_SUBSCRIBE_TEMPLATE_IDS.length === 0) {
+      return;
+    }
+
+    try {
+      const result = await new Promise((resolve, reject) => {
+        wx.requestSubscribeMessage({
+          tmplIds: RECRUIT_SUBSCRIBE_TEMPLATE_IDS,
+          success: resolve,
+          fail: reject
+        });
+      });
+      console.log('[报名] 订阅消息结果:', result);
+    } catch (error) {
+      // 用户拒绝或取消不应阻断报名流程
+      console.warn('[报名] 订阅消息授权未完成:', error);
     }
   },
 
@@ -615,7 +691,17 @@ Page({
         }
       }
 
-      // 3. 准备提交数据
+      // 3. 上传流水截图到云存储（如果有直播经验）
+      let uploadedIncomeScreenshot = '';
+      if (formData.experience.hasExperience && formData.experience.incomeScreenshot) {
+        wx.showLoading({ title: '上传流水截图中...' });
+        uploadedIncomeScreenshot = await this.uploadImage(
+          formData.experience.incomeScreenshot,
+          `candidates/${openId}/income_screenshot_${timestamp}.jpg`
+        );
+      }
+
+      // 4. 准备提交数据
       const submitData = {
         formData: {
           basicInfo: {
@@ -629,7 +715,10 @@ Page({
             ...formData.talent,
             videos: uploadedVideos
           },
-          experience: formData.experience
+          experience: {
+            ...formData.experience,
+            incomeScreenshot: uploadedIncomeScreenshot
+          }
         },
         source: scoutShareCode ? '星探推荐' : '官网报名',
         scoutShareCode: scoutShareCode || null
@@ -650,6 +739,12 @@ Page({
       console.log('[报名] 云函数返回:', res.result);
 
       if (res.result && res.result.success) {
+        wx.hideLoading();
+
+        if (!isEdit) {
+          await this.requestRecruitmentSubscribe();
+        }
+
         // 保存候选人ID到本地
         wx.setStorageSync('myCandidateId', res.result.candidateId);
 
@@ -657,7 +752,6 @@ Page({
         wx.removeStorageSync('applyDraft');
         wx.removeStorageSync('scene_params');
 
-        wx.hideLoading();
         this.setData({ uploading: false });
 
         wx.showToast({

@@ -33,6 +33,14 @@ export const adminAPI = {
     })
   },
 
+  // 批量更新候选人状态
+  batchUpdateStatus(ids, status, reason = '') {
+    return wxcloud.callFunction('admin', {
+      action: 'batchUpdateStatus',
+      data: { ids, status, reason }
+    })
+  },
+
   // 安排面试
   scheduleInterview(data) {
     return wxcloud.callFunction('admin', {
@@ -47,5 +55,21 @@ export const adminAPI = {
       action: 'getStatistics',
       data: {}
     })
+  },
+
+  // 删除候选人（软删除，仅admin账号）
+  deleteCandidate(id) {
+    return wxcloud.callFunction('admin', {
+      action: 'deleteCandidate',
+      data: { id }
+    })
   }
+}
+
+// 星探相关 API
+export function callScoutFunction(action, data = {}) {
+  return wxcloud.callFunction('scout', {
+    action,
+    data
+  })
 }

@@ -39,18 +39,53 @@ onMounted(async () => {
 <style scoped>
 .stat-card {
   text-align: center;
-  padding: 8px 0;
+  padding: 20px 0;
+  border: 4px solid #333;
+  background: #1E1E1E; /* Default Dark */
+  box-shadow: 4px 4px 0 rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(255, 255, 255, 0.2);
 }
 
 .stat-value {
-  font-size: 32px;
-  font-weight: 600;
-  color: #409eff;
+  font-size: 36px;
+  font-weight: 900;
+  color: #FFF;
+  font-family: 'Impact', sans-serif; /* Strong font */
+  letter-spacing: 1px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #999;
-  margin-top: 4px;
+  color: #888;
+  margin-top: 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Specific Card Themes */
+:deep(.el-col:nth-child(1)) .stat-card {
+  border-color: var(--color-cyan);
+  box-shadow: var(--shadow-hard-cyan);
+}
+
+:deep(.el-col:nth-child(1)) .stat-value {
+  color: var(--color-cyan);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+}
+
+:deep(.el-col:nth-child(2)) .stat-card {
+  border-color: var(--color-yellow);
+  box-shadow: var(--shadow-hard-yellow);
+}
+
+:deep(.el-col:nth-child(2)) .stat-value {
+  color: var(--color-yellow);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
 }
 </style>

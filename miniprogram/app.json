@@ -6,6 +6,8 @@
     "pages/recruit/apply/apply",
     "pages/recruit/status/status",
     "pages/recruit/detail/detail",
+    "pages/scout/register/register",
+    "pages/scout/home/home",
     "pages/role-select/role-select",
     "pages/register/guide/guide",
     "pages/register/employee/employee",

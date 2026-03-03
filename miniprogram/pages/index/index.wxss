@@ -76,6 +76,15 @@
   box-shadow: 6rpx 6rpx 0 rgba(19, 232, 221, 0.4);
 }
 
+.scout-card {
+  border-color: #A78BFA;
+  box-shadow: 10rpx 10rpx 0 rgba(167, 139, 250, 0.4);
+}
+
+.scout-card:active {
+  box-shadow: 6rpx 6rpx 0 rgba(167, 139, 250, 0.4);
+}
+
 .employee-card {
   border-color: #F8D55D;
   box-shadow: 10rpx 10rpx 0 rgba(248, 213, 93, 0.4);
@@ -126,6 +135,10 @@
   background: #13E8DD;
 }
 
+.scout-card .card-button {
+  background: #A78BFA;
+}
+
 .employee-card .card-button {
   background: #F8D55D;
 }
@@ -161,8 +174,73 @@
   background: #13E8DD;
 }
 
+.scout-card .card-accent {
+  background: #A78BFA;
+}
+
 .employee-card .card-accent {
   background: #F8D55D;
+}
+
+/* ==================== 星探小卡片样式 ==================== */
+.scout-card-small {
+  padding: 24rpx 32rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.small-card-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+}
+
+.card-icon-small {
+  font-size: 48rpx;
+  line-height: 1;
+}
+
+.card-content-small {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.card-title-small {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 1rpx;
+}
+
+.card-desc-small {
+  font-size: 22rpx;
+  color: #666666;
+  font-weight: 600;
+}
+
+.card-button-small {
+  background: #A78BFA;
+  padding: 16rpx 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.button-text-small {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 1rpx;
+}
+
+.button-arrow-small {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #000000;
 }
 
 /* ==================== 底部标语 ==================== */

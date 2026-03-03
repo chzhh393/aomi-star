@@ -1,10 +1,192 @@
+:root {
+  /* 背景色 */
+  --color-bg: #000000;
+  --color-text: #FFFFFF;
+
+  /* 街头风格颜色 */
+  --color-cyan: #13E8DD;
+  /* 霓虹青 */
+  --color-yellow: #F8D55D;
+  /* 活力黄 */
+
+  /* 旧变量保留但重新映射或调整 */
+  --card-gold: #F8D55D;
+  --card-blue: #13E8DD;
+  --card-green: #00E676;
+  --card-dark: #1E1E1E;
+  /* 保持深色背景 */
+  --card-orange: #FF9500;
+  --card-red: #FF3366;
+  --card-purple: #AB47BC;
+
+  /* 文字颜色 */
+  --text-on-light: #000000;
+  /* 亮色背景用黑色文字 */
+  --text-on-dark: #FFFFFF;
+  --text-muted: #888888;
+
+  /* 阴影 - 硬阴影 */
+  --shadow-hard-cyan: 4px 4px 0 rgba(19, 232, 221, 0.4);
+  --shadow-hard-yellow: 4px 4px 0 rgba(248, 213, 93, 0.4);
+  --shadow-card: 4px 4px 0 rgba(255, 255, 255, 0.1);
+
+  /* Element Plus Dark Mode Overrides */
+  --el-bg-color: var(--color-bg);
+  --el-bg-color-overlay: var(--card-dark);
+  --el-text-color-primary: var(--color-text);
+  --el-text-color-regular: #D1D5DB;
+  --el-text-color-secondary: var(--text-muted);
+  --el-border-color: #333;
+  --el-border-color-light: #444;
+  --el-border-color-lighter: #555;
+  --el-fill-color-blank: var(--color-bg);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body, #app {
+html,
+body,
+#app {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Common Utility Classes */
+.card-solid {
+  border-radius: 0;
+  /* 直角或小圆角 */
+  padding: 20px;
+  background: #FFFFFF;
+  /* 默认白底黑字 */
+  color: #000000;
+  border: 4px solid #000000;
+  /* 粗边框 */
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.card-solid:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 黑色主题卡片 */
+.card-dark-theme {
+  background: var(--card-dark);
+  color: #FFFFFF;
+  border: 2px solid #333;
+  box-shadow: var(--shadow-card);
+}
+
+.text-primary {
+  color: var(--color-cyan);
+}
+
+.text-warning {
+  color: var(--color-yellow);
+}
+
+.text-danger {
+  color: var(--card-red);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Element Plus Customization */
+.el-card {
+  background-color: var(--card-dark);
+  border: none;
+  color: var(--text-on-dark);
+}
+
+.el-table {
+  background-color: var(--card-dark);
+  --el-table-tr-bg-color: var(--card-dark);
+  --el-table-header-bg-color: #2c2c2c;
+  --el-table-row-hover-bg-color: #333;
+  color: var(--color-text);
+}
+
+.el-table th {
+  background-color: #2c2c2c;
+}
+
+.el-table tr {
+  background-color: var(--card-dark);
+}
+
+.el-pagination {
+  --el-pagination-bg-color: transparent;
+  --el-pagination-button-bg-color: var(--card-dark);
+  --el-pagination-hover-color: var(--card-blue);
+}
+
+.el-input__wrapper {
+  background-color: #2c2c2c;
+  box-shadow: 0 0 0 1px #333 inset;
+}
+
+.el-input__inner {
+  color: #FFF;
+}
+
+/* Dialog & Descriptions Overrides */
+.el-dialog {
+  background: var(--card-dark);
+}
+
+.el-dialog__title {
+  color: #FFF;
+}
+
+.el-descriptions__body {
+  background: transparent;
+  color: #FFF;
+}
+
+.el-descriptions__label.is-bordered-label {
+  background: #2c2c2c;
+  color: #AAA;
+}
+
+.el-descriptions__content.is-bordered-content {
+  color: #FFF;
+}
+
+.el-descriptions__table tr {
+  background: transparent;
+}
+
+/* 详情弹窗样式 */
+.detail-dialog .el-dialog__header {
+  padding: 12px 16px 0;
+  margin-right: 0;
+}
+
+.detail-dialog .el-dialog__body {
+  padding: 20px 28px 28px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.detail-dialog .el-dialog__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detail-dialog .el-dialog__body::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+.detail-dialog .el-dialog__body::-webkit-scrollbar-track {
+  background: transparent;
 }

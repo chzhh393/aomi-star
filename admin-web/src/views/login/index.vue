@@ -46,6 +46,8 @@ async function handleLogin() {
     const res = await adminAPI.login(form.username, form.password)
     if (res.success) {
       localStorage.setItem('admin_token', res.token)
+      // 保存用户信息，用于权限判断
+      localStorage.setItem('admin_info', JSON.stringify(res.admin))
       router.push('/candidates')
       ElMessage.success('登录成功')
     } else {
@@ -65,20 +67,23 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--color-bg);
+  background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
 }
 
 .login-card {
   width: 400px;
   padding: 40px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: var(--card-dark);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid #333;
 }
 
 .login-card h2 {
   text-align: center;
   margin-bottom: 32px;
-  color: #333;
+  color: var(--color-text);
+  font-weight: bold;
 }
 </style>

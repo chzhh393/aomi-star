@@ -1,0 +1,137 @@
+<!--pages/scout/home/home.wxml-->
+<view class="container">
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 内容 -->
+  <view wx:else class="content">
+    <!-- 头部卡片 -->
+    <view class="header-card">
+      <view class="welcome">
+        <text class="name">{{scout.profile.name}}</text>
+        <text class="role">星探</text>
+      </view>
+
+      <!-- 推荐码 -->
+      <view class="share-code-section">
+        <view class="code-label">我的推荐码</view>
+        <view class="code-value">{{scout.shareCode}}</view>
+        <view class="code-actions">
+          <button class="action-btn primary" open-type="share">
+            📤 分享小程序给好友
+          </button>
+        </view>
+        <view class="code-hint">分享时自动携带推荐码</view>
+      </view>
+    </view>
+
+    <!-- 统计数据 -->
+    <view class="stats-section">
+      <view class="section-title">📊 数据概览</view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <view class="stat-value">{{scout.stats.totalReferred}}</view>
+          <view class="stat-label">总推荐</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{scout.stats.pendingCount}}</view>
+          <view class="stat-label">待审核</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{scout.stats.approvedCount}}</view>
+          <view class="stat-label">已通过</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{scout.stats.signedCount}}</view>
+          <view class="stat-label">已签约</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 筛选器 -->
+    <view class="filter-section">
+      <view class="section-title">👥 推荐的候选人</view>
+      <view class="filter-tabs">
+        <view
+          class="filter-tab {{currentFilter === 'all' ? 'active' : ''}}"
+          data-filter="all"
+          bindtap="onFilterChange"
+        >
+          全部({{referrals.length}})
+        </view>
+        <view
+          class="filter-tab {{currentFilter === 'pending' ? 'active' : ''}}"
+          data-filter="pending"
+          bindtap="onFilterChange"
+        >
+          待审核
+        </view>
+        <view
+          class="filter-tab {{currentFilter === 'approved' ? 'active' : ''}}"
+          data-filter="approved"
+          bindtap="onFilterChange"
+        >
+          已通过
+        </view>
+        <view
+          class="filter-tab {{currentFilter === 'signed' ? 'active' : ''}}"
+          data-filter="signed"
+          bindtap="onFilterChange"
+        >
+          已签约
+        </view>
+      </view>
+    </view>
+
+    <!-- 候选人列表 -->
+    <view class="referrals-section">
+      <view wx:if="{{filteredReferrals.length === 0}}" class="empty-state">
+        <text class="empty-icon">📭</text>
+        <text class="empty-text">暂无推荐记录</text>
+        <text class="empty-hint">分享小程序给潜在主播，开始赚取推荐奖励！</text>
+      </view>
+
+      <view wx:else class="referral-list">
+        <view
+          class="referral-item"
+          wx:for="{{filteredReferrals}}"
+          wx:key="_id"
+          bindtap="onViewDetail"
+          data-id="{{item._id}}"
+        >
+          <view class="referral-header">
+            <view class="candidate-info">
+              <text class="candidate-name">{{item.basicInfo.name}}</text>
+              <text class="candidate-meta">
+                {{item.basicInfo.age}}岁 | {{item.basicInfo.height}}cm
+              </text>
+            </view>
+            <view class="status-badge status-{{item.status}}">
+              {{statusMap[item.status]}}
+            </view>
+          </view>
+
+          <view class="referral-details">
+            <view class="detail-row">
+              <text class="detail-label">报名时间</text>
+              <text class="detail-value">{{item.createdAtText}}</text>
+            </view>
+            <view class="detail-row" wx:if="{{item.basicInfo.phone}}">
+              <text class="detail-label">联系方式</text>
+              <text class="detail-value">{{item.basicInfo.phone}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 刷新按钮 -->
+    <view class="refresh-section">
+      <button class="refresh-btn" bindtap="onRefresh">
+        🔄 刷新数据
+      </button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,60 @@
+<!--pages/scout/register/register.wxml-->
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="header">
+    <view class="title">成为星探</view>
+    <view class="subtitle">推荐优秀主播，赚取推荐奖励</view>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form-content">
+    <view class="form-section">
+      <view class="section-title">📝 基本信息</view>
+
+      <view class="form-field">
+        <text class="field-label">真实姓名 *</text>
+        <input
+          class="field-input"
+          placeholder="请输入真实姓名"
+          value="{{formData.name}}"
+          data-field="name"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">手机号 *</text>
+        <input
+          class="field-input"
+          type="number"
+          placeholder="请输入手机号"
+          value="{{formData.phone}}"
+          data-field="phone"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">微信号 *</text>
+        <input
+          class="field-input"
+          placeholder="请输入微信号"
+          value="{{formData.wechat}}"
+          data-field="wechat"
+          bindinput="onInput"
+        />
+      </view>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="submit-section">
+      <button
+        class="submit-btn"
+        bindtap="submitRegister"
+        disabled="{{submitting}}"
+      >
+        {{submitting ? '提交中...' : '提交注册'}}
+      </button>
+    </view>
+  </view>
+</view>

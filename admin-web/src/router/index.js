@@ -19,6 +19,12 @@ const routes = [
         meta: { title: '候选人管理' }
       },
       {
+        path: 'scouts',
+        name: 'Scouts',
+        component: () => import('../views/scouts/list.vue'),
+        meta: { title: '星探管理' }
+      },
+      {
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('../views/dashboard/index.vue'),
