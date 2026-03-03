@@ -90,6 +90,12 @@
             <span v-if="row.experience?.hasExperience && row.experience?.guild" class="meta-item meta-guild">
               {{ row.experience.guild }}
             </span>
+            <template v-if="row.referral">
+              <span class="meta-divider">|</span>
+              <el-tag size="small" type="success" effect="plain" round class="meta-scout">
+                ⭐ 星探推荐：{{ row.referral.scoutName || row.referral.scoutShareCode }}
+              </el-tag>
+            </template>
           </div>
           <div class="candidate-extra">
             <div class="talent-tags" v-if="row.talent?.talents?.length || row.talent?.otherTalent">
@@ -239,6 +245,21 @@
             <div class="info-row">
               <span class="info-label">报名时间</span>
               <span class="info-value">{{ formatDate(currentCandidate.createdAt) }}</span>
+            </div>
+          </div>
+          <div class="info-block" v-if="currentCandidate.referral">
+            <div class="info-block-title">星探推荐</div>
+            <div class="info-row">
+              <span class="info-label">星探姓名</span>
+              <span class="info-value">{{ currentCandidate.referral.scoutName || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">推荐码</span>
+              <span class="info-value">{{ currentCandidate.referral.scoutShareCode }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">推荐时间</span>
+              <span class="info-value">{{ formatDate(currentCandidate.referral.referredAt) }}</span>
             </div>
           </div>
         </div>
@@ -887,6 +908,12 @@ onMounted(fetchList)
   font-size: 12px;
   color: #aaa;
   border: 1px solid #3a3a3a;
+}
+
+.meta-scout {
+  border-color: rgba(103, 194, 58, 0.4);
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.1);
 }
 
 .talent-tags .el-tag {

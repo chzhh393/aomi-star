@@ -1,10 +1,13 @@
 // pages/recruit/index/index.js
 // 主播招募首页
 
-import { requireLogin, getCurrentOpenId } from '../../../utils/auth.js';
+import { requireLogin } from '../../../utils/auth.js';
 
 Page({
   data: {
+    // 星探推荐码
+    scoutShareCode: '',
+
     // 公司信息
     companyName: '奥米光年',
     companySlogan: '在5000平的舞台上，做自己的合伙人',
@@ -34,7 +37,14 @@ Page({
     ]
   },
 
-  onLoad() {
+  onLoad(options) {
+    // 获取星探推荐码
+    const { ref } = options;
+    if (ref) {
+      this.setData({ scoutShareCode: ref });
+      console.log('[招募首页] 检测到星探推荐码:', ref);
+    }
+
     // 页面加载时不强制登录，让游客可以浏览
     console.log('[招募首页] 页面加载');
   },
@@ -61,14 +71,17 @@ Page({
     }
 
     // 需要登录后才能报名
+    const scoutShareCode = this.data.scoutShareCode;
     await requireLogin({
       title: '登录提示',
       content: '报名前需要登录微信账号，以便后续查看报名进度',
       onSuccess: () => {
         console.log('[招募首页] 登录成功，跳转报名页');
-        wx.navigateTo({
-          url: '/pages/recruit/apply/apply'
-        });
+        // 传递星探推荐码
+        const url = scoutShareCode
+          ? `/pages/recruit/apply/apply?ref=${scoutShareCode}`
+          : '/pages/recruit/apply/apply';
+        wx.navigateTo({ url });
       },
       onCancel: () => {
         console.log('[招募首页] 用户取消登录');
@@ -112,6 +125,7 @@ Page({
             });
           } else {
             // 没有报名记录
+            const scoutShareCode = this.data.scoutShareCode;
             wx.showModal({
               title: '提示',
               content: '您还未报名，请先填写报名表单',
@@ -119,9 +133,11 @@ Page({
               cancelText: '取消',
               success: (modalRes) => {
                 if (modalRes.confirm) {
-                  wx.navigateTo({
-                    url: '/pages/recruit/apply/apply'
-                  });
+                  // 传递星探推荐码
+                  const url = scoutShareCode
+                    ? `/pages/recruit/apply/apply?ref=${scoutShareCode}`
+                    : '/pages/recruit/apply/apply';
+                  wx.navigateTo({ url });
                 }
               }
             });
