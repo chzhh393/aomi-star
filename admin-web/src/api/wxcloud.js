@@ -5,7 +5,8 @@ const IS_DEV = import.meta.env.DEV
 
 class WxCloudAPI {
   async callFunction(name, data) {
-    const adminToken = localStorage.getItem('admin_token')
+    // 兼容历史 key：admin_token；当前登录流程使用 token
+    const adminToken = localStorage.getItem('token') || localStorage.getItem('admin_token')
 
     if (IS_DEV) {
       const response = await axios.post('/api/cloudfunction', {

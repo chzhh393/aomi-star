@@ -57,11 +57,109 @@ export const adminAPI = {
     })
   },
 
-  // 删除候选人（软删除，仅admin账号）
+  // 删除候选人（硬删除，仅admin账号）
   deleteCandidate(id) {
     return wxcloud.callFunction('admin', {
       action: 'deleteCandidate',
       data: { id }
+    })
+  },
+
+  // ==================== 权限管理相关 ====================
+
+  // 获取管理员/经纪人列表
+  getAdminList() {
+    return wxcloud.callFunction('admin', {
+      action: 'getAdminList',
+      data: {}
+    })
+  },
+
+  // 创建管理员/经纪人账号
+  createAdmin(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'createAdmin',
+      data
+    })
+  },
+
+  // 更新管理员/经纪人信息
+  updateAdmin(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'updateAdmin',
+      data
+    })
+  },
+
+  // 删除管理员/经纪人
+  deleteAdmin(id) {
+    return wxcloud.callFunction('admin', {
+      action: 'deleteAdmin',
+      data: { id }
+    })
+  },
+
+  // ==================== 候选人分配相关 ====================
+
+  // 分配候选人给经纪人
+  assignCandidate(candidateId, agentId) {
+    return wxcloud.callFunction('admin', {
+      action: 'assignCandidate',
+      data: { candidateId, agentId }
+    })
+  },
+
+  // 取消分配候选人
+  unassignCandidate(candidateId) {
+    return wxcloud.callFunction('admin', {
+      action: 'unassignCandidate',
+      data: { candidateId }
+    })
+  },
+
+  // 获取分配关系列表
+  getAssignments() {
+    return wxcloud.callFunction('admin', {
+      action: 'getAssignments',
+      data: {}
+    })
+  },
+
+  // ==================== 操作日志相关 ====================
+
+  // 获取审计日志
+  getAuditLogs(params = {}) {
+    return wxcloud.callFunction('admin', {
+      action: 'getAuditLogs',
+      data: params
+    })
+  },
+
+  // ==================== 面试打分相关 ====================
+
+  // 面试打分
+  scoreInterview(candidateId, score) {
+    return wxcloud.callFunction('admin', {
+      action: 'scoreInterview',
+      data: { candidateId, score }
+    })
+  },
+
+  // ==================== 面试资料上传相关 ====================
+
+  // 上传面试资料
+  uploadInterviewMaterials(candidateId, type, materials) {
+    return wxcloud.callFunction('admin', {
+      action: 'uploadInterviewMaterials',
+      data: { candidateId, type, materials }
+    })
+  },
+
+  // 删除面试资料
+  deleteInterviewMaterial(candidateId, type, fileId) {
+    return wxcloud.callFunction('admin', {
+      action: 'deleteInterviewMaterial',
+      data: { candidateId, type, fileId }
     })
   }
 }
@@ -71,5 +169,21 @@ export function callScoutFunction(action, data = {}) {
   return wxcloud.callFunction('scout', {
     action,
     data
+  })
+}
+
+// 获取星探列表
+export function getScouts(params = {}) {
+  return wxcloud.callFunction('scout', {
+    action: 'getAllScouts',
+    data: params
+  })
+}
+
+// 获取星探详情
+export function getScoutDetail(scoutId) {
+  return wxcloud.callFunction('scout', {
+    action: 'getScoutDetail',
+    data: { scoutId }
   })
 }

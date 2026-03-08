@@ -5,6 +5,7 @@ Page({
   data: {
     loading: true,
     scout: null,
+    teamInfo: null,
     referrals: [],
     filteredReferrals: [],
     currentFilter: 'all',
@@ -84,6 +85,22 @@ Page({
 
       const scout = scoutRes.result.scout;
 
+      // 如果是一级星探，获取团队信息
+      let teamInfo = null;
+      if (scout.level && scout.level.depth === 1) {
+        try {
+          const teamRes = await wx.cloud.callFunction({
+            name: 'scout',
+            data: { action: 'getMyTeam' }
+          });
+          if (teamRes.result && teamRes.result.success) {
+            teamInfo = teamRes.result.team;
+          }
+        } catch (error) {
+          console.error('[星探工作台] 获取团队信息失败:', error);
+        }
+      }
+
       // 获取推荐的候选人列表
       const referralsRes = await wx.cloud.callFunction({
         name: 'scout',
@@ -106,6 +123,7 @@ Page({
 
       this.setData({
         scout,
+        teamInfo,
         referrals,
         filteredReferrals: referrals,
         loading: false
@@ -181,6 +199,53 @@ Page({
         title: '刷新成功',
         icon: 'success'
       });
+    });
+  },
+
+  // 复制邀请码
+  copyInviteCode() {
+    const inviteCode = this.data.scout.inviteCode;
+    if (!inviteCode) {
+      wx.showToast({ title: '邀请码不存在', icon: 'none' });
+      return;
+    }
+
+    wx.setClipboardData({
+      data: inviteCode,
+      success: () => {
+        wx.showToast({
+          title: '邀请码已复制',
+          icon: 'success'
+        });
+      }
+    });
+  },
+
+  // 分享邀请码
+  shareInvite() {
+    const inviteCode = this.data.scout.inviteCode;
+    if (!inviteCode) {
+      wx.showToast({ title: '邀请码不存在', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '分享邀请码',
+      content: `您的邀请码是：${inviteCode}\n\n请将此邀请码分享给想要成为下级星探的人员，对方注册时输入此邀请码即可加入您的团队。`,
+      confirmText: '复制邀请码',
+      cancelText: '关闭',
+      success: (res) => {
+        if (res.confirm) {
+          this.copyInviteCode();
+        }
+      }
+    });
+  },
+
+  // 查看团队详情
+  viewTeam() {
+    wx.navigateTo({
+      url: '/pages/scout/team/team'
     });
   }
 });

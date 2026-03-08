@@ -1,0 +1,42 @@
+{
+  "envId": "cloud1-0g9rnpap8488905b",
+  "functionRoot": "./cloudfunctions",
+  "functions": [
+    {
+      "name": "admin",
+      "timeout": 15,
+      "runtime": "Nodejs16.13",
+      "installDependency": true
+    },
+    {
+      "name": "admin-api",
+      "timeout": 15,
+      "runtime": "Nodejs16.13",
+      "installDependency": true
+    },
+    {
+      "name": "candidate",
+      "timeout": 15,
+      "runtime": "Nodejs16.13",
+      "installDependency": true
+    },
+    {
+      "name": "login",
+      "timeout": 15,
+      "runtime": "Nodejs16.13",
+      "installDependency": true
+    },
+    {
+      "name": "user",
+      "timeout": 15,
+      "runtime": "Nodejs16.13",
+      "installDependency": true
+    },
+    {
+      "name": "scout",
+      "timeout": 15,
+      "runtime": "Nodejs16.13",
+      "installDependency": true
+    }
+  ]
+}

@@ -8,6 +8,48 @@ cloud.init({
 const db = cloud.database();
 const _ = db.command;
 
+function isEmpty(value) {
+  return value === undefined || value === null || String(value).trim() === '';
+}
+
+function toBoolean(value) {
+  return value === true || value === 'true' || value === 1 || value === '1';
+}
+
+function validateCandidateFormData(data) {
+  if (!data || !data.formData) {
+    return '提交数据不完整';
+  }
+
+  const basicInfo = data.formData.basicInfo || {};
+  const experience = data.formData.experience || {};
+  const hasExperience = toBoolean(experience.hasExperience);
+
+  if (isEmpty(basicInfo.douyin)) {
+    return '请输入抖音账号';
+  }
+
+  if (isEmpty(basicInfo.douyinFans)) {
+    return '请输入抖音粉丝数';
+  }
+
+  if (hasExperience) {
+    if (isEmpty(experience.guild)) {
+      return '请填写之前所在工会';
+    }
+
+    if (isEmpty(experience.accountName)) {
+      return '请填写直播账号名';
+    }
+
+    if (isEmpty(experience.incomeScreenshot)) {
+      return '请上传流水截图';
+    }
+  }
+
+  return '';
+}
+
 // 云函数入口函数
 exports.main = async (event) => {
   const wxContext = cloud.getWXContext();
@@ -58,6 +100,13 @@ async function submitCandidate(openId, data) {
     };
   }
 
+  const validationError = validateCandidateFormData(data);
+  if (validationError) {
+    return { success: false, error: validationError };
+  }
+
+  const hasExperience = toBoolean(data.formData.experience.hasExperience);
+
   // 上传照片到云存储
   const uploadedImages = await uploadImages(openId, data.formData.basicInfo);
 
@@ -100,9 +149,10 @@ async function submitCandidate(openId, data) {
 
     // 直播经验
     experience: {
-      hasExperience: data.formData.experience.hasExperience || false,
-      guild: data.formData.experience.guild || '',
-      accountName: data.formData.experience.accountName || ''
+      hasExperience: hasExperience,
+      guild: hasExperience ? (data.formData.experience.guild || '') : '',
+      accountName: hasExperience ? (data.formData.experience.accountName || '') : '',
+      incomeScreenshot: hasExperience ? (data.formData.experience.incomeScreenshot || '') : ''
     },
 
     // 来源
@@ -126,14 +176,28 @@ async function submitCandidate(openId, data) {
 
     if (scoutRes.data.length > 0) {
       const scout = scoutRes.data[0];
+
+      // 构建推荐链条
+      const scoutChain = [scout._id];
+      const scoutChainNames = [scout.profile.name];
+
+      // 如果是二级星探，添加一级星探信息
+      if (scout.level && scout.level.parentScoutId) {
+        scoutChain.unshift(scout.level.parentScoutId);
+        scoutChainNames.unshift(scout.level.parentScoutName);
+      }
+
       candidateData.referral = {
         scoutId: scout._id,
         scoutShareCode: data.scoutShareCode,
         scoutName: scout.profile.name,
+        scoutLevel: scout.level?.depth || 1,
+        scoutChain: scoutChain,  // [一级ID, 二级ID] 或 [一级ID]
+        scoutChainNames: scoutChainNames,  // [一级名称, 二级名称] 或 [一级名称]
         referredAt: db.serverDate()
       };
 
-      console.log('[candidate] 关联星探成功:', scout.profile.name);
+      console.log('[candidate] 关联星探成功:', scout.profile.name, '层级:', scout.level?.depth || 1);
     } else {
       console.log('[candidate] 推荐码无效或星探已停用:', data.scoutShareCode);
     }
@@ -153,6 +217,7 @@ async function submitCandidate(openId, data) {
       'candidateInfo.status': 'pending',
       'profile.name': candidateData.basicInfo.name,
       'profile.phone': candidateData.basicInfo.phone,
+      candidateApplyDraft: _.remove(),
       updatedAt: db.serverDate()
     }
   });
@@ -260,6 +325,13 @@ async function updateCandidate(openId, data) {
     return { success: false, error: '当前状态不允许修改' };
   }
 
+  const validationError = validateCandidateFormData(data);
+  if (validationError) {
+    return { success: false, error: validationError };
+  }
+
+  const hasExperience = toBoolean(data.formData.experience.hasExperience);
+
   // 处理图片
   const uploadedImages = await uploadImages(openId, data.formData.basicInfo);
   // 处理视频
@@ -291,15 +363,25 @@ async function updateCandidate(openId, data) {
       level: data.formData.talent.level || 5
     },
     experience: {
-      hasExperience: data.formData.experience.hasExperience || false,
-      guild: data.formData.experience.guild || '',
-      accountName: data.formData.experience.accountName || ''
+      hasExperience: hasExperience,
+      guild: hasExperience ? (data.formData.experience.guild || '') : '',
+      accountName: hasExperience ? (data.formData.experience.accountName || '') : '',
+      incomeScreenshot: hasExperience ? (data.formData.experience.incomeScreenshot || '') : ''
     },
     updatedAt: db.serverDate()
   };
 
   await db.collection('candidates').doc(candidate._id).update({
     data: updateData
+  });
+
+  await db.collection('users').where({
+    openId: openId
+  }).update({
+    data: {
+      candidateApplyDraft: _.remove(),
+      updatedAt: db.serverDate()
+    }
   });
 
   return {
@@ -375,6 +457,29 @@ async function updateCandidateStatus(id, status) {
       console.log('[candidate] 星探统计数据更新成功');
     } catch (error) {
       console.error('[candidate] 星探统计数据更新失败:', error);
+      // 不影响主流程，继续执行
+    }
+  }
+
+  // 如果状态变更为已签约，自动触发分账计算
+  if (status === 'signed' && oldStatus !== 'signed') {
+    try {
+      console.log('[candidate] 触发分账计算, candidateId:', id);
+      const commissionRes = await cloud.callFunction({
+        name: 'commission',
+        data: {
+          action: 'calculate',
+          data: { candidateId: id }
+        }
+      });
+
+      if (commissionRes.result && commissionRes.result.success) {
+        console.log('[candidate] 分账计算成功:', commissionRes.result.message);
+      } else {
+        console.error('[candidate] 分账计算失败:', commissionRes.result?.error);
+      }
+    } catch (error) {
+      console.error('[candidate] 调用分账云函数失败:', error);
       // 不影响主流程，继续执行
     }
   }

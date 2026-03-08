@@ -1,0 +1,382 @@
+<template>
+  <div class="page-container">
+    <div class="page-header">
+      <h2>候选人分配</h2>
+      <el-button type="primary" @click="showAssignDialog">
+        <el-icon><Plus /></el-icon>
+        新增分配
+      </el-button>
+    </div>
+
+    <!-- 分配列表 -->
+    <div v-loading="loading">
+      <el-collapse v-model="activeNames">
+        <el-collapse-item
+          v-for="assignment in assignments"
+          :key="assignment.agentId"
+          :name="assignment.agentId"
+        >
+          <template #title>
+            <div class="agent-header">
+              <el-tag type="info" size="large">经纪人</el-tag>
+              <span class="agent-name">{{ assignment.agentName }}</span>
+              <span class="agent-username">(@{{ assignment.agentUsername }})</span>
+              <el-tag size="small" class="candidate-count">
+                已分配 {{ assignment.candidates.length }} 人
+              </el-tag>
+            </div>
+          </template>
+
+          <el-table
+            :data="assignment.candidates"
+            style="width: 100%"
+            class="candidate-table"
+          >
+            <el-table-column prop="name" label="候选人姓名" width="150" />
+            <el-table-column label="状态" width="120">
+              <template #default="{ row }">
+                <el-tag :type="getStatusType(row.status)" size="small">
+                  {{ getStatusText(row.status) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="报名时间" width="180">
+              <template #default="{ row }">
+                {{ formatDate(row.createdAt) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="120">
+              <template #default="{ row }">
+                <el-button
+                  link
+                  type="danger"
+                  size="small"
+                  @click="handleUnassign(row.id, assignment.agentName)"
+                >
+                  取消分配
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <el-empty v-if="assignment.candidates.length === 0" description="暂无分配的候选人" />
+        </el-collapse-item>
+      </el-collapse>
+
+      <el-empty v-if="assignments.length === 0" description="暂无经纪人" />
+    </div>
+
+    <!-- 分配对话框 -->
+    <el-dialog
+      title="分配候选人"
+      v-model="assignDialogVisible"
+      width="600px"
+    >
+      <el-form :model="assignForm" label-width="100px">
+        <el-form-item label="选择经纪人">
+          <el-select
+            v-model="assignForm.agentId"
+            placeholder="请选择经纪人"
+            style="width: 100%"
+            @change="handleAgentChange"
+          >
+            <el-option
+              v-for="agent in agentList"
+              :key="agent._id"
+              :label="`${agent.name} (@${agent.username})`"
+              :value="agent._id"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="选择候选人">
+          <el-select
+            v-model="assignForm.candidateId"
+            placeholder="请选择候选人"
+            style="width: 100%"
+            filterable
+          >
+            <el-option
+              v-for="candidate in availableCandidates"
+              :key="candidate._id"
+              :label="`${candidate.basicInfo?.name} - ${getStatusText(candidate.status)}`"
+              :value="candidate._id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="assignDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleAssign" :loading="assigning">
+          确定分配
+        </el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import { adminAPI } from '../../api/admin'
+
+const loading = ref(false)
+const assignments = ref([])
+const activeNames = ref([])
+const assignDialogVisible = ref(false)
+const assigning = ref(false)
+
+const agentList = ref([])
+const allCandidates = ref([])
+const availableCandidates = ref([])
+
+const assignForm = ref({
+  agentId: '',
+  candidateId: ''
+})
+
+// 状态映射
+const statusMap = {
+  pending: '待审核',
+  approved: '审核通过',
+  rejected: '审核拒绝',
+  interview_scheduled: '已安排面试',
+  signed: '已签约'
+}
+
+const statusTypeMap = {
+  pending: 'warning',
+  approved: 'success',
+  rejected: 'danger',
+  interview_scheduled: 'primary',
+  signed: 'success'
+}
+
+function getStatusText(status) {
+  return statusMap[status] || status
+}
+
+function getStatusType(status) {
+  return statusTypeMap[status] || 'info'
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return date.toLocaleString('zh-CN')
+}
+
+// 加载分配关系
+async function loadAssignments() {
+  loading.value = true
+  try {
+    const res = await adminAPI.getAssignments()
+    if (res.success) {
+      assignments.value = res.data
+      // 默认展开第一个
+      if (res.data.length > 0) {
+        activeNames.value = [res.data[0].agentId]
+      }
+    } else {
+      ElMessage.error(res.error || '加载失败')
+    }
+  } catch (error) {
+    console.error('加载分配关系失败:', error)
+    ElMessage.error('加载失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 显示分配对话框
+async function showAssignDialog() {
+  // 加载经纪人列表
+  try {
+    const [agentRes, candidateRes] = await Promise.all([
+      adminAPI.getAdminList(),
+      adminAPI.getCandidateList({ page: 1, pageSize: 1000, status: 'all' })
+    ])
+
+    if (agentRes.success) {
+      agentList.value = agentRes.data.filter(u => u.role === 'agent' && u.status === 'active')
+    }
+
+    if (candidateRes.success) {
+      allCandidates.value = candidateRes.data.list
+    }
+
+    assignForm.value = {
+      agentId: '',
+      candidateId: ''
+    }
+
+    assignDialogVisible.value = true
+  } catch (error) {
+    console.error('加载数据失败:', error)
+    ElMessage.error('加载数据失败')
+  }
+}
+
+// 经纪人改变时，筛选可用候选人
+function handleAgentChange(agentId) {
+  if (!agentId) {
+    availableCandidates.value = []
+    return
+  }
+
+  // 找到该经纪人已分配的候选人ID
+  const assignment = assignments.value.find(a => a.agentId === agentId)
+  const assignedIds = assignment ? assignment.candidates.map(c => c.id) : []
+
+  // 过滤出未分配给该经纪人的候选人
+  availableCandidates.value = allCandidates.value.filter(
+    c => !assignedIds.includes(c._id) && !c.assignedAgent
+  )
+}
+
+// 分配候选人
+async function handleAssign() {
+  if (!assignForm.value.agentId || !assignForm.value.candidateId) {
+    ElMessage.warning('请选择经纪人和候选人')
+    return
+  }
+
+  assigning.value = true
+  try {
+    const res = await adminAPI.assignCandidate(
+      assignForm.value.candidateId,
+      assignForm.value.agentId
+    )
+
+    if (res.success) {
+      ElMessage.success('分配成功')
+      assignDialogVisible.value = false
+      loadAssignments()
+    } else {
+      ElMessage.error(res.error || '分配失败')
+    }
+  } catch (error) {
+    console.error('分配失败:', error)
+    ElMessage.error('分配失败，请重试')
+  } finally {
+    assigning.value = false
+  }
+}
+
+// 取消分配
+async function handleUnassign(candidateId, agentName) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要取消该候选人与经纪人"${agentName}"的分配关系吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    const res = await adminAPI.unassignCandidate(candidateId)
+
+    if (res.success) {
+      ElMessage.success('取消分配成功')
+      loadAssignments()
+    } else {
+      ElMessage.error(res.error || '操作失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('取消分配失败:', error)
+      ElMessage.error('操作失败，请重试')
+    }
+  }
+}
+
+onMounted(() => {
+  loadAssignments()
+})
+</script>
+
+<style scoped>
+.page-container {
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.agent-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.agent-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--color-text);
+}
+
+.agent-username {
+  font-size: 14px;
+  color: #888;
+}
+
+.candidate-count {
+  margin-left: auto;
+}
+
+.candidate-table {
+  background: var(--card-dark);
+  border: 1px solid #333;
+  margin-top: 12px;
+}
+
+:deep(.el-collapse) {
+  border-top: none;
+  border-bottom: none;
+}
+
+:deep(.el-collapse-item) {
+  background: var(--card-dark);
+  border: 2px solid #333;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-collapse-item__header) {
+  background: #1a1a1a;
+  color: var(--color-text);
+  border-bottom: 2px solid #333;
+  padding: 16px 20px;
+  height: auto;
+}
+
+:deep(.el-collapse-item__header.is-active) {
+  border-bottom-color: var(--color-cyan);
+}
+
+:deep(.el-collapse-item__wrap) {
+  background: var(--card-dark);
+  border-bottom: none;
+}
+
+:deep(.el-collapse-item__content) {
+  padding: 16px;
+}
+</style>

@@ -44,6 +44,35 @@
           bindinput="onInput"
         />
       </view>
+
+      <!-- 邀请码（可选） -->
+      <view class="form-field">
+        <text class="field-label">邀请码（选填）</text>
+        <view class="invite-code-input">
+          <input
+            class="field-input invite-input"
+            placeholder="请输入上级星探邀请码"
+            value="{{inviteCode}}"
+            bindinput="onInviteCodeInput"
+          />
+          <button
+            class="verify-btn"
+            size="mini"
+            bindtap="verifyInviteCode"
+            disabled="{{!inviteCode || verifying}}"
+          >
+            {{verifying ? '验证中' : '验证'}}
+          </button>
+        </view>
+
+        <!-- 验证成功后显示上级信息 -->
+        <view wx:if="{{parentScoutInfo}}" class="parent-info">
+          <view class="parent-info-icon">✓</view>
+          <view class="parent-info-text">
+            上级星探：{{parentScoutInfo.name}}
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 提交按钮 -->

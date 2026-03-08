@@ -5,6 +5,8 @@ const RECRUIT_SUBSCRIBE_TEMPLATE_IDS = [
   'Y0HUyqrKLrK1RWzKeE44xwUmoxU1pp7DCHIrDY1EYYQ', // 授权审核通过通知
   'hIAElgobOhB20TJwf7TKvxkiR0G9w2m-KCDZRFORCC8'  // 日程提醒
 ];
+const DRAFT_STORAGE_KEY = 'applyDraft';
+const DRAFT_SAVE_DEBOUNCE_MS = 1200;
 
 Page({
   data: {
@@ -77,38 +79,42 @@ Page({
     isEditMode: false
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    this._skipDraftSave = false;
+
     // 获取星探推荐码
-    const { ref, mode } = options;
+    const { ref, mode } = options || {};
     if (ref) {
       this.setData({ scoutShareCode: ref });
       console.log('[报名] 检测到星探推荐码:', ref);
     }
 
     // 确保用户已登录
-    this.ensureLogin();
+    const loginSuccess = await this.ensureLogin();
+    if (!loginSuccess) {
+      return;
+    }
 
     // 编辑模式：从云端加载已有数据
     if (mode === 'edit') {
       this.setData({ isEditMode: true });
-      this.loadExistingData();
+      await this.loadExistingData();
       return;
     }
 
-    // 新建模式：尝试恢复草稿
-    const draft = wx.getStorageSync('applyDraft');
-    if (draft) {
-      // 确保 talent 数据结构完整
-      if (!draft.talent) {
-        draft.talent = this.data.formData.talent;
-      } else {
-        if (!draft.talent.talents) draft.talent.talents = [];
-        if (!draft.talent.selectedTalents) draft.talent.selectedTalents = {};
-        if (draft.talent.hasOther === undefined) draft.talent.hasOther = false;
-        if (!draft.talent.otherTalent) draft.talent.otherTalent = '';
-        if (!draft.talent.videos) draft.talent.videos = [];
-      }
-      this.setData({ formData: draft });
+    // 新建模式：恢复本地草稿
+    await this.restoreDraft();
+  },
+
+  onHide() {
+    this.saveDraft({ immediate: true });
+  },
+
+  onUnload() {
+    this.saveDraft({ immediate: true });
+    if (this._draftSaveTimer) {
+      clearTimeout(this._draftSaveTimer);
+      this._draftSaveTimer = null;
     }
   },
 
@@ -198,7 +204,7 @@ Page({
     const openId = getCurrentOpenId();
     if (!openId) {
       // 未登录，触发登录
-      await requireLogin({
+      const loginSuccess = await requireLogin({
         title: '需要登录',
         content: '请先登录后再填写报名表单',
         onSuccess: () => {
@@ -209,7 +215,10 @@ Page({
           wx.navigateBack();
         }
       });
+      return loginSuccess;
     }
+
+    return true;
   },
 
   // 表单输入处理
@@ -474,9 +483,188 @@ Page({
     this.saveDraft();
   },
 
-  // 保存草稿
-  saveDraft() {
-    wx.setStorageSync('applyDraft', this.data.formData);
+  // 构建草稿数据
+  buildDraftPayload() {
+    return {
+      formData: JSON.parse(JSON.stringify(this.data.formData)),
+      currentStep: this.data.currentStep || 0,
+      scoutShareCode: this.data.scoutShareCode || '',
+      updatedAt: Date.now()
+    };
+  },
+
+  // 统一草稿结构（兼容旧版仅存 formData 的草稿）
+  normalizeDraftPayload(rawDraft) {
+    if (!rawDraft || typeof rawDraft !== 'object') return null;
+
+    if (rawDraft.formData && typeof rawDraft.formData === 'object') {
+      return {
+        formData: this.normalizeFormData(rawDraft.formData),
+        currentStep: typeof rawDraft.currentStep === 'number' ? rawDraft.currentStep : 0,
+        scoutShareCode: rawDraft.scoutShareCode || '',
+        updatedAt: rawDraft.updatedAt || rawDraft.clientUpdatedAt || 0
+      };
+    }
+
+    return {
+      formData: this.normalizeFormData(rawDraft),
+      currentStep: 0,
+      scoutShareCode: '',
+      updatedAt: 0
+    };
+  },
+
+  // 补齐表单结构，防止字段缺失导致渲染/提交异常
+  normalizeFormData(formData) {
+    const normalized = JSON.parse(JSON.stringify(this.data.formData));
+
+    if (!formData || typeof formData !== 'object') {
+      return normalized;
+    }
+
+    if (formData.basicInfo && typeof formData.basicInfo === 'object') {
+      normalized.basicInfo = {
+        ...normalized.basicInfo,
+        ...formData.basicInfo
+      };
+      if (!Array.isArray(normalized.basicInfo.hobbies)) {
+        normalized.basicInfo.hobbies = [];
+      }
+      if (!normalized.basicInfo.selectedHobbies || typeof normalized.basicInfo.selectedHobbies !== 'object') {
+        normalized.basicInfo.selectedHobbies = {};
+      }
+    }
+
+    if (formData.talent && typeof formData.talent === 'object') {
+      normalized.talent = {
+        ...normalized.talent,
+        ...formData.talent
+      };
+      if (!Array.isArray(normalized.talent.talents)) normalized.talent.talents = [];
+      if (!normalized.talent.selectedTalents || typeof normalized.talent.selectedTalents !== 'object') {
+        normalized.talent.selectedTalents = {};
+      }
+      if (!Array.isArray(normalized.talent.videos)) normalized.talent.videos = [];
+      if (normalized.talent.hasOther === undefined) normalized.talent.hasOther = false;
+      if (!normalized.talent.otherTalent) normalized.talent.otherTalent = '';
+    }
+
+    if (formData.experience && typeof formData.experience === 'object') {
+      normalized.experience = {
+        ...normalized.experience,
+        ...formData.experience
+      };
+    }
+
+    return normalized;
+  },
+
+  // 恢复草稿（仅本地）
+  async restoreDraft() {
+    const localDraft = this.normalizeDraftPayload(wx.getStorageSync(DRAFT_STORAGE_KEY));
+
+    if (!localDraft || !localDraft.formData) {
+      return;
+    }
+
+    const step = Math.min(
+      Math.max(localDraft.currentStep || 0, 0),
+      this.data.steps.length - 1
+    );
+    const scoutShareCode = this.data.scoutShareCode || localDraft.scoutShareCode || '';
+
+    this.setData({
+      formData: localDraft.formData,
+      currentStep: step,
+      scoutShareCode
+    });
+
+    // 回写到本地，保证下一次离线也能恢复
+    wx.setStorageSync(DRAFT_STORAGE_KEY, {
+      ...localDraft,
+      currentStep: step,
+      scoutShareCode
+    });
+  },
+
+  // 保存草稿（本地异步防抖）
+  saveDraft(options = {}) {
+    if (this.data.isEditMode || this._skipDraftSave) return;
+
+    const { immediate = false } = options;
+    const payload = this.buildDraftPayload();
+    const snapshot = JSON.stringify(payload);
+
+    if (immediate) {
+      this._lastLocalDraftSnapshot = snapshot;
+      wx.setStorageSync(DRAFT_STORAGE_KEY, payload);
+      return;
+    }
+
+    if (snapshot === this._lastLocalDraftSnapshot) {
+      return;
+    }
+
+    this._pendingLocalDraftPayload = payload;
+    this._pendingLocalDraftSnapshot = snapshot;
+
+    if (this._draftSaveTimer) {
+      clearTimeout(this._draftSaveTimer);
+    }
+    this._draftSaveTimer = setTimeout(() => {
+      this.flushLocalDraftSave();
+    }, DRAFT_SAVE_DEBOUNCE_MS);
+  },
+
+  flushLocalDraftSave() {
+    if (this._draftSaveTimer) {
+      clearTimeout(this._draftSaveTimer);
+      this._draftSaveTimer = null;
+    }
+
+    if (this.data.isEditMode || this._skipDraftSave) return;
+    if (!this._pendingLocalDraftPayload) {
+      return;
+    }
+
+    const payload = this._pendingLocalDraftPayload;
+    const snapshot = this._pendingLocalDraftSnapshot;
+    this._pendingLocalDraftPayload = null;
+    this._pendingLocalDraftSnapshot = '';
+
+    wx.setStorage({
+      key: DRAFT_STORAGE_KEY,
+      data: payload,
+      success: () => {
+        this._lastLocalDraftSnapshot = snapshot;
+      },
+      fail: (error) => {
+        console.warn('[报名] 本地草稿异步保存失败，回退同步保存:', error);
+        try {
+          wx.setStorageSync(DRAFT_STORAGE_KEY, payload);
+          this._lastLocalDraftSnapshot = snapshot;
+        } catch (syncError) {
+          console.error('[报名] 本地草稿同步保存失败:', syncError);
+        }
+      }
+    });
+  },
+
+  clearDraft(options = {}) {
+    const { lockSaving = false } = options;
+    if (lockSaving) {
+      this._skipDraftSave = true;
+    }
+
+    if (this._draftSaveTimer) {
+      clearTimeout(this._draftSaveTimer);
+      this._draftSaveTimer = null;
+    }
+
+    this._pendingLocalDraftPayload = null;
+    this._pendingLocalDraftSnapshot = '';
+    this._lastLocalDraftSnapshot = '';
+    wx.removeStorageSync(DRAFT_STORAGE_KEY);
   },
 
   // 下一步
@@ -486,6 +674,8 @@ Page({
     if (this.data.currentStep < this.data.steps.length - 1) {
       this.setData({
         currentStep: this.data.currentStep + 1
+      }, () => {
+        this.saveDraft();
       });
     }
   },
@@ -495,6 +685,8 @@ Page({
     if (this.data.currentStep > 0) {
       this.setData({
         currentStep: this.data.currentStep - 1
+      }, () => {
+        this.saveDraft();
       });
     }
   },
@@ -749,7 +941,7 @@ Page({
         wx.setStorageSync('myCandidateId', res.result.candidateId);
 
         // 清除草稿
-        wx.removeStorageSync('applyDraft');
+        this.clearDraft({ lockSaving: true });
         wx.removeStorageSync('scene_params');
 
         this.setData({ uploading: false });

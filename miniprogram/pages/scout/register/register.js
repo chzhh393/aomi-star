@@ -8,6 +8,9 @@ Page({
       phone: '',
       wechat: ''
     },
+    inviteCode: '',
+    parentScoutInfo: null,
+    verifying: false,
     submitting: false
   },
 
@@ -85,6 +88,71 @@ Page({
     });
   },
 
+  // 邀请码输入处理
+  onInviteCodeInput(e) {
+    const { value } = e.detail;
+    this.setData({
+      inviteCode: value,
+      parentScoutInfo: null  // 清空之前的验证结果
+    });
+  },
+
+  // 验证邀请码
+  async verifyInviteCode() {
+    const { inviteCode } = this.data;
+
+    if (!inviteCode || !inviteCode.trim()) {
+      wx.showToast({ title: '请输入邀请码', icon: 'none' });
+      return;
+    }
+
+    this.setData({ verifying: true });
+    wx.showLoading({ title: '验证中...' });
+
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'scout',
+        data: {
+          action: 'verifyInviteCode',
+          data: { inviteCode: inviteCode.trim() }
+        }
+      });
+
+      wx.hideLoading();
+
+      if (res.result && res.result.success && res.result.valid) {
+        // 验证成功
+        this.setData({
+          parentScoutInfo: res.result.scout
+        });
+        wx.showToast({
+          title: '邀请码验证成功',
+          icon: 'success'
+        });
+      } else {
+        // 验证失败
+        const errorMsg = res.result?.error || '邀请码无效';
+        wx.showToast({
+          title: errorMsg,
+          icon: 'none'
+        });
+        this.setData({
+          parentScoutInfo: null
+        });
+      }
+
+    } catch (error) {
+      console.error('[星探注册] 验证邀请码失败:', error);
+      wx.hideLoading();
+      wx.showToast({
+        title: '验证失败，请重试',
+        icon: 'none'
+      });
+    } finally {
+      this.setData({ verifying: false });
+    }
+  },
+
   // 验证表单
   validateForm() {
     const { name, phone, wechat } = this.data.formData;
@@ -121,11 +189,17 @@ Page({
     wx.showLoading({ title: '提交中...' });
 
     try {
+      // 准备注册数据，包含邀请码
+      const registerData = {
+        ...this.data.formData,
+        inviteCode: this.data.inviteCode?.trim() || ''
+      };
+
       const res = await wx.cloud.callFunction({
         name: 'scout',
         data: {
           action: 'register',
-          data: this.data.formData
+          data: registerData
         }
       });
 

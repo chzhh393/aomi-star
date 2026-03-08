@@ -1,0 +1,9 @@
+{
+  "name": "fix-scout-level",
+  "version": "1.0.0",
+  "description": "临时修复云函数-为旧星探添加level字段",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

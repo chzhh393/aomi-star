@@ -16,9 +16,25 @@
           <el-icon><User /></el-icon>
           <span>候选人管理</span>
         </el-menu-item>
-        <el-menu-item index="/scouts">
+        <el-menu-item index="/scouts" v-if="hasPermission('viewReferralInfo')">
           <el-icon><UserFilled /></el-icon>
           <span>星探管理</span>
+        </el-menu-item>
+        <el-menu-item index="/commissions" v-if="hasPermission('viewReferralInfo')">
+          <el-icon><Wallet /></el-icon>
+          <span>分账管理</span>
+        </el-menu-item>
+        <el-menu-item index="/users" v-if="hasPermission('manageUsers')">
+          <el-icon><Setting /></el-icon>
+          <span>用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="/assignments" v-if="hasPermission('assignCandidates')">
+          <el-icon><Connection /></el-icon>
+          <span>候选人分配</span>
+        </el-menu-item>
+        <el-menu-item index="/audit-logs" v-if="hasPermission('viewAuditLog')">
+          <el-icon><Document /></el-icon>
+          <span>操作日志</span>
         </el-menu-item>
         <el-menu-item index="/dashboard">
           <el-icon><DataAnalysis /></el-icon>
@@ -30,7 +46,10 @@
     <el-container>
       <el-header class="layout-header">
         <div class="header-right">
-          <span class="admin-name">管理员</span>
+          <el-tag :type="userInfo?.role === 'admin' ? 'success' : 'info'" size="small">
+            {{ userInfo?.role === 'admin' ? '管理员' : '经纪人' }}
+          </el-tag>
+          <span class="admin-name">{{ userInfo?.name || '未知用户' }}</span>
           <el-button link @click="handleLogout">退出登录</el-button>
         </div>
       </el-header>
@@ -42,17 +61,25 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { User, UserFilled, DataAnalysis } from '@element-plus/icons-vue'
+import { User, UserFilled, DataAnalysis, Setting, Connection, Document, Wallet } from '@element-plus/icons-vue'
+import { getUserInfo, clearUserInfo, hasPermission as checkPermission } from '../utils/permission'
 
 const route = useRoute()
 const router = useRouter()
 
+const userInfo = ref(getUserInfo())
+
 const activeMenu = computed(() => route.path)
 
+// 检查权限
+function hasPermission(permission) {
+  return checkPermission(permission)
+}
+
 function handleLogout() {
-  localStorage.removeItem('admin_token')
+  clearUserInfo()
   router.push('/login')
 }
 </script>

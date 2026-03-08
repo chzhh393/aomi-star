@@ -24,6 +24,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminAPI } from '../../api/admin'
+import { saveUserInfo } from '../../utils/permission'
 
 const router = useRouter()
 const formRef = ref()
@@ -45,15 +46,24 @@ async function handleLogin() {
   try {
     const res = await adminAPI.login(form.username, form.password)
     if (res.success) {
-      localStorage.setItem('admin_token', res.token)
-      // 保存用户信息，用于权限判断
-      localStorage.setItem('admin_info', JSON.stringify(res.admin))
-      router.push('/candidates')
+      // 保存 token
+      localStorage.setItem('token', res.token)
+      // 保存用户信息（包括 role 和 permissions）
+      saveUserInfo(res.admin)
+
       ElMessage.success('登录成功')
+
+      // 根据角色跳转到不同页面
+      if (res.admin.role === 'admin') {
+        router.push('/dashboard')
+      } else {
+        router.push('/candidates')
+      }
     } else {
       ElMessage.error(res.error || '登录失败')
     }
-  } catch {
+  } catch (error) {
+    console.error('登录失败:', error)
     ElMessage.error('登录失败，请重试')
   } finally {
     loading.value = false
