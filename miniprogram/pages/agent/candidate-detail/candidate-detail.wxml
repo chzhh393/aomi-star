@@ -1,0 +1,235 @@
+<!--pages/agent/candidate-detail/candidate-detail.wxml-->
+<view class="candidate-detail">
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-icon">⏳</text>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 详情内容 -->
+  <view class="detail-content" wx:if="{{!loading && candidate}}">
+    <!-- 基本信息卡片 -->
+    <view class="info-card">
+      <view class="card-title">
+        <text class="title-icon">👤</text>
+        <text class="title-text">基本信息</text>
+      </view>
+
+      <view class="info-list">
+        <view class="info-item">
+          <text class="label">姓名</text>
+          <text class="value">{{candidate.basicInfo.name}}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">年龄</text>
+          <text class="value">{{candidate.basicInfo.age}}岁</text>
+        </view>
+        <view class="info-item">
+          <text class="label">身高</text>
+          <text class="value">{{candidate.basicInfo.height}}cm</text>
+        </view>
+        <view class="info-item">
+          <text class="label">体重</text>
+          <text class="value">{{candidate.basicInfo.weight}}kg</text>
+        </view>
+        <view class="info-item">
+          <text class="label">所在城市</text>
+          <text class="value">{{candidate.basicInfo.location}}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">学历</text>
+          <text class="value">{{candidate.basicInfo.education || '未填写'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 才艺信息卡片 -->
+    <view class="info-card" wx:if="{{candidate.talent}}">
+      <view class="card-title">
+        <text class="title-icon">⭐</text>
+        <text class="title-text">才艺信息</text>
+      </view>
+
+      <view class="talent-section">
+        <!-- 才艺类型 -->
+        <view class="talent-item" wx:if="{{candidate.talent.types && candidate.talent.types.length > 0}}">
+          <text class="talent-label">擅长才艺：</text>
+          <view class="talent-tags">
+            <text
+              wx:for="{{candidate.talent.types}}"
+              wx:key="*this"
+              class="talent-tag"
+            >
+              {{item}}
+            </text>
+          </view>
+        </view>
+
+        <!-- 才艺描述 -->
+        <view class="talent-item" wx:if="{{candidate.talent.description}}">
+          <text class="talent-label">才艺说明：</text>
+          <text class="talent-desc">{{candidate.talent.description}}</text>
+        </view>
+
+        <!-- 获奖经历 -->
+        <view class="talent-item" wx:if="{{candidate.talent.awards}}">
+          <text class="talent-label">获奖经历：</text>
+          <text class="talent-desc">{{candidate.talent.awards}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 社交账号卡片 -->
+    <view class="info-card" wx:if="{{candidate.social}}">
+      <view class="card-title">
+        <text class="title-icon">🌐</text>
+        <text class="title-text">社交账号</text>
+      </view>
+
+      <view class="info-list">
+        <view class="info-item" wx:if="{{candidate.social.douyin}}">
+          <text class="label">抖音号</text>
+          <text class="value">{{candidate.social.douyin}}</text>
+        </view>
+        <view class="info-item" wx:if="{{candidate.social.xiaohongshu}}">
+          <text class="label">小红书</text>
+          <text class="value">{{candidate.social.xiaohongshu}}</text>
+        </view>
+        <view class="info-item" wx:if="{{candidate.social.bilibili}}">
+          <text class="label">B站</text>
+          <text class="value">{{candidate.social.bilibili}}</text>
+        </view>
+        <view class="info-item" wx:if="{{candidate.social.kuaishou}}">
+          <text class="label">快手</text>
+          <text class="value">{{candidate.social.kuaishou}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 直播经验卡片 -->
+    <view class="info-card" wx:if="{{candidate.liveExperience}}">
+      <view class="card-title">
+        <text class="title-icon">🎬</text>
+        <text class="title-text">直播经验</text>
+      </view>
+
+      <view class="info-list">
+        <view class="info-item">
+          <text class="label">是否有直播经验</text>
+          <text class="value">{{candidate.liveExperience.hasExperience ? '是' : '否'}}</text>
+        </view>
+        <view class="info-item" wx:if="{{candidate.liveExperience.platform}}">
+          <text class="label">直播平台</text>
+          <text class="value">{{candidate.liveExperience.platform}}</text>
+        </view>
+        <view class="info-item" wx:if="{{candidate.liveExperience.duration}}">
+          <text class="label">直播时长</text>
+          <text class="value">{{candidate.liveExperience.duration}}</text>
+        </view>
+        <view class="info-item" wx:if="{{candidate.liveExperience.fans}}">
+          <text class="label">粉丝数</text>
+          <text class="value">{{candidate.liveExperience.fans}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 面试评分卡片（如果已打分） -->
+    <view class="info-card score-card" wx:if="{{candidate.interview && candidate.interview.score}}">
+      <view class="card-title">
+        <text class="title-icon">📝</text>
+        <text class="title-text">面试评分</text>
+      </view>
+
+      <view class="score-section">
+        <view class="score-result">
+          <text class="result-label">评分结果：</text>
+          <text class="result-value {{candidate.interview.score.result}}">
+            {{getScoreLabel(candidate.interview.score.result)}}
+          </text>
+        </view>
+
+        <!-- 评价标签 -->
+        <view class="score-tags" wx:if="{{candidate.interview.score.tags}}">
+          <view class="tag-category" wx:for="{{scoreTags}}" wx:key="key" wx:for-item="category">
+            <text class="category-name">{{category.name}}：</text>
+            <view class="category-tags">
+              <text
+                wx:for="{{category.values}}"
+                wx:key="*this"
+                wx:for-item="tag"
+                class="score-tag"
+              >
+                {{tag}}
+              </text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 备注 -->
+        <view class="score-comment" wx:if="{{candidate.interview.score.comment}}">
+          <text class="comment-label">备注：</text>
+          <text class="comment-text">{{candidate.interview.score.comment}}</text>
+        </view>
+
+        <!-- 打分人和时间 -->
+        <view class="score-meta">
+          <text class="meta-text">评分人：{{candidate.interview.score.scorerName || '未知'}}</text>
+          <text class="meta-text">评分时间：{{formatTime(candidate.interview.score.scoreTime)}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 面试资料卡片（如果有上传） -->
+    <view class="info-card materials-card" wx:if="{{candidate.interview && (candidate.interview.photos || candidate.interview.videos)}}">
+      <view class="card-title">
+        <text class="title-icon">📸</text>
+        <text class="title-text">面试资料</text>
+      </view>
+
+      <!-- 照片 -->
+      <view class="materials-section" wx:if="{{candidate.interview.photos && candidate.interview.photos.length > 0}}">
+        <text class="materials-label">照片：</text>
+        <view class="photos-grid">
+          <image
+            wx:for="{{candidate.interview.photos}}"
+            wx:key="*this"
+            class="photo-item"
+            src="{{item}}"
+            mode="aspectFill"
+            bindtap="previewPhoto"
+            data-url="{{item}}"
+            data-urls="{{candidate.interview.photos}}"
+          />
+        </view>
+      </view>
+
+      <!-- 视频 -->
+      <view class="materials-section" wx:if="{{candidate.interview.videos && candidate.interview.videos.length > 0}}">
+        <text class="materials-label">视频：</text>
+        <view class="videos-list">
+          <video
+            wx:for="{{candidate.interview.videos}}"
+            wx:key="*this"
+            class="video-item"
+            src="{{item}}"
+            controls
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions" wx:if="{{!loading && candidate}}">
+    <button class="action-btn primary" bindtap="goToScore">
+      {{candidate.interview && candidate.interview.score ? '修改打分' : '面试打分'}}
+    </button>
+    <button class="action-btn secondary" bindtap="goToUpload">
+      {{candidate.interview && (candidate.interview.photos || candidate.interview.videos) ? '管理资料' : '上传资料'}}
+    </button>
+    <button class="action-btn share" open-type="share">
+      <text class="share-icon">📤</text>
+      分享
+    </button>
+  </view>
+</view>

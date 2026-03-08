@@ -1,0 +1,79 @@
+<!--pages/agent/my-scores/my-scores.wxml-->
+<view class="my-scores-page">
+  <!-- 统计卡片 -->
+  <view class="stats-card">
+    <view class="stat-item">
+      <text class="stat-value">{{stats.totalCount}}</text>
+      <text class="stat-label">总打分数</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{stats.monthCount}}</text>
+      <text class="stat-label">本月打分</text>
+    </view>
+  </view>
+
+  <!-- 评价记录列表 -->
+  <view class="scores-list">
+    <!-- 加载中 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-icon">⏳</text>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && scoreList.length === 0}}">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">暂无评价记录</text>
+    </view>
+
+    <!-- 评价记录卡片 -->
+    <view
+      wx:for="{{scoreList}}"
+      wx:key="_id"
+      class="score-card"
+      bindtap="goToDetail"
+      data-id="{{item._id}}"
+    >
+      <view class="card-header">
+        <view class="candidate-info">
+          <text class="candidate-name">{{item.basicInfo.name}}</text>
+          <text class="candidate-meta">{{item.basicInfo.age}}岁 · {{item.basicInfo.height}}cm</text>
+        </view>
+        <view class="score-result {{item.interview.score.result}}">
+          <text class="result-text">{{getScoreLabel(item.interview.score.result)}}</text>
+        </view>
+      </view>
+
+      <view class="card-content">
+        <!-- 评价标签（最多显示5个） -->
+        <view class="score-tags" wx:if="{{getTags(item).length > 0}}">
+          <text
+            wx:for="{{getTags(item)}}"
+            wx:key="*this"
+            wx:for-item="tag"
+            class="tag-item"
+          >
+            {{tag}}
+          </text>
+          <text wx:if="{{getTags(item).length > 5}}" class="tag-more">...</text>
+        </view>
+
+        <!-- 评价时间 -->
+        <view class="score-time">
+          <text class="time-text">{{formatTime(item.interview.score.scoreTime)}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading}}">
+    <text class="load-more-text" bindtap="loadMore">加载更多</text>
+  </view>
+
+  <!-- 没有更多 -->
+  <view class="no-more" wx:if="{{!hasMore && scoreList.length > 0}}">
+    <text class="no-more-text">没有更多了</text>
+  </view>
+</view>

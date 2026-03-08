@@ -1,0 +1,256 @@
+/* pages/agent/score-interview/score-interview.wxss */
+page {
+  background: #f5f7fa;
+}
+
+.score-interview-page {
+  padding: 30rpx;
+  padding-bottom: 140rpx;
+}
+
+/* 候选人信息卡片 */
+.candidate-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20rpx;
+  padding: 35rpx 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  margin-bottom: 15rpx;
+}
+
+.candidate-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.candidate-meta {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card-info {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.info-item {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.info-divider {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 评分表单 */
+.score-form {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 35rpx 30rpx;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 表单区块 */
+.form-section {
+  margin-bottom: 40rpx;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25rpx;
+}
+
+.title-text {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.title-required {
+  font-size: 30rpx;
+  color: #ff6b6b;
+  margin-left: 8rpx;
+}
+
+.title-tip {
+  font-size: 24rpx;
+  color: #999;
+  margin-left: 10rpx;
+}
+
+/* 评分结果选项 */
+.result-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.result-option {
+  padding: 25rpx 20rpx;
+  border-radius: 15rpx;
+  border: 3rpx solid #e0e0e0;
+  text-align: center;
+  transition: all 0.3s;
+  background: #fafafa;
+}
+
+.result-option:active {
+  transform: scale(0.98);
+}
+
+.result-option.active.pass_s {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  border-color: #ff6b6b;
+}
+
+.result-option.active.pass_a {
+  background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
+  border-color: #ff9800;
+}
+
+.result-option.active.pass_b {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  border-color: #4caf50;
+}
+
+.result-option.active.fail {
+  background: linear-gradient(135deg, #999 0%, #aaa 100%);
+  border-color: #999;
+}
+
+.result-option.active.pending {
+  background: linear-gradient(135deg, #2196f3 0%, #42a5f5 100%);
+  border-color: #2196f3;
+}
+
+.option-label {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.result-option.active .option-label {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* 标签分类 */
+.tag-category {
+  margin-bottom: 30rpx;
+}
+
+.tag-category:last-child {
+  margin-bottom: 0;
+}
+
+.category-name {
+  font-size: 26rpx;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 18rpx;
+  display: block;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15rpx;
+}
+
+.tag-item {
+  padding: 15rpx 25rpx;
+  border-radius: 25rpx;
+  border: 2rpx solid #e0e0e0;
+  background: #fafafa;
+  transition: all 0.3s;
+}
+
+.tag-item:active {
+  transform: scale(0.95);
+}
+
+.tag-item.selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.tag-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.tag-item.selected .tag-text {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* 备注输入 */
+.comment-input {
+  width: 100%;
+  min-height: 200rpx;
+  padding: 25rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 15rpx;
+  font-size: 28rpx;
+  background: #fafafa;
+  line-height: 1.6;
+}
+
+.comment-counter {
+  text-align: right;
+  margin-top: 15rpx;
+}
+
+.counter-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 提交按钮 */
+.submit-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 90rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 15rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s;
+}
+
+.submit-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.submit-btn[disabled] {
+  opacity: 0.6;
+  transform: none;
+}

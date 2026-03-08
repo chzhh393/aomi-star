@@ -71,6 +71,10 @@
               {{ STATUS_MAP[row.status]?.label || row.status }}
             </el-tag>
           </div>
+          <div v-if="row.basicInfo?.artName || row.experience?.accountName" class="candidate-name-extra">
+            <span v-if="row.basicInfo?.artName" class="name-pill">艺名：{{ row.basicInfo.artName }}</span>
+            <span v-if="row.experience?.accountName" class="name-pill name-pill-live">直播名：{{ row.experience.accountName }}</span>
+          </div>
           <div class="candidate-meta">
             <span class="meta-item">{{ row.basicInfo?.gender || '-' }}</span>
             <span class="meta-divider">/</span>
@@ -174,6 +178,21 @@
                 {{ STATUS_MAP[currentCandidate.status]?.label }}
               </el-tag>
             </div>
+            <div v-if="currentCandidate.basicInfo?.artName || currentCandidate.experience?.accountName" class="detail-name-extra">
+              <el-tag v-if="currentCandidate.basicInfo?.artName" size="small" effect="plain" round class="alias-tag">
+                艺名：{{ currentCandidate.basicInfo.artName }}
+              </el-tag>
+              <el-tag
+                v-if="currentCandidate.experience?.accountName"
+                size="small"
+                type="warning"
+                effect="plain"
+                round
+                class="alias-tag alias-tag-live"
+              >
+                直播名：{{ currentCandidate.experience.accountName }}
+              </el-tag>
+            </div>
             <div class="detail-stats">
               <span class="stat-chip">{{ currentCandidate.basicInfo?.gender }}</span>
               <span class="stat-chip">{{ currentCandidate.basicInfo?.age }}岁</span>
@@ -249,14 +268,52 @@
           </div>
           <div class="info-block" v-if="currentCandidate.referral">
             <div class="info-block-title">星探推荐</div>
-            <div class="info-row">
-              <span class="info-label">星探姓名</span>
-              <span class="info-value">{{ currentCandidate.referral.scoutName || '-' }}</span>
+
+            <!-- 推荐链条 -->
+            <div class="info-row" v-if="currentCandidate.referral.scoutChainNames && currentCandidate.referral.scoutChainNames.length > 0">
+              <span class="info-label">推荐链条</span>
+              <span class="info-value chain-value">
+                <span
+                  v-for="(name, index) in currentCandidate.referral.scoutChainNames"
+                  :key="index"
+                  class="chain-item"
+                >
+                  <el-tag
+                    :type="index === 0 ? 'warning' : 'success'"
+                    size="small"
+                    effect="plain"
+                  >
+                    {{ index === 0 ? '⭐' : '⭐⭐' }} {{ name }}
+                  </el-tag>
+                  <span v-if="index < currentCandidate.referral.scoutChainNames.length - 1" class="chain-arrow">→</span>
+                </span>
+              </span>
             </div>
+
+            <!-- 直接推荐人 -->
+            <div class="info-row">
+              <span class="info-label">直接推荐人</span>
+              <span class="info-value">
+                {{ currentCandidate.referral.scoutName || '-' }}
+                <el-tag
+                  v-if="currentCandidate.referral.scoutLevel"
+                  :type="currentCandidate.referral.scoutLevel === 1 ? 'warning' : 'success'"
+                  size="small"
+                  effect="plain"
+                  style="margin-left: 8px"
+                >
+                  {{ currentCandidate.referral.scoutLevel === 1 ? '一级星探' : '二级星探' }}
+                </el-tag>
+              </span>
+            </div>
+
+            <!-- 推荐码 -->
             <div class="info-row">
               <span class="info-label">推荐码</span>
               <span class="info-value">{{ currentCandidate.referral.scoutShareCode }}</span>
             </div>
+
+            <!-- 推荐时间 -->
             <div class="info-row">
               <span class="info-label">推荐时间</span>
               <span class="info-value">{{ formatDate(currentCandidate.referral.referredAt) }}</span>
@@ -285,6 +342,112 @@
               <span class="info-value">{{ currentCandidate.interview.notes }}</span>
             </div>
           </div>
+
+          <!-- 面试打分 -->
+          <div v-if="currentCandidate.interview?.score" class="score-display">
+            <div class="score-result">
+              <el-tag :type="getScoreResultType(currentCandidate.interview.score.result)" size="large">
+                {{ getScoreResultText(currentCandidate.interview.score.result) }}
+              </el-tag>
+              <span class="score-by">评分人：{{ currentCandidate.interview.score.scoredBy }}</span>
+              <span class="score-time">{{ formatDate(currentCandidate.interview.score.scoredAt) }}</span>
+            </div>
+            <div v-if="Object.keys(currentCandidate.interview.score.tags || {}).length > 0" class="score-tags">
+              <template v-for="(tags, category) in currentCandidate.interview.score.tags" :key="category">
+                <div v-if="tags && tags.length > 0" class="tag-category">
+                  <span class="tag-category-name">{{ getTagCategoryName(category) }}：</span>
+                  <el-tag v-for="tag in tags" :key="tag" size="small" class="score-tag">{{ tag }}</el-tag>
+                </div>
+              </template>
+            </div>
+            <div v-if="currentCandidate.interview.score.comment" class="score-comment">
+              <strong>评语：</strong>{{ currentCandidate.interview.score.comment }}
+            </div>
+          </div>
+
+          <!-- 打分按钮 - 已移至小程序端 -->
+          <!-- <div v-if="hasPermission('scoreInterview') && !currentCandidate.interview?.score" class="score-action">
+            <el-button type="primary" @click="handleScoreInterview(currentCandidate)">
+              面试打分
+            </el-button>
+          </div> -->
+
+          <!-- 面试资料 -->
+          <div v-if="currentCandidate.interview?.materials" class="materials-display">
+            <div class="materials-title">面试资料</div>
+
+            <!-- 面试照片 -->
+            <div v-if="currentCandidate.interview.materials.photos?.length > 0" class="materials-section">
+              <div class="materials-subtitle">面试照片（{{ currentCandidate.interview.materials.photos.length }}）</div>
+              <div class="materials-grid">
+                <div v-for="(photo, index) in currentCandidate.interview.materials.photos" :key="index" class="material-item">
+                  <el-image
+                    :src="photo.url"
+                    fit="cover"
+                    class="material-image"
+                    :preview-src-list="currentCandidate.interview.materials.photos.map(p => p.url)"
+                    :initial-index="index"
+                  />
+                  <div class="material-info">
+                    <span class="material-uploader">{{ photo.uploadedBy }}</span>
+                    <span class="material-time">{{ formatDate(photo.uploadedAt) }}</span>
+                  </div>
+                  <!-- 删除按钮已移除 - 资料只读显示 -->
+                  <!-- <el-button
+                    v-if="hasPermission('uploadInterviewMaterials')"
+                    link
+                    type="danger"
+                    size="small"
+                    class="material-delete"
+                    @click="handleDeleteMaterial(currentCandidate._id, 'photos', photo.fileId)"
+                  >
+                    删除
+                  </el-button> -->
+                </div>
+              </div>
+            </div>
+
+            <!-- 才艺视频 -->
+            <div v-if="currentCandidate.interview.materials.videos?.length > 0" class="materials-section">
+              <div class="materials-subtitle">才艺视频（{{ currentCandidate.interview.materials.videos.length }}）</div>
+              <div class="materials-grid">
+                <div v-for="(video, index) in currentCandidate.interview.materials.videos" :key="index" class="material-item">
+                  <video
+                    :src="video.url"
+                    controls
+                    class="material-video"
+                  />
+                  <div class="material-info">
+                    <span class="material-uploader">{{ video.uploadedBy }}</span>
+                    <span class="material-time">{{ formatDate(video.uploadedAt) }}</span>
+                  </div>
+                  <!-- 删除按钮已移除 - 资料只读显示 -->
+                  <!-- <el-button
+                    v-if="hasPermission('uploadInterviewMaterials')"
+                    link
+                    type="danger"
+                    size="small"
+                    class="material-delete"
+                    @click="handleDeleteMaterial(currentCandidate._id, 'videos', video.fileId)"
+                  >
+                    删除
+                  </el-button> -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 上传资料按钮 - 已移至小程序端 -->
+          <!-- <div v-if="hasPermission('uploadInterviewMaterials') && currentCandidate.interview" class="upload-materials-action">
+            <el-button @click="handleUploadPhotos(currentCandidate)">
+              <el-icon><Plus /></el-icon>
+              上传面试照片
+            </el-button>
+            <el-button @click="handleUploadVideos(currentCandidate)">
+              <el-icon><Plus /></el-icon>
+              上传才艺视频
+            </el-button>
+          </div> -->
         </div>
 
         <!-- 4. 照片 -->
@@ -292,12 +455,14 @@
           <div class="section-title">照片</div>
           <div class="photo-grid">
             <el-image
-              v-for="(url, key) in candidatePhotos"
-              :key="key"
-              :src="url"
+              v-for="(photo, index) in candidatePhotoList"
+              :key="photo.key"
+              :src="photo.url"
               class="photo-item"
               fit="cover"
-              :preview-src-list="Object.values(candidatePhotos)"
+              :preview-src-list="candidatePhotoPreviewList"
+              :initial-index="index"
+              preview-teleported
             />
           </div>
         </div>
@@ -379,6 +544,118 @@
       </template>
     </el-dialog>
 
+    <!-- 面试打分对话框 -->
+    <el-dialog v-model="scoreDialogVisible" title="面试打分" width="600px">
+      <el-form :model="scoreForm" label-width="100px">
+        <el-form-item label="评分结果" required>
+          <el-radio-group v-model="scoreForm.result">
+            <el-radio value="pass_s">通过 S（优秀）</el-radio>
+            <el-radio value="pass_a">通过 A（良好）</el-radio>
+            <el-radio value="pass_b">通过 B（合格）</el-radio>
+            <el-radio value="fail">不通过</el-radio>
+            <el-radio value="pending">待定</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="形象气质">
+          <el-checkbox-group v-model="scoreForm.tags.appearance">
+            <el-checkbox value="优秀">优秀</el-checkbox>
+            <el-checkbox value="良好">良好</el-checkbox>
+            <el-checkbox value="一般">一般</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+
+        <el-form-item label="才艺表现">
+          <el-checkbox-group v-model="scoreForm.tags.talent">
+            <el-checkbox value="专业">专业</el-checkbox>
+            <el-checkbox value="有潜力">有潜力</el-checkbox>
+            <el-checkbox value="需提升">需提升</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+
+        <el-form-item label="表达能力">
+          <el-checkbox-group v-model="scoreForm.tags.expression">
+            <el-checkbox value="流畅">流畅</el-checkbox>
+            <el-checkbox value="清晰">清晰</el-checkbox>
+            <el-checkbox value="需锻炼">需锻炼</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+
+        <el-form-item label="个性特点">
+          <el-checkbox-group v-model="scoreForm.tags.personality">
+            <el-checkbox value="外向">外向</el-checkbox>
+            <el-checkbox value="稳重">稳重</el-checkbox>
+            <el-checkbox value="活泼">活泼</el-checkbox>
+            <el-checkbox value="内敛">内敛</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+
+        <el-form-item label="配合度">
+          <el-checkbox-group v-model="scoreForm.tags.cooperation">
+            <el-checkbox value="积极">积极</el-checkbox>
+            <el-checkbox value="主动">主动</el-checkbox>
+            <el-checkbox value="被动">被动</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+
+        <el-form-item label="综合评语">
+          <el-input
+            v-model="scoreForm.comment"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入综合评价"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="scoreDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="confirmScore">确认提交</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 上传面试资料对话框 -->
+    <el-dialog
+      v-model="uploadMaterialsDialogVisible"
+      :title="uploadMaterialsType === 'photos' ? '上传面试照片' : '上传才艺视频'"
+      width="600px"
+    >
+      <div class="upload-area">
+        <input
+          ref="fileInputRef"
+          type="file"
+          :accept="uploadMaterialsType === 'photos' ? 'image/*' : 'video/*'"
+          multiple
+          style="display: none"
+          @change="handleFileSelect"
+        />
+        <div class="file-select-area" @click="triggerFileSelect">
+          <el-icon class="upload-icon"><Plus /></el-icon>
+          <div class="upload-text">点击选择文件</div>
+          <div class="upload-tip">
+            {{ uploadMaterialsType === 'photos' ? '支持 JPG、PNG 格式，每张图片不超过 5MB' : '支持 MP4、MOV 格式，每个视频不超过 50MB' }}
+          </div>
+        </div>
+        <div v-if="selectedFiles.length > 0" class="selected-files">
+          <div v-for="(file, index) in selectedFiles" :key="index" class="file-item">
+            <span class="file-name">{{ file.name }}</span>
+            <span class="file-size">{{ formatFileSize(file.size) }}</span>
+            <el-button link type="danger" size="small" @click="removeSelectedFile(index)">删除</el-button>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="uploadMaterialsDialogVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          :loading="uploading"
+          :disabled="selectedFiles.length === 0"
+          @click="confirmUploadMaterials"
+        >
+          确认上传（{{ selectedFiles.length }}）
+        </el-button>
+      </template>
+    </el-dialog>
+
     <!-- 批量拒绝原因对话框 -->
     <el-dialog v-model="batchRejectDialogVisible" title="批量拒绝" width="450px">
       <p style="margin-bottom: 12px; color: #ccc">
@@ -395,11 +672,12 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminAPI } from '../../api/admin'
 import { STATUS_MAP, formatDate } from '../../utils/constants'
 import { resolveCandidateImages } from '../../utils/cloudfile'
+import { hasPermission } from '../../utils/permission'
 
 const list = ref([])
 const total = ref(0)
@@ -413,15 +691,15 @@ const keyword = ref('')
 const drawerVisible = ref(false)
 const currentCandidate = ref(null)
 
-const candidatePhotos = computed(() => {
-  if (!currentCandidate.value?.images) return {}
+const candidatePhotoList = computed(() => {
+  if (!currentCandidate.value?.images) return []
   const imgs = currentCandidate.value.images
-  const result = {}
-  for (const [key, url] of Object.entries(imgs)) {
-    if (url) result[key] = url
-  }
-  return result
+  return Object.entries(imgs)
+    .filter(([, url]) => !!url)
+    .map(([key, url]) => ({ key, url }))
 })
+
+const candidatePhotoPreviewList = computed(() => candidatePhotoList.value.map(item => item.url))
 
 const candidateVideos = computed(() => {
   return (currentCandidate.value?.talent?.videos || []).filter(v => v.url)
@@ -454,6 +732,29 @@ const scheduleForm = reactive({
   interviewers: '',
   notes: ''
 })
+
+// 面试打分对话框
+const scoreDialogVisible = ref(false)
+const scoringCandidate = ref(null)
+const scoreForm = reactive({
+  result: '',
+  tags: {
+    appearance: [],
+    talent: [],
+    expression: [],
+    personality: [],
+    cooperation: []
+  },
+  comment: ''
+})
+
+// 上传面试资料对话框
+const uploadMaterialsDialogVisible = ref(false)
+const uploadMaterialsType = ref('photos') // 'photos' 或 'videos'
+const uploadingCandidate = ref(null)
+const fileInputRef = ref()
+const selectedFiles = ref([])
+const uploading = ref(false)
 
 // 批量选择
 const selectedIds = ref([])
@@ -571,9 +872,13 @@ async function fetchList() {
     if (res.success) {
       list.value = await resolveCandidateImages(res.data.list)
       total.value = res.data.total
+    } else {
+      list.value = []
+      total.value = 0
+      ElMessage.error(res.error || '获取列表失败')
     }
   } catch (err) {
-    ElMessage.error('获取列表失败')
+    ElMessage.error(err?.message || '获取列表失败')
   } finally {
     loading.value = false
   }
@@ -687,6 +992,218 @@ async function confirmSchedule() {
     ElMessage.error('操作失败')
   } finally {
     submitting.value = false
+  }
+}
+
+// 面试打分
+function handleScoreInterview(row) {
+  scoringCandidate.value = row
+  scoreForm.result = ''
+  scoreForm.tags = {
+    appearance: [],
+    talent: [],
+    expression: [],
+    personality: [],
+    cooperation: []
+  }
+  scoreForm.comment = ''
+  scoreDialogVisible.value = true
+}
+
+async function confirmScore() {
+  if (!scoreForm.result) {
+    ElMessage.warning('请选择评分结果')
+    return
+  }
+  submitting.value = true
+  try {
+    const res = await adminAPI.scoreInterview(scoringCandidate.value._id, scoreForm)
+    if (res.success) {
+      ElMessage.success('打分成功')
+      scoreDialogVisible.value = false
+      drawerVisible.value = false
+      fetchList()
+    } else {
+      ElMessage.error(res.error || '操作失败')
+    }
+  } catch (error) {
+    console.error('打分失败:', error)
+    ElMessage.error('操作失败，请重试')
+  } finally {
+    submitting.value = false
+  }
+}
+
+// 获取评分结果类型（用于标签颜色）
+function getScoreResultType(result) {
+  const typeMap = {
+    pass_s: 'success',
+    pass_a: 'success',
+    pass_b: 'success',
+    fail: 'danger',
+    pending: 'warning'
+  }
+  return typeMap[result] || 'info'
+}
+
+// 获取评分结果文本
+function getScoreResultText(result) {
+  const textMap = {
+    pass_s: '通过 S（优秀）',
+    pass_a: '通过 A（良好）',
+    pass_b: '通过 B（合格）',
+    fail: '不通过',
+    pending: '待定'
+  }
+  return textMap[result] || result
+}
+
+// 获取标签分类名称
+function getTagCategoryName(category) {
+  const nameMap = {
+    appearance: '形象气质',
+    talent: '才艺表现',
+    expression: '表达能力',
+    personality: '个性特点',
+    cooperation: '配合度'
+  }
+  return nameMap[category] || category
+}
+
+// 上传面试照片
+function handleUploadPhotos(row) {
+  uploadingCandidate.value = row
+  uploadMaterialsType.value = 'photos'
+  selectedFiles.value = []
+  uploadMaterialsDialogVisible.value = true
+}
+
+// 上传才艺视频
+function handleUploadVideos(row) {
+  uploadingCandidate.value = row
+  uploadMaterialsType.value = 'videos'
+  selectedFiles.value = []
+  uploadMaterialsDialogVisible.value = true
+}
+
+// 触发文件选择
+function triggerFileSelect() {
+  fileInputRef.value?.click()
+}
+
+// 处理文件选择
+function handleFileSelect(event) {
+  const files = Array.from(event.target.files || [])
+  const maxSize = uploadMaterialsType.value === 'photos' ? 5 * 1024 * 1024 : 50 * 1024 * 1024
+
+  for (const file of files) {
+    if (file.size > maxSize) {
+      ElMessage.warning(`文件 ${file.name} 超过大小限制`)
+      continue
+    }
+    selectedFiles.value.push(file)
+  }
+
+  // 清空input，以便可以重复选择同一文件
+  event.target.value = ''
+}
+
+// 移除已选文件
+function removeSelectedFile(index) {
+  selectedFiles.value.splice(index, 1)
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+}
+
+// 确认上传资料
+async function confirmUploadMaterials() {
+  if (selectedFiles.value.length === 0) {
+    ElMessage.warning('请选择文件')
+    return
+  }
+
+  uploading.value = true
+  try {
+    // 导入 CloudBase SDK
+    const { default: wxcloud } = await import('../../api/wxcloud')
+
+    const uploadedMaterials = []
+
+    // 上传每个文件到云存储
+    for (const file of selectedFiles.value) {
+      const cloudPath = `interview-materials/${uploadMaterialsType.value}/${Date.now()}-${file.name}`
+
+      const uploadResult = await wxcloud.uploadFile(cloudPath, file)
+
+      if (uploadResult.fileID) {
+        uploadedMaterials.push({
+          url: uploadResult.fileID,
+          fileId: uploadResult.fileID
+        })
+      }
+    }
+
+    if (uploadedMaterials.length === 0) {
+      ElMessage.error('文件上传失败')
+      return
+    }
+
+    // 调用云函数保存记录
+    const res = await adminAPI.uploadInterviewMaterials(
+      uploadingCandidate.value._id,
+      uploadMaterialsType.value,
+      uploadedMaterials
+    )
+
+    if (res.success) {
+      ElMessage.success('上传成功')
+      uploadMaterialsDialogVisible.value = false
+      selectedFiles.value = []
+      // 刷新候选人详情
+      await viewDetail(uploadingCandidate.value._id)
+    } else {
+      ElMessage.error(res.error || '保存失败')
+    }
+  } catch (error) {
+    console.error('上传失败:', error)
+    ElMessage.error('上传失败，请重试')
+  } finally {
+    uploading.value = false
+  }
+}
+
+// 删除面试资料
+async function handleDeleteMaterial(candidateId, type, fileId) {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除这个文件吗？',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    const res = await adminAPI.deleteInterviewMaterial(candidateId, type, fileId)
+
+    if (res.success) {
+      ElMessage.success('删除成功')
+      // 刷新候选人详情
+      await viewDetail(candidateId)
+    } else {
+      ElMessage.error(res.error || '删除失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除失败:', error)
+      ElMessage.error('删除失败，请重试')
+    }
   }
 }
 
@@ -857,6 +1374,31 @@ onMounted(fetchList)
   color: #fff;
 }
 
+.candidate-name-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.name-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-cyan, #13e8dd);
+  background: rgba(19, 232, 221, 0.1);
+  border: 1px solid rgba(19, 232, 221, 0.28);
+}
+
+.name-pill-live {
+  color: #ffb347;
+  background: rgba(255, 179, 71, 0.1);
+  border-color: rgba(255, 179, 71, 0.35);
+}
+
 .candidate-meta {
   display: flex;
   align-items: center;
@@ -993,6 +1535,25 @@ onMounted(fetchList)
   gap: 8px;
 }
 
+.detail-name-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.alias-tag {
+  border-color: rgba(19, 232, 221, 0.35);
+  color: var(--color-cyan, #13e8dd);
+  background: rgba(19, 232, 221, 0.08);
+}
+
+.alias-tag-live {
+  border-color: rgba(255, 179, 71, 0.4);
+  color: #ffb347;
+  background: rgba(255, 179, 71, 0.1);
+}
+
 .detail-name {
   font-size: 22px;
   font-weight: 700;
@@ -1088,6 +1649,26 @@ onMounted(fetchList)
   text-align: right;
 }
 
+/* 推荐链条样式 */
+.chain-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chain-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chain-arrow {
+  font-size: 16px;
+  color: #666;
+  font-weight: bold;
+}
+
 .fans-count {
   font-size: 12px;
   color: #666;
@@ -1142,6 +1723,212 @@ onMounted(fetchList)
 
 .interview-details .info-label {
   min-width: 48px;
+}
+
+/* 面试打分 */
+.score-display {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+}
+
+.score-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.score-by, .score-time {
+  font-size: 13px;
+  color: #888;
+}
+
+.score-tags {
+  margin: 12px 0;
+}
+
+.tag-category {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tag-category-name {
+  font-size: 13px;
+  color: #999;
+  min-width: 70px;
+}
+
+.score-tag {
+  margin-right: 4px;
+}
+
+.score-comment {
+  margin-top: 12px;
+  padding: 12px;
+  background: #252525;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.6;
+}
+
+.score-comment strong {
+  color: var(--color-cyan, #13e8dd);
+  margin-right: 8px;
+}
+
+.score-action {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+}
+
+/* 面试资料 */
+.materials-display {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+}
+
+.materials-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.materials-section {
+  margin-bottom: 16px;
+}
+
+.materials-subtitle {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 12px;
+}
+
+.materials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.material-item {
+  position: relative;
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #252525;
+}
+
+.material-image, .material-video {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.material-info {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.material-uploader {
+  font-size: 13px;
+  color: var(--color-cyan);
+  font-weight: 500;
+}
+
+.material-time {
+  font-size: 12px;
+  color: #888;
+}
+
+.material-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 4px 8px;
+}
+
+.upload-materials-action {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+  display: flex;
+  gap: 12px;
+}
+
+/* 上传对话框 */
+.upload-area {
+  padding: 20px 0;
+}
+
+.file-select-area {
+  border: 2px dashed #666;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.file-select-area:hover {
+  border-color: var(--color-cyan);
+  background: rgba(19, 232, 221, 0.05);
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.upload-text {
+  font-size: 16px;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.upload-tip {
+  font-size: 13px;
+  color: #888;
+}
+
+.selected-files {
+  margin-top: 20px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #252525;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-size {
+  font-size: 13px;
+  color: #888;
+  min-width: 70px;
+  text-align: right;
 }
 
 /* 照片网格 */

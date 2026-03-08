@@ -1,0 +1,128 @@
+<!--pages/agent/candidates/candidates.wxml-->
+<view class="candidates-page">
+  <!-- 筛选标签 -->
+  <view class="filter-tabs">
+    <view
+      class="tab-item {{currentTab === 'all' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="all"
+    >
+      <text class="tab-text">全部</text>
+      <text class="tab-count">{{stats.totalCount}}</text>
+    </view>
+    <view
+      class="tab-item {{currentTab === 'pending' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="pending"
+    >
+      <text class="tab-text">待打分</text>
+      <text class="tab-count highlight">{{stats.pendingCount}}</text>
+    </view>
+    <view
+      class="tab-item {{currentTab === 'scored' ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-tab="scored"
+    >
+      <text class="tab-text">已打分</text>
+      <text class="tab-count">{{stats.scoredCount}}</text>
+    </view>
+  </view>
+
+  <!-- 候选人列表 -->
+  <view class="candidate-list">
+    <!-- 加载中 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-icon">⏳</text>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && candidateList.length === 0}}">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">暂无候选人</text>
+    </view>
+
+    <!-- 候选人卡片 -->
+    <view
+      wx:for="{{candidateList}}"
+      wx:key="_id"
+      class="candidate-card"
+      bindtap="goToDetail"
+      data-id="{{item._id}}"
+    >
+      <!-- 头部：姓名和状态 -->
+      <view class="card-header">
+        <view class="candidate-info">
+          <text class="candidate-name">{{item.basicInfo.name}}</text>
+          <text class="candidate-id">ID: {{item._id.slice(-6)}}</text>
+        </view>
+        <view class="status-badge {{item.interview && item.interview.score ? 'scored' : 'pending'}}">
+          <text class="badge-text">{{item.interview && item.interview.score ? '已打分' : '待打分'}}</text>
+        </view>
+      </view>
+
+      <!-- 基本信息 -->
+      <view class="card-content">
+        <view class="info-row">
+          <view class="info-item">
+            <text class="info-label">年龄：</text>
+            <text class="info-value">{{item.basicInfo.age}}岁</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">身高：</text>
+            <text class="info-value">{{item.basicInfo.height}}cm</text>
+          </view>
+        </view>
+
+        <view class="info-row">
+          <view class="info-item">
+            <text class="info-label">体重：</text>
+            <text class="info-value">{{item.basicInfo.weight}}kg</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">城市：</text>
+            <text class="info-value">{{item.basicInfo.location}}</text>
+          </view>
+        </view>
+
+        <!-- 才艺标签 -->
+        <view class="talent-tags" wx:if="{{item.talent && item.talent.types && item.talent.types.length > 0}}">
+          <text class="tag-label">才艺：</text>
+          <view class="tags-list">
+            <text
+              wx:for="{{item.talent.types}}"
+              wx:key="*this"
+              wx:for-item="tag"
+              class="talent-tag"
+            >
+              {{tag}}
+            </text>
+          </view>
+        </view>
+
+        <!-- 评分结果（已打分的情况） -->
+        <view class="score-result" wx:if="{{item.interview && item.interview.score}}">
+          <text class="result-label">评分：</text>
+          <text class="result-value {{item.interview.score.result}}">
+            {{getScoreLabel(item.interview.score.result)}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="card-footer">
+        <text class="action-text">{{item.interview && item.interview.score ? '查看详情' : '去打分'}} →</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading}}">
+    <text class="load-more-text" bindtap="loadMore">加载更多</text>
+  </view>
+
+  <!-- 没有更多 -->
+  <view class="no-more" wx:if="{{!hasMore && candidateList.length > 0}}">
+    <text class="no-more-text">没有更多了</text>
+  </view>
+</view>

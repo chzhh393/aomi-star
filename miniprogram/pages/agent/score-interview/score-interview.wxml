@@ -1,0 +1,155 @@
+<!--pages/agent/score-interview/score-interview.wxml-->
+<view class="score-interview-page">
+  <!-- 候选人信息卡片 -->
+  <view class="candidate-card" wx:if="{{candidate}}">
+    <view class="card-header">
+      <text class="candidate-name">{{candidate.basicInfo.name}}</text>
+      <text class="candidate-meta">{{candidate.basicInfo.age}}岁 · {{candidate.basicInfo.height}}cm</text>
+    </view>
+    <view class="card-info">
+      <text class="info-item">城市：{{candidate.basicInfo.location}}</text>
+      <text class="info-divider">|</text>
+      <text class="info-item">学历：{{candidate.basicInfo.education || '未填写'}}</text>
+    </view>
+  </view>
+
+  <!-- 评分表单 -->
+  <view class="score-form">
+    <!-- 评分结果 -->
+    <view class="form-section">
+      <view class="section-title">
+        <text class="title-text">评分结果</text>
+        <text class="title-required">*</text>
+      </view>
+      <view class="result-options">
+        <view
+          wx:for="{{resultOptions}}"
+          wx:key="value"
+          class="result-option {{scoreData.result === item.value ? 'active' : ''}} {{item.value}}"
+          bindtap="selectResult"
+          data-value="{{item.value}}"
+        >
+          <text class="option-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 评价标签 -->
+    <view class="form-section">
+      <view class="section-title">
+        <text class="title-text">评价标签</text>
+        <text class="title-tip">（可多选）</text>
+      </view>
+
+      <!-- 外形 -->
+      <view class="tag-category">
+        <text class="category-name">外形</text>
+        <view class="tag-list">
+          <view
+            wx:for="{{tagOptions.appearance}}"
+            wx:key="*this"
+            class="tag-item {{isTagSelected('appearance', item) ? 'selected' : ''}}"
+            bindtap="toggleTag"
+            data-category="appearance"
+            data-tag="{{item}}"
+          >
+            <text class="tag-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 才艺 -->
+      <view class="tag-category">
+        <text class="category-name">才艺</text>
+        <view class="tag-list">
+          <view
+            wx:for="{{tagOptions.talent}}"
+            wx:key="*this"
+            class="tag-item {{isTagSelected('talent', item) ? 'selected' : ''}}"
+            bindtap="toggleTag"
+            data-category="talent"
+            data-tag="{{item}}"
+          >
+            <text class="tag-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 性格 -->
+      <view class="tag-category">
+        <text class="category-name">性格</text>
+        <view class="tag-list">
+          <view
+            wx:for="{{tagOptions.personality}}"
+            wx:key="*this"
+            class="tag-item {{isTagSelected('personality', item) ? 'selected' : ''}}"
+            bindtap="toggleTag"
+            data-category="personality"
+            data-tag="{{item}}"
+          >
+            <text class="tag-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 表达 -->
+      <view class="tag-category">
+        <text class="category-name">表达</text>
+        <view class="tag-list">
+          <view
+            wx:for="{{tagOptions.communication}}"
+            wx:key="*this"
+            class="tag-item {{isTagSelected('communication', item) ? 'selected' : ''}}"
+            bindtap="toggleTag"
+            data-category="communication"
+            data-tag="{{item}}"
+          >
+            <text class="tag-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 潜力 -->
+      <view class="tag-category">
+        <text class="category-name">潜力</text>
+        <view class="tag-list">
+          <view
+            wx:for="{{tagOptions.potential}}"
+            wx:key="*this"
+            class="tag-item {{isTagSelected('potential', item) ? 'selected' : ''}}"
+            bindtap="toggleTag"
+            data-category="potential"
+            data-tag="{{item}}"
+          >
+            <text class="tag-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-section">
+      <view class="section-title">
+        <text class="title-text">备注</text>
+      </view>
+      <textarea
+        class="comment-input"
+        placeholder="请输入评价备注..."
+        value="{{scoreData.comment}}"
+        bindinput="onCommentInput"
+        maxlength="500"
+        auto-height
+      />
+      <view class="comment-counter">
+        <text class="counter-text">{{scoreData.comment.length}}/500</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button class="submit-btn" bindtap="handleSubmit" disabled="{{submitting}}">
+      {{submitting ? '提交中...' : '提交评分'}}
+    </button>
+  </view>
+</view>

@@ -16,9 +16,9 @@ Page({
         id: 'agent',
         name: '经纪人',
         icon: '⭐',
-        desc: '主播管理、签约、业绩统计',
+        desc: '面试打分、资料上传、候选人管理',
         color: '#FFD700',
-        homePath: '/pages/agent/home/home'
+        homePath: '/pages/agent/login/login'
       },
       {
         id: 'hr',
@@ -93,11 +93,29 @@ Page({
 
     if (!selectedRole) return;
 
-    wx.showModal({
-      title: '无权限',
-      content: '当前用户没有权限访问该功能',
-      showCancel: false,
-      confirmText: '我知道了'
-    });
+    // 保存当前选择的角色
+    wx.setStorageSync('currentRole', selectedRole.id);
+
+    // 跳转到对应页面
+    if (selectedRole.homePath) {
+      wx.redirectTo({
+        url: selectedRole.homePath,
+        fail: () => {
+          wx.showModal({
+            title: '提示',
+            content: '该功能暂未开放',
+            showCancel: false,
+            confirmText: '我知道了'
+          });
+        }
+      });
+    } else {
+      wx.showModal({
+        title: '提示',
+        content: '该功能正在开发中',
+        showCancel: false,
+        confirmText: '我知道了'
+      });
+    }
   }
 });

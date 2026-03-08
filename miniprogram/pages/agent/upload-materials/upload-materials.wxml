@@ -1,0 +1,115 @@
+<!--pages/agent/upload-materials/upload-materials.wxml-->
+<view class="upload-materials-page">
+  <!-- 候选人信息卡片 -->
+  <view class="candidate-card" wx:if="{{candidate}}">
+    <view class="card-header">
+      <text class="candidate-name">{{candidate.basicInfo.name}}</text>
+      <text class="candidate-meta">{{candidate.basicInfo.age}}岁 · {{candidate.basicInfo.height}}cm</text>
+    </view>
+  </view>
+
+  <!-- 照片上传区域 -->
+  <view class="upload-section">
+    <view class="section-header">
+      <text class="section-title">📸 面试照片</text>
+      <text class="section-count">{{photos.length}}/9</text>
+    </view>
+
+    <view class="photos-grid">
+      <!-- 已上传的照片 -->
+      <view
+        wx:for="{{photos}}"
+        wx:key="index"
+        class="photo-item"
+      >
+        <image
+          class="photo-img"
+          src="{{item}}"
+          mode="aspectFill"
+          bindtap="previewPhoto"
+          data-index="{{index}}"
+        />
+        <view class="photo-delete" catchtap="deletePhoto" data-index="{{index}}">
+          <text class="delete-icon">×</text>
+        </view>
+      </view>
+
+      <!-- 添加照片按钮 -->
+      <view
+        wx:if="{{photos.length < 9}}"
+        class="photo-add"
+        bindtap="choosePhotos"
+      >
+        <text class="add-icon">+</text>
+        <text class="add-text">添加照片</text>
+      </view>
+    </view>
+
+    <view class="upload-tip">
+      <text class="tip-text">支持拍照或从相册选择，最多9张</text>
+    </view>
+  </view>
+
+  <!-- 视频上传区域 -->
+  <view class="upload-section">
+    <view class="section-header">
+      <text class="section-title">🎬 面试视频</text>
+      <text class="section-count">{{videos.length}}/5</text>
+    </view>
+
+    <view class="videos-list">
+      <!-- 已上传的视频 -->
+      <view
+        wx:for="{{videos}}"
+        wx:key="index"
+        class="video-item"
+      >
+        <video
+          class="video-player"
+          src="{{item}}"
+          controls
+          show-center-play-btn
+        />
+        <view class="video-delete" catchtap="deleteVideo" data-index="{{index}}">
+          <text class="delete-icon">×</text>
+        </view>
+      </view>
+
+      <!-- 添加视频按钮 -->
+      <view
+        wx:if="{{videos.length < 5}}"
+        class="video-add"
+        bindtap="chooseVideos"
+      >
+        <text class="add-icon">+</text>
+        <text class="add-text">添加视频</text>
+      </view>
+    </view>
+
+    <view class="upload-tip">
+      <text class="tip-text">支持录制或从相册选择，最多5个</text>
+    </view>
+  </view>
+
+  <!-- 上传进度提示 -->
+  <view class="upload-progress" wx:if="{{uploading}}">
+    <view class="progress-card">
+      <text class="progress-text">正在上传...</text>
+      <text class="progress-detail">{{uploadProgress.current}}/{{uploadProgress.total}}</text>
+      <progress
+        class="progress-bar"
+        percent="{{uploadProgress.percent}}"
+        stroke-width="8"
+        activeColor="#667eea"
+        backgroundColor="#f0f0f0"
+      />
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button class="submit-btn" bindtap="handleSubmit" disabled="{{submitting || uploading}}">
+      {{submitting ? '提交中...' : uploading ? '上传中...' : '提交资料'}}
+    </button>
+  </view>
+</view>
