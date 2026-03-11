@@ -11,7 +11,7 @@
     <view class="my-info-card">
       <view class="my-header">
         <view class="my-name">{{myInfo.name}}</view>
-        <view class="my-level">⭐ 一级星探</view>
+        <view class="my-level">星探合伙人 (SP)</view>
       </view>
       <view class="my-codes">
         <view class="code-item">
@@ -44,13 +44,13 @@
       </view>
     </view>
 
-    <!-- 下级星探列表 -->
+    <!-- 特约星探团队列表 -->
     <view class="scouts-section">
-      <view class="section-title">👥 我的下级星探</view>
+      <view class="section-title">👥 我的特约星探团队</view>
 
       <view wx:if="{{team.directScouts.length === 0}}" class="empty-state">
         <text class="empty-icon">👤</text>
-        <text class="empty-text">暂无下级星探</text>
+        <text class="empty-text">暂无特约星探</text>
         <text class="empty-hint">分享您的邀请码给想要加入的人员</text>
       </view>
 
@@ -62,7 +62,7 @@
         >
           <view class="scout-header">
             <view class="scout-name">{{item.name}}</view>
-            <view class="scout-badge">⭐⭐ 二级</view>
+            <view class="scout-badge">SS</view>
           </view>
 
           <view class="scout-info">

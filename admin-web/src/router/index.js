@@ -9,6 +9,12 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/apply',
+    name: 'Apply',
+    component: () => import('../views/apply/index.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/',
     component: () => import('../layout/index.vue'),
     redirect: '/dashboard',
@@ -17,13 +23,25 @@ const routes = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('../views/dashboard/index.vue'),
-        meta: { title: '数据看板' }
+        meta: {
+          title: '数据看板',
+          roles: ['admin', 'hr'] // 只有管理员和HR可以访问
+        }
       },
       {
         path: 'candidates',
         name: 'Candidates',
         component: () => import('../views/candidates/list.vue'),
         meta: { title: '候选人管理' }
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: () => import('../views/users/list.vue'),
+        meta: {
+          title: '用户管理',
+          roles: ['admin'] // 只有管理员可以访问
+        }
       },
       {
         path: 'scouts',
@@ -95,18 +113,27 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // 检查权限
-  if (to.meta.permission) {
-    const userInfo = getUserInfo()
-    if (!userInfo) {
-      next('/login')
+  const userInfo = getUserInfo()
+  if (!userInfo) {
+    next('/login')
+    return
+  }
+
+  // 检查角色限制
+  if (to.meta.roles && Array.isArray(to.meta.roles)) {
+    if (!to.meta.roles.includes(userInfo.role)) {
+      // 没有权限访问该页面，跳转到候选人管理
+      next('/candidates')
       return
     }
+  }
 
+  // 检查权限
+  if (to.meta.permission) {
     // 检查是否有该权限
     if (!hasPermission(to.meta.permission)) {
-      // 没有权限，跳转到首页
-      next('/dashboard')
+      // 没有权限，跳转到候选人管理
+      next('/candidates')
       return
     }
   }

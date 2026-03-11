@@ -6,3 +6,4 @@
 
 - [管理后台文案与候选人展示修复（含云环境发布）](./admin-web-operation-log-and-candidate-fixes-2026-03-09.md)
 - [经纪人小程序端完整功能实施及分享功能](./agent-miniapp-features-and-share-2026-03-09.md)
+- [系统优化与功能增强（3批8个需求）](./system-optimization-and-enhancements-2026-03-10.md) - 🚧 进行中

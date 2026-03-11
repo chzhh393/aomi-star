@@ -13,6 +13,11 @@
           <el-button type="primary" size="large" style="width: 100%" :loading="loading" native-type="submit">
             登录
           </el-button>
+          <div style="margin-top: 16px; text-align: center;">
+            <router-link to="/apply" style="color: #409eff; text-decoration: none;">
+              还没有账号？点击申请
+            </router-link>
+          </div>
         </el-form-item>
       </el-form>
     </div>

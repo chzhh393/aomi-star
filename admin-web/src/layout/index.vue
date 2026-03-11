@@ -16,6 +16,10 @@
           <el-icon><User /></el-icon>
           <span>候选人管理</span>
         </el-menu-item>
+        <el-menu-item index="/dashboard" v-if="hasRole(['admin', 'hr'])">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>数据看板</span>
+        </el-menu-item>
         <el-menu-item index="/scouts" v-if="hasPermission('viewReferralInfo')">
           <el-icon><UserFilled /></el-icon>
           <span>星探管理</span>
@@ -35,10 +39,6 @@
         <el-menu-item index="/audit-logs" v-if="hasPermission('viewAuditLog')">
           <el-icon><Document /></el-icon>
           <span>操作日志</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard">
-          <el-icon><DataAnalysis /></el-icon>
-          <span>数据看板</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -64,7 +64,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { User, UserFilled, DataAnalysis, Setting, Connection, Document, Wallet } from '@element-plus/icons-vue'
-import { getUserInfo, clearUserInfo, hasPermission as checkPermission } from '../utils/permission'
+import { getUserInfo, clearUserInfo, hasPermission as checkPermission, getUserRole } from '../utils/permission'
 
 const route = useRoute()
 const router = useRouter()
@@ -76,6 +76,12 @@ const activeMenu = computed(() => route.path)
 // 检查权限
 function hasPermission(permission) {
   return checkPermission(permission)
+}
+
+// 检查角色
+function hasRole(roles) {
+  const role = getUserRole()
+  return Array.isArray(roles) ? roles.includes(role) : roles === role
 }
 
 function handleLogout() {

@@ -66,11 +66,11 @@ Page({
 
       const { myInfo, team } = res.result;
 
-      // 检查是否为一级星探
+      // 检查是否为星探合伙人
       if (myInfo.level && myInfo.level.depth > 1) {
         wx.showModal({
           title: '提示',
-          content: '二级星探暂不支持查看团队',
+          content: '特约星探暂不支持查看团队',
           showCancel: false,
           success: () => {
             wx.navigateBack();

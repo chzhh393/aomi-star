@@ -124,6 +124,10 @@ body,
   background-color: var(--card-dark);
 }
 
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: #252525;
+}
+
 .el-pagination {
   --el-pagination-bg-color: transparent;
   --el-pagination-button-bg-color: var(--card-dark);

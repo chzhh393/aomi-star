@@ -15,9 +15,8 @@
   margin-bottom: 100rpx;
 }
 
-.logo {
-  width: 160rpx;
-  height: 160rpx;
+.logo-icon {
+  font-size: 120rpx;
   margin-bottom: 30rpx;
 }
 
@@ -62,6 +61,7 @@
   border: 2rpx solid #e0e0e0;
   border-radius: 15rpx;
   font-size: 30rpx;
+  color: #333;
   background: #f8f9fa;
   transition: all 0.3s;
 }

@@ -217,6 +217,40 @@
         </view>
       </view>
     </view>
+
+    <!-- 试镜视频卡片 -->
+    <view class="info-card audition-card">
+      <view class="card-title">
+        <text class="title-icon">🎥</text>
+        <text class="title-text">试镜视频</text>
+        <text class="video-count">已上传：{{auditionVideos.length}}/3</text>
+      </view>
+
+      <!-- 已上传的视频 -->
+      <view class="audition-section" wx:if="{{auditionVideos && auditionVideos.length > 0}}">
+        <view class="audition-videos">
+          <view class="audition-video-item" wx:for="{{auditionVideos}}" wx:key="index">
+            <video
+              class="audition-video"
+              src="{{item.url}}"
+              controls
+              object-fit="cover"
+            />
+            <view class="video-info">
+              <text class="video-duration">{{formatDuration(item.duration)}}</text>
+              <text class="upload-time">{{formatTime(item.uploadTime)}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 未上传提示 -->
+      <view class="empty-audition" wx:if="{{!auditionVideos || auditionVideos.length === 0}}">
+        <text class="empty-icon">🎬</text>
+        <text class="empty-text">暂无试镜视频</text>
+        <text class="empty-hint">点击下方按钮上传试镜视频</text>
+      </view>
+    </view>
   </view>
 
   <!-- 底部操作栏 -->
@@ -226,6 +260,10 @@
     </button>
     <button class="action-btn secondary" bindtap="goToUpload">
       {{candidate.interview && (candidate.interview.photos || candidate.interview.videos) ? '管理资料' : '上传资料'}}
+    </button>
+    <button class="action-btn audition" bindtap="goToUploadAudition">
+      <text class="audition-icon">🎬</text>
+      试镜视频
     </button>
     <button class="action-btn share" open-type="share">
       <text class="share-icon">📤</text>

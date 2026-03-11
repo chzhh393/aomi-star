@@ -2,7 +2,7 @@
 <view class="login-container">
   <!-- Logo区域 -->
   <view class="logo-section">
-    <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
+    <text class="logo-icon">⭐</text>
     <text class="app-name">经纪人管理系统</text>
   </view>
 

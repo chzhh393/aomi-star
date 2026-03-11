@@ -19,8 +19,8 @@
         <el-col :span="18">
           <el-radio-group v-model="activeFilter" @change="handleFilterChange">
             <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="level1">一级星探</el-radio-button>
-            <el-radio-button value="level2">二级星探</el-radio-button>
+            <el-radio-button value="level1">星探合伙人 (SP)</el-radio-button>
+            <el-radio-button value="level2">特约星探 (SS)</el-radio-button>
             <el-radio-button value="active">活跃</el-radio-button>
           </el-radio-group>
         </el-col>
@@ -41,7 +41,7 @@
         <el-card shadow="hover" class="stat-card level1">
           <div class="stat-content">
             <div class="stat-value">{{ stats.level1 }}</div>
-            <div class="stat-label">一级星探</div>
+            <div class="stat-label">星探合伙人 (SP)</div>
           </div>
         </el-card>
       </el-col>
@@ -49,7 +49,7 @@
         <el-card shadow="hover" class="stat-card level2">
           <div class="stat-content">
             <div class="stat-value">{{ stats.level2 }}</div>
-            <div class="stat-label">二级星探</div>
+            <div class="stat-label">特约星探 (SS)</div>
           </div>
         </el-card>
       </el-col>
@@ -71,11 +71,11 @@
         <!-- 左侧：等级标识 -->
         <div class="scout-level-indicator">
           <el-tag
-            :type="(row.level?.depth || 1) === 1 ? 'warning' : 'success'"
+            :type="(row.level?.depth || 2) === 1 ? 'warning' : 'info'"
             effect="dark"
             size="large"
           >
-            {{ (row.level?.depth || 1) === 1 ? '⭐' : '⭐⭐' }}
+            {{ (row.level?.depth || 2) === 1 ? 'SP' : 'SS' }}
           </el-tag>
         </div>
 
@@ -84,11 +84,11 @@
           <div class="scout-header">
             <span class="scout-name">{{ row.profile?.name || '-' }}</span>
             <el-tag
-              :type="(row.level?.depth || 1) === 1 ? 'warning' : 'success'"
+              :type="(row.level?.depth || 2) === 1 ? 'warning' : 'info'"
               size="small"
               effect="plain"
             >
-              {{ (row.level?.depth || 1) === 1 ? '一级星探' : '二级星探' }}
+              {{ (row.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)' }}
             </el-tag>
             <el-tag
               v-if="row.status === 'active'"
@@ -112,7 +112,7 @@
             </template>
           </div>
 
-          <!-- 二级星探显示上级信息 -->
+          <!-- 特约星探显示上级信息 -->
           <div v-if="row.level?.depth === 2 && row.level?.parentScoutName" class="scout-parent">
             <el-icon><TopRight /></el-icon>
             上级星探：{{ row.level.parentScoutName }}
@@ -121,8 +121,8 @@
 
         <!-- 右侧：统计数据 -->
         <div class="scout-stats">
-          <!-- 一级星探显示团队统计 -->
-          <template v-if="(row.level?.depth || 1) === 1">
+          <!-- 星探合伙人显示团队统计 -->
+          <template v-if="(row.level?.depth || 2) === 1">
             <div class="stat-item">
               <div class="stat-value">{{ row.team?.directScouts || 0 }}</div>
               <div class="stat-label">下级星探</div>
@@ -139,6 +139,28 @@
             <div class="stat-value">{{ row.stats?.signedCount || 0 }}</div>
             <div class="stat-label">已签约</div>
           </div>
+        </div>
+
+        <!-- 操作按钮（仅管理员可见） -->
+        <div v-if="hasPermission('manageUsers')" class="scout-actions" @click.stop>
+          <el-button
+            v-if="row.status === 'active'"
+            type="danger"
+            size="small"
+            plain
+            @click="confirmDelete(row)"
+          >
+            删除
+          </el-button>
+          <el-button
+            v-if="row.status === 'deleted'"
+            type="success"
+            size="small"
+            plain
+            @click="confirmRestore(row)"
+          >
+            恢复
+          </el-button>
         </div>
       </div>
     </div>
@@ -172,11 +194,20 @@
               <span class="info-label">层级</span>
               <span class="info-value">
                 <el-tag
-                  :type="(currentScout.level?.depth || 1) === 1 ? 'warning' : 'success'"
+                  :type="(currentScout.level?.depth || 2) === 1 ? 'warning' : 'info'"
                   effect="plain"
                 >
-                  {{ (currentScout.level?.depth || 1) === 1 ? '⭐ 一级星探' : '⭐⭐ 二级星探' }}
+                  {{ (currentScout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)' }}
                 </el-tag>
+                <el-button
+                  v-if="hasPermission('manageUsers')"
+                  link
+                  size="small"
+                  style="margin-left: 12px"
+                  @click="openLevelEdit"
+                >
+                  编辑层级
+                </el-button>
               </span>
             </div>
             <div class="info-row">
@@ -212,7 +243,7 @@
           </div>
         </div>
 
-        <!-- 3. 层级关系（二级星探） -->
+        <!-- 3. 层级关系（特约星探） -->
         <div v-if="currentScout.level?.depth === 2" class="detail-section">
           <div class="section-title">层级关系</div>
           <div class="info-block">
@@ -227,8 +258,8 @@
           </div>
         </div>
 
-        <!-- 4. 团队统计（一级星探） -->
-        <div v-if="(currentScout.level?.depth || 1) === 1" class="detail-section">
+        <!-- 4. 团队统计（星探合伙人） -->
+        <div v-if="(currentScout.level?.depth || 2) === 1" class="detail-section">
           <div class="section-title">团队统计</div>
           <div class="team-stats-grid">
             <div class="team-stat-card">
@@ -298,6 +329,93 @@
         </div>
       </div>
     </el-drawer>
+
+    <!-- 层级编辑对话框 -->
+    <el-dialog
+      v-model="levelEditVisible"
+      title="调整星探层级"
+      width="450px"
+      :close-on-click-modal="false"
+    >
+      <div v-if="currentScout" class="level-edit-content">
+        <div class="current-level-info">
+          <span style="font-weight: 500; color: #888">当前层级：</span>
+          <el-tag
+            :type="(currentScout.level?.depth || 2) === 1 ? 'warning' : 'info'"
+            style="margin-left: 8px"
+          >
+            {{ (currentScout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)' }}
+          </el-tag>
+        </div>
+
+        <el-form :model="levelForm" style="margin-top: 24px" label-width="80px">
+          <el-form-item label="调整为">
+            <el-radio-group v-model="levelForm.newDepth">
+              <el-radio :value="2">特约星探 (SS)</el-radio>
+              <el-radio :value="1">星探合伙人 (SP)</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+          <!-- 降级警告 -->
+          <el-alert
+            v-if="(currentScout.level?.depth || 2) === 1 && levelForm.newDepth === 2"
+            type="warning"
+            :closable="false"
+            style="margin-bottom: 16px"
+            title="降级影响"
+          >
+            <div style="font-size: 13px; line-height: 1.8">
+              <div>降级为特约星探后：</div>
+              <ul style="margin: 8px 0 0 0; padding-left: 20px">
+                <li>将失去邀请码，无法再邀请下级</li>
+                <li>现有下级星探（{{ currentScout.team?.directScouts || 0 }}人）将自动升级为星探合伙人</li>
+                <li>推荐数据不受影响</li>
+              </ul>
+            </div>
+          </el-alert>
+
+          <!-- 升级提示 -->
+          <el-alert
+            v-if="(currentScout.level?.depth || 2) === 2 && levelForm.newDepth === 1"
+            type="success"
+            :closable="false"
+            style="margin-bottom: 16px"
+            title="升级效果"
+          >
+            <div style="font-size: 13px; line-height: 1.8">
+              <div>升级为星探合伙人后：</div>
+              <ul style="margin: 8px 0 0 0; padding-left: 20px">
+                <li>将自动获得邀请码</li>
+                <li>可以邀请特约星探加入团队</li>
+                <li>如有上级关系将被解除</li>
+                <li>推荐数据不受影响</li>
+              </ul>
+            </div>
+          </el-alert>
+
+          <el-form-item label="调整原因">
+            <el-input
+              v-model="levelForm.reason"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入调整原因（选填）"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <template #footer>
+        <el-button @click="levelEditVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          @click="confirmLevelChange"
+          :disabled="levelForm.newDepth === (currentScout?.level?.depth || 2)"
+          :loading="levelChanging"
+        >
+          确认调整
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -305,7 +423,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Search, TopRight } from '@element-plus/icons-vue'
 import { getScouts, getScoutDetail } from '../../api/admin'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { hasPermission } from '../../utils/permission'
 
 // 筛选器
 const keyword = ref('')
@@ -328,6 +447,14 @@ const stats = reactive({
 const detailVisible = ref(false)
 const currentScout = ref(null)
 const scoutReferrals = ref([])
+
+// 层级编辑
+const levelEditVisible = ref(false)
+const levelChanging = ref(false)
+const levelForm = reactive({
+  newDepth: 2,
+  reason: ''
+})
 
 // 候选人状态映射
 const getCandidateStatusType = (status) => {
@@ -441,6 +568,134 @@ const handleView = async (row) => {
     console.error('获取星探详情失败:', error)
     ElMessage.error('获取星探详情失败')
   }
+}
+
+// 打开层级编辑对话框
+const openLevelEdit = () => {
+  if (!currentScout.value) return
+
+  levelForm.newDepth = currentScout.value.level?.depth || 2
+  levelForm.reason = ''
+  levelEditVisible.value = true
+}
+
+// 确认层级调整
+const confirmLevelChange = async () => {
+  if (!currentScout.value) return
+
+  const oldDepth = currentScout.value.level?.depth || 2
+  if (levelForm.newDepth === oldDepth) {
+    ElMessage.warning('层级未发生变化')
+    return
+  }
+
+  levelChanging.value = true
+
+  try {
+    const wxcloud = await import('../../api/wxcloud')
+    const result = await wxcloud.default.callFunction('admin', {
+      action: 'updateScoutLevel',
+      data: {
+        scoutId: currentScout.value._id,
+        newDepth: levelForm.newDepth,
+        reason: levelForm.reason
+      }
+    })
+
+    if (result.success) {
+      ElMessage.success('层级调整成功')
+
+      // 如果是升级，显示生成的邀请码
+      if (result.inviteCode) {
+        ElMessage.success(`已自动生成邀请码：${result.inviteCode}`)
+      }
+
+      levelEditVisible.value = false
+
+      // 刷新列表和详情
+      await loadScouts()
+      await handleView(currentScout.value)
+    } else {
+      ElMessage.error(result.error || '层级调整失败')
+    }
+  } catch (error) {
+    console.error('层级调整失败:', error)
+    ElMessage.error('层级调整失败：' + error.message)
+  } finally {
+    levelChanging.value = false
+  }
+}
+
+// 确认删除星探
+const confirmDelete = (scout) => {
+  const hasChildren = (scout.level?.depth || 2) === 1 && (scout.team?.directScouts || 0) > 0
+
+  let message = `确定要删除星探 ${scout.profile?.name || '-'} 吗？\n\n⚠️ 注意：\n• 该星探将无法登录\n• 推荐的候选人数据保留`
+
+  if (hasChildren) {
+    message += `\n• 该星探有 ${scout.team.directScouts} 个下级，删除后下级将自动升级为星探合伙人`
+  }
+
+  ElMessageBox.confirm(message, '确认删除', {
+    type: 'warning',
+    confirmButtonText: '确认删除',
+    cancelButtonText: '取消',
+    dangerouslyUseHTMLString: false
+  }).then(async () => {
+    try {
+      const wxcloud = await import('../../api/wxcloud')
+      const result = await wxcloud.default.callFunction('admin', {
+        action: 'deleteScout',
+        data: { scoutId: scout._id }
+      })
+
+      if (result.success) {
+        ElMessage.success('删除成功')
+        await loadScouts()
+      } else {
+        ElMessage.error(result.error || '删除失败')
+      }
+    } catch (error) {
+      console.error('删除星探失败:', error)
+      ElMessage.error('删除失败：' + error.message)
+    }
+  }).catch(() => {
+    // 用户取消
+  })
+}
+
+// 确认恢复星探
+const confirmRestore = (scout) => {
+  ElMessageBox.confirm(
+    `确定要恢复星探 ${scout.profile?.name || '-'} 吗？\n\n恢复后该星探可以重新登录。`,
+    '确认恢复',
+    {
+      type: 'info',
+      confirmButtonText: '确认恢复',
+      cancelButtonText: '取消',
+      dangerouslyUseHTMLString: false
+    }
+  ).then(async () => {
+    try {
+      const wxcloud = await import('../../api/wxcloud')
+      const result = await wxcloud.default.callFunction('admin', {
+        action: 'restoreScout',
+        data: { scoutId: scout._id }
+      })
+
+      if (result.success) {
+        ElMessage.success('恢复成功')
+        await loadScouts()
+      } else {
+        ElMessage.error(result.error || '恢复失败')
+      }
+    } catch (error) {
+      console.error('恢复星探失败:', error)
+      ElMessage.error('恢复失败：' + error.message)
+    }
+  }).catch(() => {
+    // 用户取消
+  })
 }
 
 onMounted(() => {
@@ -617,6 +872,19 @@ onMounted(() => {
   width: 1px;
   height: 40px;
   background: #333;
+}
+
+/* 操作按钮 */
+.scout-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  padding-left: 16px;
+  border-left: 1px solid #333;
+}
+
+.scout-actions .el-button {
+  margin: 0;
 }
 
 /* 详情抽屉 */

@@ -172,7 +172,8 @@ const loadCommissions = async () => {
     })
 
     if (result.success) {
-      let allCommissions = result.data.filter(c => c.commission)
+      const candidates = result.data?.list || []
+      let allCommissions = candidates.filter(c => c.commission)
 
       // 根据筛选条件过滤
       if (activeFilter.value !== 'all') {
@@ -186,7 +187,7 @@ const loadCommissions = async () => {
       }))
 
       // 计算统计数据
-      calculateStats(result.data.filter(c => c.commission))
+      calculateStats(candidates.filter(c => c.commission))
     } else {
       ElMessage.error(result.error || '获取分账列表失败')
     }

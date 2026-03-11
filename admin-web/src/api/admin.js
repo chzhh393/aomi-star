@@ -125,6 +125,49 @@ export const adminAPI = {
     })
   },
 
+  // 获取经纪人列表（含分配统计）
+  getAgentList() {
+    return wxcloud.callFunction('admin', {
+      action: 'getAgentList',
+      data: {}
+    })
+  },
+
+  // 批量分配候选人给经纪人
+  batchAssignCandidates(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'batchAssignCandidates',
+      data
+    })
+  },
+
+  // ==================== 用户申请和审核相关 ====================
+
+  // 用户申请（无需token）
+  applyUser(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'applyUser',
+      data,
+      needToken: false // 申请不需要token
+    })
+  },
+
+  // 获取用户列表
+  getUserList(params = {}) {
+    return wxcloud.callFunction('admin', {
+      action: 'getUserList',
+      data: params
+    })
+  },
+
+  // 审核用户
+  reviewUser(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'reviewUser',
+      data
+    })
+  },
+
   // ==================== 操作日志相关 ====================
 
   // 获取审计日志

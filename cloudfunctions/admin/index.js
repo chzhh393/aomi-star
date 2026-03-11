@@ -38,8 +38,71 @@ const ROLE_PERMISSIONS = {
     viewAuditLog: false,
     manageUsers: false,
     assignCandidates: false
+  },
+  hr: {
+    viewPersonalInfo: true,
+    viewReferralInfo: true,
+    uploadInterviewMaterials: false,
+    scoreInterview: false,
+    updateStatus: true,
+    exportData: true,
+    viewAuditLog: true,
+    manageUsers: false,
+    assignCandidates: true
+  },
+  operations: {
+    viewPersonalInfo: true,
+    viewReferralInfo: true,
+    uploadInterviewMaterials: false,
+    scoreInterview: false,
+    updateStatus: false,
+    exportData: true,
+    viewAuditLog: true,
+    manageUsers: false,
+    assignCandidates: false
+  },
+  trainer: {
+    viewPersonalInfo: false,
+    viewReferralInfo: false,
+    uploadInterviewMaterials: false,
+    scoreInterview: true,
+    updateStatus: false,
+    exportData: false,
+    viewAuditLog: false,
+    manageUsers: false,
+    assignCandidates: false
   }
 };
+
+// 数据脱敏函数 - 用于经纪人角色
+function desensitizeCandidateForAgent(candidate) {
+  if (!candidate) return candidate;
+
+  const sanitized = { ...candidate };
+
+  // 移除联系方式
+  if (sanitized.basicInfo) {
+    delete sanitized.basicInfo.phone;
+    delete sanitized.basicInfo.wechat;
+
+    // 移除社交账号
+    delete sanitized.basicInfo.douyin;
+    delete sanitized.basicInfo.douyinFans;
+    delete sanitized.basicInfo.xiaohongshu;
+    delete sanitized.basicInfo.xiaohongshuFans;
+    delete sanitized.basicInfo.bilibili;
+    delete sanitized.basicInfo.bilibiliUsername;
+    delete sanitized.basicInfo.bilibiliName;
+    delete sanitized.basicInfo.bilibiliFans;
+  }
+
+  // 移除推荐人信息
+  if (sanitized.referral) {
+    delete sanitized.referral;
+  }
+
+  return sanitized;
+}
 
 const SUBSCRIBE_TEMPLATE = {
   reviewResult: 'Y0HUyqrKLrK1RWzKeE44xwUmoxU1pp7DCHIrDY1EYYQ', // 授权审核通过通知
@@ -240,6 +303,18 @@ exports.main = async (event) => {
         return await unassignCandidate(data.candidateId, token);
       case 'getAssignments':
         return await getAssignments(token);
+      case 'getAgentList':
+        return await getAgentList(token);
+      case 'batchAssignCandidates':
+        return await batchAssignCandidates(data, token);
+
+      // 星探管理
+      case 'updateScoutLevel':
+        return await updateScoutLevel(data, token);
+      case 'deleteScout':
+        return await deleteScout(data, token);
+      case 'restoreScout':
+        return await restoreScout(data, token);
 
       // 操作日志
       case 'getAuditLogs':
@@ -254,6 +329,18 @@ exports.main = async (event) => {
         return await uploadInterviewMaterials(data, token);
       case 'deleteInterviewMaterial':
         return await deleteInterviewMaterial(data, token);
+
+      // 试镜视频上传
+      case 'uploadAuditionVideos':
+        return await uploadAuditionVideos(data, token);
+
+      // 用户申请和审核
+      case 'applyUser':
+        return await applyUser(data);
+      case 'getUserList':
+        return await getUserList(data, token);
+      case 'reviewUser':
+        return await reviewUser(data, token);
 
       default:
         return { success: false, error: '未知操作' };
@@ -420,17 +507,7 @@ async function getCandidateList({ page = 1, pageSize = 20, status = 'all', keywo
   // 如果是经纪人，移除敏感信息
   let list = res.data;
   if (user.role === 'agent') {
-    list = list.map(candidate => {
-      const sanitized = { ...candidate };
-      // 移除手机号、微信号
-      if (sanitized.contactInfo) {
-        delete sanitized.contactInfo.phone;
-        delete sanitized.contactInfo.wechat;
-      }
-      // 移除星探推荐信息
-      delete sanitized.referral;
-      return sanitized;
-    });
+    list = list.map(candidate => desensitizeCandidateForAgent(candidate));
   }
 
   return {
@@ -465,15 +542,7 @@ async function getCandidateDetail(id, token) {
 
   // 如果是经纪人，移除敏感信息
   if (user.role === 'agent') {
-    const sanitized = { ...candidate };
-    // 移除手机号、微信号
-    if (sanitized.contactInfo) {
-      delete sanitized.contactInfo.phone;
-      delete sanitized.contactInfo.wechat;
-    }
-    // 移除星探推荐信息
-    delete sanitized.referral;
-    candidate = sanitized;
+    candidate = desensitizeCandidateForAgent(candidate);
   }
 
   // 记录查看候选人详情的审计日志
@@ -1206,6 +1275,508 @@ async function getAssignments(token) {
   return { success: true, data: assignments };
 }
 
+// 获取经纪人列表（含分配统计）
+async function getAgentList(token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 只有管理员可以查看经纪人列表
+  if (!user.permissions.assignCandidates) {
+    return { success: false, error: '无权限访问' };
+  }
+
+  try {
+    // 获取所有未删除的经纪人
+    const agentsRes = await db.collection('admins').where({
+      role: 'agent',
+      status: _.neq('deleted')
+    }).get();
+
+    // 计算每个经纪人的分配数量
+    const agentsWithCount = agentsRes.data.map(agent => ({
+      _id: agent._id,
+      name: agent.name,
+      username: agent.username,
+      assignedCount: (agent.assignedCandidates || []).length
+    }));
+
+    return { success: true, data: agentsWithCount };
+  } catch (error) {
+    console.error('获取经纪人列表失败:', error);
+    return { success: false, error: '获取经纪人列表失败' };
+  }
+}
+
+// 批量分配候选人给经纪人
+async function batchAssignCandidates(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 只有管理员可以分配候选人
+  if (!user.permissions.assignCandidates) {
+    return { success: false, error: '无权限操作' };
+  }
+
+  const { candidateIds, agentId } = data;
+
+  if (!candidateIds || !Array.isArray(candidateIds) || candidateIds.length === 0) {
+    return { success: false, error: '候选人ID列表不能为空' };
+  }
+
+  if (!agentId) {
+    return { success: false, error: '经纪人ID不能为空' };
+  }
+
+  try {
+    // 验证经纪人存在且是 agent 角色
+    const agentRes = await db.collection('admins').doc(agentId).get();
+    if (!agentRes.data || agentRes.data.role !== 'agent') {
+      return { success: false, error: '经纪人不存在或已删除' };
+    }
+
+    const agent = agentRes.data;
+
+    // 更新经纪人的分配候选人列表
+    const currentAssigned = agent.assignedCandidates || [];
+    const newAssigned = [...new Set([...currentAssigned, ...candidateIds])]; // 去重
+
+    await db.collection('admins').doc(agentId).update({
+      data: {
+        assignedCandidates: newAssigned,
+        updatedAt: db.serverDate()
+      }
+    });
+
+    // 批量更新候选人的分配信息
+    let successCount = 0;
+    const errors = [];
+    const reassignments = []; // 记录重新分配的候选人
+
+    for (const candidateId of candidateIds) {
+      try {
+        // 先获取候选人当前信息
+        const candidateRes = await db.collection('candidates').doc(candidateId).get();
+
+        if (candidateRes.data) {
+          // 检查是否已经分配给其他经纪人
+          if (candidateRes.data.assignedAgent &&
+              candidateRes.data.assignedAgent.agentId &&
+              candidateRes.data.assignedAgent.agentId !== agentId) {
+            reassignments.push({
+              candidateId,
+              candidateName: candidateRes.data.basicInfo?.name || '未知',
+              oldAgentName: candidateRes.data.assignedAgent.agentName || '未知'
+            });
+          }
+        }
+
+        // 更新分配信息
+        await db.collection('candidates').doc(candidateId).update({
+          data: {
+            assignedAgent: {
+              agentId: agentId,
+              agentName: agent.name,
+              assignedAt: db.serverDate(),
+              assignedBy: user._id
+            },
+            updatedAt: db.serverDate()
+          }
+        });
+        successCount++;
+      } catch (error) {
+        console.error(`分配候选人 ${candidateId} 失败:`, error);
+        errors.push({ candidateId, error: error.message });
+      }
+    }
+
+    // 记录操作日志
+    await logAuditAction(
+      'batch_assign_candidates',
+      user.username,
+      agentId,
+      {
+        agentName: agent.name,
+        candidateCount: candidateIds.length,
+        successCount,
+        failedCount: candidateIds.length - successCount
+      }
+    );
+
+    if (successCount === 0) {
+      return { success: false, error: '所有候选人分配失败', errors };
+    }
+
+    return {
+      success: true,
+      successCount,
+      totalCount: candidateIds.length,
+      failedCount: candidateIds.length - successCount,
+      errors: errors.length > 0 ? errors : undefined,
+      reassignments: reassignments.length > 0 ? reassignments : undefined // 重新分配的候选人列表
+    };
+  } catch (error) {
+    console.error('批量分配候选人失败:', error);
+    return { success: false, error: '批量分配失败：' + error.message };
+  }
+}
+
+// ==================== 星探管理相关 ====================
+
+// 更新星探层级
+async function updateScoutLevel(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 权限检查 - 只有管理员可以调整层级
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以调整星探层级' };
+  }
+
+  const { scoutId, newDepth, reason } = data;
+
+  // 验证新层级
+  if (![1, 2].includes(newDepth)) {
+    return { success: false, error: '无效的层级' };
+  }
+
+  try {
+    // 获取星探当前信息
+    const scoutRes = await db.collection('scouts').doc(scoutId).get();
+    if (!scoutRes.data) {
+      return { success: false, error: '星探不存在' };
+    }
+
+    const scout = scoutRes.data;
+    const oldDepth = scout.level?.depth || 2;
+
+    // 如果层级没有变化
+    if (oldDepth === newDepth) {
+      return { success: false, error: '层级未发生变化' };
+    }
+
+    const updateData = {
+      'level.depth': newDepth,
+      updatedAt: db.serverDate()
+    };
+
+    // 情况1：升级为星探合伙人（SS → SP）
+    if (oldDepth === 2 && newDepth === 1) {
+      // 生成唯一邀请码
+      try {
+        const inviteCode = await generateUniqueInviteCode(db);
+        updateData.inviteCode = inviteCode;
+      } catch (error) {
+        console.error('生成邀请码失败:', error);
+        return { success: false, error: '生成邀请码失败，请重试' };
+      }
+
+      // 如果原来有上级，需要解除上级关系
+      if (scout.level?.parentScoutId) {
+        updateData['level.parentScoutId'] = null;
+        updateData['level.parentScoutName'] = '';
+        updateData['level.parentInviteCode'] = '';
+
+        // 更新原上级的下级统计
+        try {
+          await db.collection('scouts').doc(scout.level.parentScoutId).update({
+            data: {
+              'team.directScouts': _.inc(-1),
+              'team.totalScouts': _.inc(-1),
+              updatedAt: db.serverDate()
+            }
+          });
+        } catch (error) {
+          console.error('更新原上级统计失败:', error);
+          // 不阻断主流程
+        }
+      }
+    }
+
+    // 情况2：降级为特约星探（SP → SS）
+    if (oldDepth === 1 && newDepth === 2) {
+      // 移除邀请码
+      updateData.inviteCode = null;
+
+      // 处理下级星探 - 自动升级为星探合伙人
+      if (scout.team?.directScouts > 0) {
+        // 查找所有下级星探
+        const childrenRes = await db.collection('scouts').where({
+          'level.parentScoutId': scoutId
+        }).get();
+
+        if (childrenRes.data.length > 0) {
+          // 逐个更新下级星探，确保邀请码唯一
+          for (const child of childrenRes.data) {
+            try {
+              // 生成唯一邀请码
+              const childInviteCode = await generateUniqueInviteCode(db);
+
+              await db.collection('scouts').doc(child._id).update({
+                data: {
+                  'level.depth': 1, // 升级为星探合伙人
+                  'level.parentScoutId': null,
+                  'level.parentScoutName': '',
+                  'level.parentInviteCode': '',
+                  inviteCode: childInviteCode,
+                  updatedAt: db.serverDate()
+                }
+              });
+            } catch (error) {
+              console.error(`升级下级星探 ${child._id} 失败:`, error);
+              // 继续处理其他下级星探
+            }
+          }
+        }
+      }
+
+      // 清空团队统计
+      updateData['team.directScouts'] = 0;
+      updateData['team.totalScouts'] = 0;
+    }
+
+    // 更新星探信息
+    await db.collection('scouts').doc(scoutId).update({
+      data: updateData
+    });
+
+    // 记录操作日志
+    await logAuditAction(
+      'update_scout_level',
+      user.username,
+      scoutId,
+      {
+        scoutName: scout.profile?.name || '-',
+        oldLevel: oldDepth === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)',
+        newLevel: newDepth === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)',
+        reason: reason || '无',
+        inviteCode: updateData.inviteCode || null
+      }
+    );
+
+    return {
+      success: true,
+      message: '层级调整成功',
+      inviteCode: updateData.inviteCode || null
+    };
+  } catch (error) {
+    console.error('更新星探层级失败:', error);
+    return { success: false, error: '层级调整失败：' + error.message };
+  }
+}
+
+// 生成邀请码（简单版本，不检查重复）
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'INV';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+// 生成唯一邀请码（检查数据库确保不重复）
+async function generateUniqueInviteCode(db) {
+  let retryCount = 0;
+  const maxRetries = 20; // 增加重试次数
+
+  while (retryCount < maxRetries) {
+    const code = generateInviteCode();
+
+    // 检查邀请码是否已存在
+    const checkRes = await db.collection('scouts').where({
+      inviteCode: code
+    }).get();
+
+    if (checkRes.data.length === 0) {
+      return code; // 找到唯一的邀请码
+    }
+
+    retryCount++;
+  }
+
+  throw new Error('无法生成唯一邀请码，请稍后重试');
+}
+
+// 删除星探（软删除）
+async function deleteScout(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 权限检查 - 只有管理员可以删除星探
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以删除星探' };
+  }
+
+  const { scoutId } = data;
+
+  try {
+    // 获取星探信息
+    const scoutRes = await db.collection('scouts').doc(scoutId).get();
+    if (!scoutRes.data) {
+      return { success: false, error: '星探不存在' };
+    }
+
+    const scout = scoutRes.data;
+
+    // 软删除星探
+    await db.collection('scouts').doc(scoutId).update({
+      data: {
+        status: 'deleted',
+        deletedAt: db.serverDate(),
+        deletedBy: user._id,
+        updatedAt: db.serverDate()
+      }
+    });
+
+    // 如果是星探合伙人，处理下级星探
+    if ((scout.level?.depth || 2) === 1 && (scout.team?.directScouts || 0) > 0) {
+      // 查找所有下级星探
+      const childrenRes = await db.collection('scouts').where({
+        'level.parentScoutId': scoutId
+      }).get();
+
+      if (childrenRes.data.length > 0) {
+        // 逐个升级下级星探为星探合伙人，确保邀请码唯一
+        for (const child of childrenRes.data) {
+          try {
+            // 生成唯一邀请码
+            const childInviteCode = await generateUniqueInviteCode(db);
+
+            await db.collection('scouts').doc(child._id).update({
+              data: {
+                'level.depth': 1, // 升级为星探合伙人
+                'level.parentScoutId': null,
+                'level.parentScoutName': '',
+                'level.parentInviteCode': '',
+                inviteCode: childInviteCode,
+                updatedAt: db.serverDate()
+              }
+            });
+          } catch (error) {
+            console.error(`升级下级星探 ${child._id} 失败:`, error);
+            // 继续处理其他下级星探
+          }
+        }
+      }
+    }
+
+    // 记录操作日志
+    await logAuditAction(
+      'delete_scout',
+      user.username,
+      scoutId,
+      {
+        scoutName: scout.profile?.name || '-',
+        scoutLevel: (scout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)',
+        hadChildren: (scout.team?.directScouts || 0) > 0,
+        childrenCount: scout.team?.directScouts || 0
+      }
+    );
+
+    return {
+      success: true,
+      message: '删除成功'
+    };
+  } catch (error) {
+    console.error('删除星探失败:', error);
+    return { success: false, error: '删除失败：' + error.message };
+  }
+}
+
+// 恢复星探
+async function restoreScout(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 权限检查 - 只有管理员可以恢复星探
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以恢复星探' };
+  }
+
+  const { scoutId } = data;
+
+  try {
+    // 获取星探信息
+    const scoutRes = await db.collection('scouts').doc(scoutId).get();
+    if (!scoutRes.data) {
+      return { success: false, error: '星探不存在' };
+    }
+
+    const scout = scoutRes.data;
+
+    // 准备更新数据
+    const updateData = {
+      status: 'active',
+      deletedAt: _.remove(),
+      deletedBy: _.remove(),
+      updatedAt: db.serverDate()
+    };
+
+    // 检查原层级关系是否有效
+    if ((scout.level?.depth || 2) === 2 && scout.level?.parentScoutId) {
+      // SS 星探有上级，检查上级是否还存在且未删除
+      try {
+        const parentRes = await db.collection('scouts').doc(scout.level.parentScoutId).get();
+
+        if (!parentRes.data || parentRes.data.status === 'deleted') {
+          // 上级已不存在或已删除，自动升级为 SP
+          console.log(`星探 ${scoutId} 的上级已不存在，自动升级为 SP`);
+
+          const inviteCode = await generateUniqueInviteCode(db);
+          updateData['level.depth'] = 1;
+          updateData['level.parentScoutId'] = null;
+          updateData['level.parentScoutName'] = '';
+          updateData['level.parentInviteCode'] = '';
+          updateData.inviteCode = inviteCode;
+        }
+      } catch (error) {
+        console.error('检查上级星探失败:', error);
+        // 保守处理：升级为 SP
+        const inviteCode = await generateUniqueInviteCode(db);
+        updateData['level.depth'] = 1;
+        updateData['level.parentScoutId'] = null;
+        updateData['level.parentScoutName'] = '';
+        updateData['level.parentInviteCode'] = '';
+        updateData.inviteCode = inviteCode;
+      }
+    }
+
+    // 恢复星探
+    await db.collection('scouts').doc(scoutId).update({
+      data: updateData
+    });
+
+    // 记录操作日志
+    await logAuditAction(
+      'restore_scout',
+      user.username,
+      scoutId,
+      {
+        scoutName: scout.profile?.name || '-',
+        scoutLevel: (scout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)'
+      }
+    );
+
+    return {
+      success: true,
+      message: '恢复成功'
+    };
+  } catch (error) {
+    console.error('恢复星探失败:', error);
+    return { success: false, error: '恢复失败：' + error.message };
+  }
+}
+
 // ==================== 操作日志相关 ====================
 
 // 获取审计日志
@@ -1476,3 +2047,341 @@ async function deleteInterviewMaterial(data, token) {
 
   return { success: true, message: '删除成功' };
 }
+
+// 上传试镜视频
+async function uploadAuditionVideos(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 检查是否有上传面试资料权限（试镜视频与面试资料使用相同权限）
+  if (!user.permissions.uploadInterviewMaterials) {
+    return { success: false, error: '无权限上传试镜视频' };
+  }
+
+  const { candidateId, auditionVideos } = data;
+
+  if (!candidateId || !auditionVideos || !Array.isArray(auditionVideos)) {
+    return { success: false, error: '缺少必要参数' };
+  }
+
+  // 验证视频数据结构
+  const requiredFields = ['url', 'fileID', 'cloudPath', 'duration', 'size'];
+  for (let i = 0; i < auditionVideos.length; i++) {
+    const video = auditionVideos[i];
+    for (const field of requiredFields) {
+      if (!video[field]) {
+        return {
+          success: false,
+          error: `视频 ${i + 1} 缺少必要字段: ${field}`
+        };
+      }
+    }
+
+    // 验证数据类型
+    if (typeof video.duration !== 'number' || video.duration <= 0) {
+      return { success: false, error: `视频 ${i + 1} 的时长无效` };
+    }
+    if (typeof video.size !== 'number' || video.size <= 0) {
+      return { success: false, error: `视频 ${i + 1} 的大小无效` };
+    }
+  }
+
+  // 检查候选人是否存在
+  const candidateRes = await db.collection('candidates').doc(candidateId).get();
+  if (!candidateRes.data) {
+    return { success: false, error: '候选人不存在' };
+  }
+
+  // 如果是经纪人，检查是否有权限操作该候选人
+  if (user.role === 'agent') {
+    const assignedIds = user.assignedCandidates || [];
+    if (!assignedIds.includes(candidateId)) {
+      return { success: false, error: '无权限操作该候选人' };
+    }
+  }
+
+  // 获取现有视频
+  const existingVideos = candidateRes.data.auditionVideos || [];
+
+  // 合并新旧视频，去重（根据 fileID）
+  const videoMap = new Map();
+
+  // 先添加现有视频
+  existingVideos.forEach(video => {
+    if (video.fileID) {
+      videoMap.set(video.fileID, video);
+    }
+  });
+
+  // 再添加新视频（会覆盖同 fileID 的旧视频）
+  auditionVideos.forEach(video => {
+    videoMap.set(video.fileID, video);
+  });
+
+  // 转换为数组，限制最多3个（保留最新的）
+  const mergedVideos = Array.from(videoMap.values()).slice(-3);
+
+  // 验证合并后的视频数量
+  if (mergedVideos.length > 3) {
+    return { success: false, error: '试镜视频总数不能超过3个' };
+  }
+
+  // 更新候选人的试镜视频
+  await db.collection('candidates').doc(candidateId).update({
+    data: {
+      auditionVideos: mergedVideos,
+      updatedAt: db.serverDate()
+    }
+  });
+
+  // 记录操作日志
+  await logAuditAction(
+    'upload_audition_videos',
+    user.username,
+    candidateId,
+    {
+      candidateName: candidateRes.data.basicInfo?.name || '-',
+      videoCount: auditionVideos.length
+    }
+  );
+
+  return {
+    success: true,
+    message: '试镜视频上传成功'
+  };
+}
+
+// ==================== 用户申请和审核相关 ====================
+
+// 用户申请（无需token）
+async function applyUser(data) {
+  const { username, password, name, desiredRole, reason } = data;
+
+  // 验证必填字段
+  if (!username || !password || !name || !desiredRole) {
+    return { success: false, error: '用户名、密码、姓名和期望角色为必填项' };
+  }
+
+  // 验证用户名格式（字母、数字、下划线，3-20位）
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+    return { success: false, error: '用户名只能包含字母、数字、下划线，长度3-20位' };
+  }
+
+  // 验证密码长度
+  if (password.length < 6) {
+    return { success: false, error: '密码长度不能少于6位' };
+  }
+
+  // 验证姓名长度和格式（1-20个字符，不允许特殊符号）
+  if (name.length < 1 || name.length > 20) {
+    return { success: false, error: '姓名长度应在1-20个字符之间' };
+  }
+  if (!/^[\u4e00-\u9fa5a-zA-Z\s]+$/.test(name)) {
+    return { success: false, error: '姓名只能包含中文、英文和空格' };
+  }
+
+  // 验证期望角色是否有效
+  const validRoles = ['hr', 'agent', 'operations', 'trainer'];
+  if (!validRoles.includes(desiredRole)) {
+    return { success: false, error: '无效的角色选择' };
+  }
+
+  // 验证申请理由长度（最多500字符）
+  if (reason && reason.length > 500) {
+    return { success: false, error: '申请理由不能超过500字符' };
+  }
+
+  try {
+    // 检查用户名是否已存在
+    const existingUser = await db.collection('admins').where({
+      username: username
+    }).get();
+
+    if (existingUser.data.length > 0) {
+      return { success: false, error: '用户名已存在' };
+    }
+
+    // 密码加密
+    const crypto = require('crypto');
+    const hashedPassword = crypto
+      .createHash('sha256')
+      .update(password)
+      .digest('hex');
+
+    // 创建待审核用户
+    await db.collection('admins').add({
+      data: {
+        username,
+        password: hashedPassword,
+        name,
+        role: 'pending',
+        status: 'pending',
+        application: {
+          desiredRole: desiredRole,
+          reason: reason || '',
+          appliedAt: db.serverDate(),
+          status: 'pending'
+        },
+        permissions: {},
+        createdAt: db.serverDate(),
+        updatedAt: db.serverDate()
+      }
+    });
+
+    return {
+      success: true,
+      message: '申请已提交，请等待管理员审核'
+    };
+  } catch (error) {
+    console.error('用户申请失败:', error);
+    return { success: false, error: '申请提交失败：' + error.message };
+  }
+}
+
+// 获取用户列表
+async function getUserList(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 权限检查 - 只有管理员可以查看
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以查看用户列表' };
+  }
+
+  const { status } = data;
+
+  try {
+    let query = db.collection('admins');
+
+    // 按状态筛选
+    if (status) {
+      query = query.where({ status });
+    }
+
+    const res = await query
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    // 统计待审核数量
+    const pendingRes = await db.collection('admins').where({
+      status: 'pending'
+    }).count();
+
+    return {
+      success: true,
+      data: res.data.map(u => ({
+        ...u,
+        password: undefined // 移除密码字段
+      })),
+      pendingCount: pendingRes.total
+    };
+  } catch (error) {
+    console.error('获取用户列表失败:', error);
+    return { success: false, error: '获取用户列表失败：' + error.message };
+  }
+}
+
+// 审核用户
+async function reviewUser(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  // 权限检查 - 只有管理员可以审核
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以审核用户' };
+  }
+
+  const { userId, approved, role, note } = data;
+
+  if (!userId) {
+    return { success: false, error: '缺少用户ID' };
+  }
+
+  try {
+    // 获取待审核用户信息
+    const userRes = await db.collection('admins').doc(userId).get();
+    if (!userRes.data) {
+      return { success: false, error: '用户不存在' };
+    }
+
+    const targetUser = userRes.data;
+
+    // 验证用户状态
+    if (targetUser.status !== 'pending') {
+      return { success: false, error: '该用户已审核过' };
+    }
+
+    const updateData = {
+      updatedAt: db.serverDate()
+    };
+
+    if (approved) {
+      // 通过审核
+      if (!role) {
+        return { success: false, error: '请选择要分配的角色' };
+      }
+
+      // 验证角色有效性
+      const validRoles = ['admin', 'hr', 'agent', 'operations', 'trainer'];
+      if (!validRoles.includes(role)) {
+        return { success: false, error: '无效的角色' };
+      }
+
+      // 设置角色和权限
+      updateData.role = role;
+      updateData.status = 'active';
+      updateData.permissions = ROLE_PERMISSIONS[role] || {};
+      updateData['application.status'] = 'approved';
+      updateData.review = {
+        reviewedBy: user._id,
+        reviewedByName: user.username,
+        reviewedAt: db.serverDate(),
+        reviewNote: note || '',
+        assignedRole: role
+      };
+    } else {
+      // 拒绝申请
+      updateData.status = 'rejected';
+      updateData['application.status'] = 'rejected';
+      updateData.review = {
+        reviewedBy: user._id,
+        reviewedByName: user.username,
+        reviewedAt: db.serverDate(),
+        reviewNote: note || ''
+      };
+    }
+
+    // 更新用户状态
+    await db.collection('admins').doc(userId).update({
+      data: updateData
+    });
+
+    // 记录操作日志
+    await logAuditAction(
+      approved ? 'approve_user_application' : 'reject_user_application',
+      user.username,
+      userId,
+      {
+        targetUsername: targetUser.username,
+        targetName: targetUser.name,
+        assignedRole: role || '',
+        reviewNote: note || ''
+      }
+    );
+
+    return {
+      success: true,
+      message: approved ? '审核通过' : '已拒绝申请'
+    };
+  } catch (error) {
+    console.error('审核用户失败:', error);
+    return { success: false, error: '审核失败：' + error.message };
+  }
+}
+

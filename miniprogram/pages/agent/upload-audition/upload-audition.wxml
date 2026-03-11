@@ -1,0 +1,88 @@
+<!--pages/agent/upload-audition/upload-audition.wxml-->
+<view class="upload-audition-page">
+  <!-- 候选人信息 -->
+  <view class="candidate-info-card">
+    <view class="candidate-name">{{ candidate.basicInfo.name }}</view>
+    <view class="candidate-meta">
+      <text class="meta-item">{{ candidate.basicInfo.age }}岁</text>
+      <text class="meta-divider">|</text>
+      <text class="meta-item">{{ candidate.basicInfo.location }}</text>
+    </view>
+  </view>
+
+  <!-- 视频列表 -->
+  <view class="videos-section">
+    <view class="section-header">
+      <text class="section-title">试镜视频</text>
+      <text class="video-count">{{ videos.length }}/3</text>
+    </view>
+
+    <view class="videos-grid">
+      <!-- 已选择的视频 -->
+      <view
+        wx:for="{{ videos }}"
+        wx:key="index"
+        class="video-item {{ item.uploading ? 'uploading' : '' }}">
+        <video
+          src="{{ item.tempPath || item.url }}"
+          class="video-preview"
+          controls
+          object-fit="cover"
+        />
+
+        <!-- 视频信息 -->
+        <view class="video-info">
+          <text class="duration">{{ formatDuration(item.duration) }}</text>
+          <text class="size">{{ formatSize(item.size) }}</text>
+        </view>
+
+        <!-- 上传进度 -->
+        <view wx:if="{{ item.uploading }}" class="upload-progress">
+          <view class="progress-bg">
+            <view class="progress-bar" style="width: {{ item.progress }}%"></view>
+          </view>
+          <text class="progress-text">{{ item.progress }}%</text>
+        </view>
+
+        <!-- 删除按钮 -->
+        <view
+          wx:if="{{ !item.uploading }}"
+          class="delete-btn"
+          bindtap="deleteVideo"
+          data-index="{{ index }}">
+          <text class="delete-icon">×</text>
+        </view>
+      </view>
+
+      <!-- 添加视频按钮 -->
+      <view
+        wx:if="{{ videos.length < 3 }}"
+        class="add-video-btn"
+        bindtap="chooseVideo">
+        <text class="add-icon">📹</text>
+        <text class="add-text">录制或选择</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 说明 -->
+  <view class="tips-card">
+    <view class="tips-title">📋 上传说明</view>
+    <view class="tips-list">
+      <view class="tip-item">• 每个视频不超过100MB</view>
+      <view class="tip-item">• 建议时长：30秒-2分钟</view>
+      <view class="tip-item">• 内容：才艺展示、自我介绍等</view>
+      <view class="tip-item">• 最多上传3个视频</view>
+    </view>
+  </view>
+
+  <!-- 底部提交按钮 -->
+  <view class="bottom-submit">
+    <button
+      class="submit-btn"
+      bindtap="submitUpload"
+      disabled="{{ videos.length === 0 || uploading || !allUploaded }}">
+      {{ uploading ? '上传中...' : '提交上传' }}
+    </button>
+  </view>
+</view>

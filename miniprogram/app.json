@@ -25,6 +25,7 @@
     "pages/agent/candidate-detail/candidate-detail",
     "pages/agent/score-interview/score-interview",
     "pages/agent/upload-materials/upload-materials",
+    "pages/agent/upload-audition/upload-audition",
     "pages/agent/my-scores/my-scores",
     "pages/operations/home/home",
     "pages/external-scout/home/home",

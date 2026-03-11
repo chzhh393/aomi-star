@@ -26,11 +26,11 @@
         <view class="code-hint">分享时自动携带推荐码</view>
       </view>
 
-      <!-- 邀请码（仅一级星探显示） -->
+      <!-- 邀请码（仅星探合伙人显示） -->
       <view wx:if="{{scout.level.depth === 1}}" class="invite-code-section">
         <view class="invite-header">
           <view class="code-label">我的邀请码</view>
-          <view class="level-badge">⭐ 一级星探</view>
+          <view class="level-badge">SP 星探合伙人</view>
         </view>
         <view class="code-value">{{scout.inviteCode}}</view>
         <view class="code-actions">
@@ -38,15 +38,15 @@
             📋 复制邀请码
           </button>
           <button class="action-btn secondary" bindtap="shareInvite">
-            🔗 分享给下级
+            🔗 分享给特约星探
           </button>
         </view>
-        <view class="code-hint">邀请下级星探组建团队</view>
+        <view class="code-hint">邀请特约星探组建团队</view>
       </view>
 
-      <!-- 二级星探标识 -->
+      <!-- 特约星探标识 -->
       <view wx:if="{{scout.level.depth === 2}}" class="level-info">
-        <view class="level-badge secondary">⭐⭐ 二级星探</view>
+        <view class="level-badge secondary">SS 特约星探</view>
         <view class="parent-info-text">
           上级星探：{{scout.level.parentScoutName}}
         </view>
@@ -62,7 +62,7 @@
       <view class="team-stats">
         <view class="team-stat-item">
           <view class="team-stat-value">{{teamInfo.summary.totalScouts}}</view>
-          <view class="team-stat-label">下级星探</view>
+          <view class="team-stat-label">特约星探</view>
         </view>
         <view class="team-stat-item">
           <view class="team-stat-value">{{teamInfo.summary.totalReferred}}</view>

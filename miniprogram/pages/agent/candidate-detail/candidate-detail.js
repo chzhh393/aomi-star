@@ -10,7 +10,8 @@ Page({
     candidateId: '',
     candidate: null,
     loading: false,
-    scoreTags: []  // 评分标签（格式化后的）
+    scoreTags: [],  // 评分标签（格式化后的）
+    auditionVideos: []  // 试镜视频列表
   },
 
   onLoad(options) {
@@ -69,6 +70,7 @@ Page({
       this.setData({
         candidate: result.candidate,
         scoreTags: scoreTags,
+        auditionVideos: result.candidate.auditionVideos || [],
         loading: false
       });
     } catch (error) {
@@ -134,6 +136,15 @@ Page({
   },
 
   /**
+   * 去上传试镜视频
+   */
+  goToUploadAudition() {
+    wx.navigateTo({
+      url: `/pages/agent/upload-audition/upload-audition?id=${this.data.candidateId}`
+    });
+  },
+
+  /**
    * 获取评分等级标签
    */
   getScoreLabel(result) {
@@ -161,6 +172,21 @@ Page({
     const minute = String(date.getMinutes()).padStart(2, '0');
 
     return `${year}-${month}-${day} ${hour}:${minute}`;
+  },
+
+  /**
+   * 格式化视频时长
+   */
+  formatDuration(seconds) {
+    if (!seconds || seconds === 0) return '0秒';
+
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+
+    if (minutes > 0) {
+      return `${minutes}分${secs}秒`;
+    }
+    return `${secs}秒`;
   },
 
   /**

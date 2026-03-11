@@ -41,6 +41,10 @@
           <span class="batch-count">已选 <strong>{{ selectedIds.length }}</strong> 人</span>
         </div>
         <div class="batch-bar-right">
+          <el-button type="primary" @click="handleBatchAssign" v-if="hasPermission('assignCandidates')">
+            <el-icon><Connection /></el-icon>
+            批量分配
+          </el-button>
           <el-button type="success" @click="handleBatchApprove" :disabled="!hasPendingSelected">批量通过</el-button>
           <el-button type="danger" @click="handleBatchReject" :disabled="!hasPendingSelected">批量拒绝</el-button>
           <el-button @click="clearSelection">取消选择</el-button>
@@ -66,14 +70,18 @@
         <!-- 中间：信息区 -->
         <div class="candidate-info">
           <div class="candidate-header">
-            <span class="candidate-name">{{ row.basicInfo?.name || '-' }}</span>
+            <span class="candidate-name">
+              {{ row.basicInfo?.name || '-' }}
+              <span v-if="row.basicInfo?.artName" class="stage-name-inline">
+                ({{ row.basicInfo.artName }})
+              </span>
+            </span>
             <el-tag :type="STATUS_MAP[row.status]?.type || 'info'" size="small" effect="dark" round>
               {{ STATUS_MAP[row.status]?.label || row.status }}
             </el-tag>
           </div>
-          <div v-if="row.basicInfo?.artName || row.experience?.accountName" class="candidate-name-extra">
-            <span v-if="row.basicInfo?.artName" class="name-pill">艺名：{{ row.basicInfo.artName }}</span>
-            <span v-if="row.experience?.accountName" class="name-pill name-pill-live">直播名：{{ row.experience.accountName }}</span>
+          <div v-if="row.experience?.accountName" class="candidate-name-extra">
+            <span class="name-pill name-pill-live">直播名：{{ row.experience.accountName }}</span>
           </div>
           <div class="candidate-meta">
             <span class="meta-item">{{ row.basicInfo?.gender || '-' }}</span>
@@ -81,8 +89,10 @@
             <span class="meta-item">{{ row.basicInfo?.age || '-' }}岁</span>
             <span class="meta-divider">/</span>
             <span class="meta-item">{{ row.basicInfo?.height || '-' }}cm</span>
-            <span class="meta-divider">|</span>
-            <span class="meta-item meta-phone">{{ row.basicInfo?.phone || '-' }}</span>
+            <template v-if="!isAgent()">
+              <span class="meta-divider">|</span>
+              <span class="meta-item meta-phone">{{ row.basicInfo?.phone || '-' }}</span>
+            </template>
             <template v-if="row.basicInfo?.mbti">
               <span class="meta-divider">|</span>
               <span class="meta-item meta-mbti">{{ row.basicInfo.mbti }}</span>
@@ -94,7 +104,7 @@
             <span v-if="row.experience?.hasExperience && row.experience?.guild" class="meta-item meta-guild">
               {{ row.experience.guild }}
             </span>
-            <template v-if="row.referral">
+            <template v-if="row.referral && !isAgent()">
               <span class="meta-divider">|</span>
               <el-tag size="small" type="success" effect="plain" round class="meta-scout">
                 ⭐ 星探推荐：{{ row.referral.scoutName || row.referral.scoutShareCode }}
@@ -172,18 +182,18 @@
           <el-avatar :size="80" :src="currentCandidate.images?.facePhoto" class="detail-avatar" />
           <div class="detail-profile-info">
             <div class="detail-profile-top">
-              <span class="detail-name">{{ currentCandidate.basicInfo?.name }}</span>
-              <span v-if="currentCandidate.basicInfo?.artName" class="detail-art-name">（{{ currentCandidate.basicInfo.artName }}）</span>
+              <span class="detail-name">
+                {{ currentCandidate.basicInfo?.name }}
+                <span v-if="currentCandidate.basicInfo?.artName" class="detail-art-name">
+                  ({{ currentCandidate.basicInfo.artName }})
+                </span>
+              </span>
               <el-tag :type="STATUS_MAP[currentCandidate.status]?.type" effect="dark" round>
                 {{ STATUS_MAP[currentCandidate.status]?.label }}
               </el-tag>
             </div>
-            <div v-if="currentCandidate.basicInfo?.artName || currentCandidate.experience?.accountName" class="detail-name-extra">
-              <el-tag v-if="currentCandidate.basicInfo?.artName" size="small" effect="plain" round class="alias-tag">
-                艺名：{{ currentCandidate.basicInfo.artName }}
-              </el-tag>
+            <div v-if="currentCandidate.experience?.accountName" class="detail-name-extra">
               <el-tag
-                v-if="currentCandidate.experience?.accountName"
                 size="small"
                 type="warning"
                 effect="plain"
@@ -221,7 +231,8 @@
 
         <!-- 2. 信息卡片网格 -->
         <div class="detail-grid">
-          <div class="info-block">
+          <!-- 联系方式 - 仅非经纪人可见 -->
+          <div v-if="!isAgent()" class="info-block">
             <div class="info-block-title">联系方式</div>
             <div class="info-row">
               <span class="info-label">手机</span>
@@ -232,7 +243,9 @@
               <span class="info-value">{{ currentCandidate.basicInfo?.wechat || '-' }}</span>
             </div>
           </div>
-          <div class="info-block">
+
+          <!-- 社交账号 - 仅非经纪人可见 -->
+          <div v-if="!isAgent()" class="info-block">
             <div class="info-block-title">社交账号</div>
             <div class="info-row">
               <span class="info-label">抖音</span>
@@ -266,7 +279,8 @@
               <span class="info-value">{{ formatDate(currentCandidate.createdAt) }}</span>
             </div>
           </div>
-          <div class="info-block" v-if="currentCandidate.referral">
+          <!-- 星探推荐 - 仅非经纪人可见 -->
+          <div v-if="currentCandidate.referral && !isAgent()" class="info-block">
             <div class="info-block-title">星探推荐</div>
 
             <!-- 推荐链条 -->
@@ -279,11 +293,11 @@
                   class="chain-item"
                 >
                   <el-tag
-                    :type="index === 0 ? 'warning' : 'success'"
+                    :type="index === 0 ? 'warning' : 'info'"
                     size="small"
                     effect="plain"
                   >
-                    {{ index === 0 ? '⭐' : '⭐⭐' }} {{ name }}
+                    {{ name }} ({{ index === 0 ? 'SP' : 'SS' }})
                   </el-tag>
                   <span v-if="index < currentCandidate.referral.scoutChainNames.length - 1" class="chain-arrow">→</span>
                 </span>
@@ -297,12 +311,12 @@
                 {{ currentCandidate.referral.scoutName || '-' }}
                 <el-tag
                   v-if="currentCandidate.referral.scoutLevel"
-                  :type="currentCandidate.referral.scoutLevel === 1 ? 'warning' : 'success'"
+                  :type="currentCandidate.referral.scoutLevel === 1 ? 'warning' : 'info'"
                   size="small"
                   effect="plain"
                   style="margin-left: 8px"
                 >
-                  {{ currentCandidate.referral.scoutLevel === 1 ? '一级星探' : '二级星探' }}
+                  {{ currentCandidate.referral.scoutLevel === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)' }}
                 </el-tag>
               </span>
             </div>
@@ -667,17 +681,79 @@
         <el-button type="danger" :loading="submitting" @click="confirmBatchReject">确认拒绝</el-button>
       </template>
     </el-dialog>
+
+    <!-- 批量分配经纪人对话框 -->
+    <el-dialog v-model="batchAssignDialogVisible" title="批量分配经纪人" width="500px">
+      <div class="batch-assign-dialog">
+        <div class="selected-info">
+          <p style="margin-bottom: 12px; color: #ccc">
+            已选择 <strong style="color: #fff">{{ selectedIds.length }}</strong> 名候选人
+          </p>
+          <div class="candidate-chips">
+            <el-tag
+              v-for="row in selectedRows.slice(0, 5)"
+              :key="row._id"
+              size="small"
+              style="margin: 4px"
+            >
+              {{ row.basicInfo?.name }}
+            </el-tag>
+            <el-tag v-if="selectedRows.length > 5" size="small" type="info" style="margin: 4px">
+              等{{ selectedRows.length }}人
+            </el-tag>
+          </div>
+        </div>
+
+        <el-form style="margin-top: 20px">
+          <el-form-item label="选择经纪人">
+            <el-select
+              v-model="selectedAgentId"
+              placeholder="请选择经纪人"
+              style="width: 100%"
+              filterable
+              :loading="loadingAgents"
+            >
+              <el-option
+                v-for="agent in agentList"
+                :key="agent._id"
+                :label="`${agent.name} (${agent.username}) - 已分配: ${agent.assignedCount || 0}人`"
+                :value="agent._id"
+              >
+                <div style="display: flex; justify-content: space-between">
+                  <span>{{ agent.name }} ({{ agent.username }})</span>
+                  <span style="color: #909399; font-size: 12px">
+                    已分配: {{ agent.assignedCount || 0 }}人
+                  </span>
+                </div>
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <template #footer>
+        <el-button @click="batchAssignDialogVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          :loading="submitting"
+          :disabled="!selectedAgentId"
+          @click="confirmBatchAssign"
+        >
+          确认分配
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { Search, Plus } from '@element-plus/icons-vue'
+import { Search, Plus, Connection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminAPI } from '../../api/admin'
 import { STATUS_MAP, formatDate } from '../../utils/constants'
 import { resolveCandidateImages } from '../../utils/cloudfile'
-import { hasPermission } from '../../utils/permission'
+import { hasPermission, getUserRole, isAgent } from '../../utils/permission'
 
 const list = ref([])
 const total = ref(0)
@@ -853,6 +929,87 @@ async function confirmBatchReject() {
     }
   } catch {
     ElMessage.error('操作失败')
+  } finally {
+    submitting.value = false
+  }
+}
+
+// 批量分配经纪人
+const batchAssignDialogVisible = ref(false)
+const selectedAgentId = ref('')
+const agentList = ref([])
+const loadingAgents = ref(false)
+
+function handleBatchAssign() {
+  if (selectedIds.value.length === 0) {
+    ElMessage.warning('请先选择候选人')
+    return
+  }
+
+  selectedAgentId.value = ''
+  batchAssignDialogVisible.value = true
+  loadAgentList()
+}
+
+async function loadAgentList() {
+  loadingAgents.value = true
+  try {
+    const res = await adminAPI.getAgentList()
+    if (res.success) {
+      agentList.value = res.data || []
+    }
+  } catch (error) {
+    console.error('加载经纪人列表失败:', error)
+    ElMessage.error('加载经纪人列表失败')
+  } finally {
+    loadingAgents.value = false
+  }
+}
+
+async function confirmBatchAssign() {
+  if (!selectedAgentId.value) {
+    ElMessage.warning('请选择经纪人')
+    return
+  }
+
+  submitting.value = true
+  try {
+    const res = await adminAPI.batchAssignCandidates({
+      candidateIds: selectedIds.value,
+      agentId: selectedAgentId.value
+    })
+
+    if (res.success) {
+      // 显示成功消息
+      let message = `成功分配 ${res.successCount || selectedIds.value.length} 人`
+
+      // 如果有重新分配的情况，显示详细信息
+      if (res.reassignments && res.reassignments.length > 0) {
+        const reassignedNames = res.reassignments
+          .slice(0, 3)
+          .map(r => r.candidateName)
+          .join('、')
+        const moreCount = res.reassignments.length - 3
+
+        ElMessageBox.alert(
+          `以下候选人已从其他经纪人重新分配：${reassignedNames}${moreCount > 0 ? ` 等${res.reassignments.length}人` : ''}`,
+          '分配成功',
+          {
+            type: 'warning',
+            confirmButtonText: '知道了'
+          }
+        )
+      } else {
+        ElMessage.success(message)
+      }
+
+      batchAssignDialogVisible.value = false
+      clearSelection()
+      fetchList()
+    }
+  } catch (error) {
+    console.error('批量分配失败:', error)
+    ElMessage.error('批量分配失败：' + (error.message || '未知错误'))
   } finally {
     submitting.value = false
   }

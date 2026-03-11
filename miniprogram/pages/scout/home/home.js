@@ -231,7 +231,7 @@ Page({
 
     wx.showModal({
       title: '分享邀请码',
-      content: `您的邀请码是：${inviteCode}\n\n请将此邀请码分享给想要成为下级星探的人员，对方注册时输入此邀请码即可加入您的团队。`,
+      content: `您的邀请码是：${inviteCode}\n\n请将此邀请码分享给想要成为特约星探的人员，对方注册时输入此邀请码即可加入您的团队。`,
       confirmText: '复制邀请码',
       cancelText: '关闭',
       success: (res) => {
