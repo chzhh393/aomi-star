@@ -173,7 +173,7 @@
     <button class="btn-back" bindtap="goBack">
       <text class="btn-text">返回</text>
     </button>
-    <button class="btn-edit" wx:if="{{candidate.status === 'pending'}}" bindtap="editApply">
+    <button class="btn-edit" wx:if="{{candidate.status === 'pending' && !readOnly}}" bindtap="editApply">
       <text class="btn-text">修改信息</text>
     </button>
   </view>

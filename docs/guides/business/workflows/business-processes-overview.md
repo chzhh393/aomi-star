@@ -3,9 +3,9 @@
 > Aomi Star 直播主播管理系统完整业务流程文档
 
 **创建日期**: 2026-03-10  
-**最后更新**: 2026-03-10  
-**维护者**: 开发团队  
-**版本**: v2.0
+**最后更新**: 2026-03-13
+**维护者**: 开发团队
+**版本**: v3.0
 
 ---
 
@@ -36,7 +36,7 @@
 
 - 🎯 **多角色工作台** - 候选人、主播、HR、经纪人、运营、星探等多种角色
 - 🔐 **微信免登录** - 基于微信授权的无缝登录体验
-- 🔗 **智能推荐** - 星探推荐码机制，自动绑定推荐关系
+- 🔗 **智能推荐** - 星探推荐码机制，审核准入制，自动绑定推荐关系
 - 📊 **数据脱敏** - 多层权限控制，保护敏感信息
 - 📱 **移动优先** - 专为移动端设计的操作体验
 
@@ -64,21 +64,22 @@ graph TB
     end
     
     subgraph 推荐流程
-        G[星探注册] --> H[获取推荐码]
+        G[星探申请] --> G1[管理员审核]
+        G1 --> H[获取推荐码]
         H --> I[推荐候选人]
         I --> A
         F --> J[佣金结算]
     end
-    
+
     subgraph 管理流程
         K[用户申请] --> L[管理员审核]
         L --> M[分配角色]
         M --> N[开通账号]
     end
-    
+
     subgraph 星探管理
-        O[层级调整] --> P[自动处理关系]
-        Q[星探删除] --> R[自动升级下级]
+        O[三级等级自动升级] --> P[差异化佣金结算]
+        Q[星探删除] --> R[软删除保留数据]
     end
     
     style A fill:#e1f5e1
@@ -92,12 +93,12 @@ graph TB
 | 编号 | 流程名称 | 主要角色 | 状态 | 优先级 | 最近更新 |
 |------|---------|---------|------|--------|---------|
 | 1 | 候选人报名与审核 | 候选人/HR/经纪人 | ✅ 运行中 | 🔴 高 | 初始版本 |
-| 2 | 星探推荐 | 星探/候选人 | ✅ 运行中 | 🔴 高 | 2026-03-10 |
+| 2 | 星探推荐 | 星探/候选人 | 🔄 改造中 | 🔴 高 | 2026-03-13 |
 | 3 | 经纪人面试评分 | 经纪人 | ✅ 增强 | 🔴 高 | 2026-03-10 |
 | 4 | 用户申请审核 | 管理员/新用户 | ✅ 新增 | 🟡 中 | 2026-03-10 |
 | 5 | 候选人批量分配 | HR/管理员 | ✅ 新增 | 🟡 中 | 2026-03-10 |
-| 6 | 星探层级管理 | 管理员 | ✅ 新增 | 🟡 中 | 2026-03-10 |
-| 7 | 星探删除 | 管理员 | ✅ 新增 | 🟢 低 | 2026-03-10 |
+| 6 | 星探等级管理 | 管理员 | 🔄 改造中 | 🟡 中 | 2026-03-13 |
+| 7 | 星探删除 | 管理员 | ✅ 运行中 | 🟢 低 | 2026-03-13 |
 | 8 | 试镜视频上传 | 经纪人 | ✅ 新增 | 🟡 中 | 2026-03-10 |
 
 ---
@@ -377,38 +378,35 @@ stateDiagram-v2
 
 ### 流程简介
 
-外部星探通过推荐码推荐候选人，候选人成功签约后，星探获得签约奖金和持续佣金分成。
+外部星探通过审核制注册，获取推荐码后推荐候选人。候选人成功签约后，星探根据等级和主播级别获得差异化佣金。
 
-### 星探层级体系
+### 星探等级体系
 
-#### 两级结构
+#### 三级结构（直营模式）
 
 ```mermaid
-graph TB
-    SP[星探合伙人 SP<br/>Senior Partner] --> SS1[特约星探 SS<br/>Special Scout]
-    SP --> SS2[特约星探 SS]
-    SP --> SS3[特约星探 SS]
-    SS1 --> C1[候选人]
-    SS1 --> C2[候选人]
-    SS2 --> C3[候选人]
-    
-    style SP fill:#ff9800,color:#fff
-    style SS1 fill:#2196f3,color:#fff
-    style SS2 fill:#2196f3,color:#fff
-    style SS3 fill:#2196f3,color:#fff
+graph LR
+    A[新锐星探<br/>Rookie Scout] -->|签约≥5人| B[特约星探<br/>Special Scout]
+    B -->|签约≥20人| C[合伙人星探<br/>Partner Scout]
+
+    style A fill:#4CAF50,color:#fff
+    style B fill:#2196f3,color:#fff
+    style C fill:#ff9800,color:#fff
 ```
 
-#### 层级特性对比
+#### 等级特性对比
 
-| 特性 | 星探合伙人 (SP) | 特约星探 (SS) |
-|------|----------------|--------------|
-| **英文名称** | Senior Partner | Special Scout |
-| **原名称** | L1星探 | L2星探 |
-| **邀请码** | ✅ 有 | ❌ 无 |
-| **发展下级** | ✅ 可以 | ❌ 不可以 |
-| **推荐候选人** | ✅ 可以 | ✅ 可以 |
-| **获取佣金** | ✅ 可以 | ✅ 可以 |
-| **注册方式** | 直接注册 | 通过SP邀请 |
+| 特性 | 新锐星探 | 特约星探 | 合伙人星探 |
+|------|---------|---------|----------|
+| **英文名称** | Rookie Scout | Special Scout | Partner Scout |
+| **等级代码** | `rookie` | `special` | `partner` |
+| **推荐码** | ✅ 有 | ✅ 有 | ✅ 有 |
+| **推荐候选人** | ✅ 可以 | ✅ 可以 | ✅ 可以 |
+| **签约奖金** | ¥200-500 | ¥300-800 | ¥500-1,200 |
+| **月度佣金比例** | 2%-3% | 3%-5% | 3%-8% |
+| **佣金周期** | 培养期+成长期 | 培养期+成长期+稳定期 | 全生命周期 |
+| **注册方式** | 申请 + 审核 | 自动升级 | 自动升级 |
+| **升级条件** | 审核通过即为新锐 | 签约≥5人 | 签约≥20人 |
 
 ---
 
@@ -418,57 +416,65 @@ graph TB
 sequenceDiagram
     participant S as 星探
     participant MP as 小程序
+    participant AD as 管理员
     participant C as 候选人
     participant SYS as 系统
     participant FIN as 财务
-    
-    S->>MP: 1. 注册成为星探
-    MP->>SYS: 2. 生成推荐码
-    SYS->>S: 3. 返回推荐码
-    
-    S->>C: 4. 分享推荐码
-    C->>MP: 5. 扫码进入小程序
-    MP->>SYS: 6. 验证推荐码
-    SYS->>SYS: 7. 绑定推荐关系
-    
-    C->>MP: 8. 完成报名流程
-    C->>MP: 9. 通过面试
-    C->>SYS: 10. 成功签约
-    
-    SYS->>FIN: 11. 触发佣金结算
-    FIN->>S: 12. 发放签约奖金
-    
-    loop 前3个月
+
+    S->>MP: 1. 申请成为星探
+    MP->>SYS: 2. 提交申请（含申请理由）
+    SYS->>AD: 3. 通知待审核
+
+    AD->>SYS: 4. 审核通过
+    SYS->>S: 5. 通知审核通过，推荐码已激活
+
+    S->>C: 6. 分享推荐码
+    C->>MP: 7. 扫码进入小程序
+    MP->>SYS: 8. 验证推荐码
+    SYS->>SYS: 9. 绑定推荐关系
+
+    C->>MP: 10. 完成报名流程
+    C->>MP: 11. 通过面试
+    C->>SYS: 12. 成功签约（定级SS/S/A/B）
+
+    SYS->>FIN: 13. 触发签约奖金（按等级和主播级别）
+    FIN->>S: 14. 发放签约奖金
+
+    loop 按生命周期阶段
         C->>SYS: 主播产生收益
-        SYS->>FIN: 计算佣金（5%）
+        SYS->>FIN: 计算佣金（按等级和阶段比例）
         FIN->>S: 发放月度佣金
     end
+
+    SYS->>SYS: 15. 检查签约人数，自动升级等级
 ```
 
 ---
 
 ### 详细步骤
 
-#### 阶段1：星探注册
+#### 阶段1：星探申请与审核
 
-**注册方式**:
+**申请流程**:
+1. 在小程序选择"成为星探"
+2. 填写申请信息：
+   - 个人信息（姓名、手机号、身份证）
+   - 申请理由（必填，10-500字）
+   - 推荐资源描述（选填）
+3. 提交申请，等待管理员审核
+4. 审核通过后，系统自动生成唯一推荐码
+5. 初始等级为**新锐星探**
 
-**方式1: 成为星探合伙人 (SP)**
-- 直接在小程序注册
-- 填写个人信息（姓名、手机号、身份证）
-- 系统自动生成唯一推荐码
-- 推荐码格式: `SC-EXT-20260310-A3B9`
-
-**方式2: 成为特约星探 (SS)**
-- 通过SP的邀请码进入
-- 填写个人信息
-- 系统绑定与SP的层级关系
-- 不生成推荐码（无法发展下级）
+**审核流程**:
+- 管理员在后台查看待审核的星探申请
+- 审核标准：身份真实性、申请理由、推荐资源
+- 通过：星探状态激活，推荐码生效
+- 拒绝：填写拒绝原因，通知申请人
 
 **推荐码规则**:
 ```javascript
 // 格式: SC-{类型}-{日期}-{随机码}
-SC-EXT-20260310-A3B9
+SC-EXT-20260313-A3B9
 
 // 类型:
 // INT - 内部专职星探
@@ -509,9 +515,9 @@ graph LR
   referral: {
     scoutId: "scout_id",
     scoutName: "张星探",
-    scoutShareCode: "SC-EXT-20260310-A3B9",
-    scoutLevel: 1, // SP=1, SS=2
-    referredAt: "2026-03-10 10:00"
+    scoutShareCode: "SC-EXT-20260313-A3B9",
+    scoutGrade: "special", // rookie/special/partner
+    referredAt: "2026-03-13 10:00"
   }
 }
 
@@ -521,8 +527,9 @@ graph LR
     {
       candidateId: "candidate_id",
       candidateName: "李候选",
-      referredAt: "2026-03-10 10:00",
+      referredAt: "2026-03-13 10:00",
       status: "pending", // pending/signed/rejected
+      anchorLevel: null,  // 签约后填入: ss/s/a/b
       commission: 0
     }
   ]
@@ -534,40 +541,60 @@ graph LR
 #### 阶段3：佣金结算
 
 **结算时机**:
-1. **签约奖金** - 候选人签约成功后立即发放
-2. **月度佣金** - 主播每月收益结算后发放
+1. **签约奖金** - 候选人签约成功后，次月15日结算
+2. **月度佣金** - 每月1日计算上月佣金，15日发放
 
-**佣金规则**:
+**签约奖金标准**（按星探等级 × 主播级别）:
 
-| 类型 | 金额/比例 | 发放时间 | 持续时长 |
-|------|----------|---------|---------|
-| 签约奖金 | ¥500/人 | 签约后立即 | 一次性 |
-| 月度佣金 | 主播收益 × 5% | 每月结算日 | 前3个月 |
+| 星探等级 | SS级主播 | S级主播 | A级主播 | B级主播 |
+|---------|---------|---------|---------|---------|
+| 新锐星探 | ¥500 | ¥400 | ¥300 | ¥200 |
+| 特约星探 | ¥800 | ¥600 | ¥500 | ¥300 |
+| 合伙人星探 | ¥1,200 | ¥1,000 | ¥800 | ¥500 |
+
+**月度佣金比例**（按星探等级 × 主播生命周期阶段）:
+
+| 星探等级 | 培养期(1-2月) | 成长期(3-4月) | 稳定期(5-6月) | 成熟期(7月+) |
+|---------|-------------|-------------|-------------|-------------|
+| 新锐星探 | 3% | 2% | - | - |
+| 特约星探 | 5% | 4% | 3% | - |
+| 合伙人星探 | 8% | 6% | 5% | 3% |
 
 **计算示例**:
 ```
-候选人：李四
-推荐星探：张星探
+候选人：李四（A级主播）
+推荐星探：张星探（特约星探）
 
-签约时间：2026-03-10
-签约奖金：¥500（立即发放）
+签约时间：2026-03-13
+签约奖金：¥500（次月15日发放）
 
-第1个月（2026-04）：
-  主播收益：¥10,000
-  星探佣金：¥10,000 × 5% = ¥500
+第1个月 - 培养期（2026-04）：
+  主播收益：¥8,000
+  星探佣金：¥8,000 × 5% = ¥400
 
-第2个月（2026-05）：
+第2个月 - 培养期（2026-05）：
+  主播收益：¥12,000
+  星探佣金：¥12,000 × 5% = ¥600
+
+第3个月 - 成长期（2026-06）：
   主播收益：¥15,000
-  星探佣金：¥15,000 × 5% = ¥750
+  星探佣金：¥15,000 × 4% = ¥600
 
-第3个月（2026-06）：
+第4个月 - 成长期（2026-07）：
+  主播收益：¥18,000
+  星探佣金：¥18,000 × 4% = ¥720
+
+第5个月 - 稳定期（2026-08）：
   主播收益：¥20,000
-  星探佣金：¥20,000 × 5% = ¥1,000
+  星探佣金：¥20,000 × 3% = ¥600
 
-第4个月起：
-  不再发放佣金
+第6个月 - 稳定期（2026-09）：
+  主播收益：¥22,000
+  星探佣金：¥22,000 × 3% = ¥660
 
-总计：¥500 + ¥500 + ¥750 + ¥1,000 = ¥2,750
+第7个月起：特约星探不再获得佣金
+
+总计：¥500 + ¥400 + ¥600 + ¥600 + ¥720 + ¥600 + ¥660 = ¥4,080
 ```
 
 **数据记录**:
@@ -575,22 +602,25 @@ graph LR
 {
   commissions: [
     {
-      type: "signing_bonus", // 签约奖金
+      type: "signing_bonus",
       candidateId: "candidate_id",
       candidateName: "李四",
+      anchorLevel: "a",
+      scoutGrade: "special",
       amount: 500,
-      paidAt: "2026-03-10",
+      paidAt: "2026-04-15",
       status: "paid"
     },
     {
-      type: "monthly", // 月度佣金
+      type: "monthly",
       candidateId: "candidate_id",
       candidateName: "李四",
       month: "2026-04",
-      anchorRevenue: 10000,
+      lifecycleStage: "nurturing",
+      anchorRevenue: 8000,
       rate: 0.05,
-      amount: 500,
-      paidAt: "2026-05-01",
+      amount: 400,
+      paidAt: "2026-05-15",
       status: "paid"
     }
   ]
@@ -601,40 +631,38 @@ graph LR
 
 ### 星探管理功能
 
-#### 6.1 层级调整 ⭐ 新增
+#### 6.1 等级自动升级 🔄 改造
 
-**升级（SS → SP）**:
+**三级等级自动升级机制**:
+
 ```mermaid
 graph LR
-    A[管理员选择星探] --> B[点击升级]
-    B --> C[生成邀请码]
-    C --> D[解除上级关系]
-    D --> E[更新原上级统计]
-    E --> F[记录操作日志]
+    A[新锐星探<br/>审核通过] -->|签约≥5人| B[特约星探<br/>自动升级]
+    B -->|签约≥20人| C[合伙人星探<br/>自动升级]
+
+    style A fill:#4CAF50,color:#fff
+    style B fill:#2196f3,color:#fff
+    style C fill:#ff9800,color:#fff
 ```
 
-**降级（SP → SS）**:
-```mermaid
-graph LR
-    A[管理员选择星探] --> B[点击降级]
-    B --> C[移除邀请码]
-    C --> D{有下级?}
-    D -->|是| E[自动升级所有下级为SP]
-    D -->|否| F[清空团队统计]
-    E --> G[为下级生成邀请码]
-    G --> F
-    F --> H[记录操作日志]
-```
+**升级触发时机**:
+- 每次候选人签约成功后，系统自动检查推荐星探的签约人数
+- 达到升级条件时自动升级，无需管理员手动操作
+- 升级后发送通知给星探
 
-**自动处理规则**:
-- SS升级为SP时，自动解除与原上级的关系
-- SP降级为SS时，所有下级自动升级为SP
-- 下级升级时自动生成新的邀请码
-- 统计数据自动更新
+**升级规则**:
+- 新锐 → 特约：累计签约人数 ≥ 5
+- 特约 → 合伙人：累计签约人数 ≥ 20
+- 等级只升不降（除非管理员手动调整）
+
+**管理员手动调整**:
+- 特殊情况下管理员可以手动调整星探等级
+- 需要填写调整理由
+- 记录操作日志
 
 ---
 
-#### 6.2 星探删除 ⭐ 新增
+#### 6.2 星探删除
 
 **软删除机制**:
 - 不真正删除数据，只标记 `status: 'deleted'`
@@ -647,45 +675,22 @@ sequenceDiagram
     participant AD as 管理员
     participant SYS as 系统
     participant DB as 数据库
-    
+
     AD->>SYS: 1. 点击删除星探
-    SYS->>DB: 2. 标记 status=deleted
-    SYS->>SYS: 3. 检查是否有下级
-    
-    alt 是SP且有下级
-        SYS->>DB: 4. 查询所有下级
-        loop 每个下级
-            SYS->>SYS: 5. 生成新邀请码
-            SYS->>DB: 6. 升级为SP
-            SYS->>DB: 7. 解除层级关系
-        end
-    end
-    
-    SYS->>DB: 8. 记录操作日志
-    SYS->>AD: 9. 删除成功
+    SYS->>AD: 2. 确认删除（显示影响范围）
+    AD->>SYS: 3. 确认
+    SYS->>DB: 4. 标记 status=deleted
+    SYS->>DB: 5. 记录操作日志
+    SYS->>AD: 6. 删除成功
 ```
 
 **恢复功能**:
 ```javascript
-// 恢复时检查原层级关系
-if (scout.level.depth === 2 && scout.level.parentScoutId) {
-  // 检查原上级是否存在
-  const parent = await getScout(scout.level.parentScoutId);
-  
-  if (!parent || parent.status === 'deleted') {
-    // 原上级已删除，自动升级为SP
-    scout.level.depth = 1;
-    scout.inviteCode = generateUniqueInviteCode();
-    scout.level.parentScoutId = null;
-  } else {
-    // 恢复原层级关系
-    // 保持不变
-  }
-}
-
+// 恢复星探
 scout.status = 'active';
 scout.deletedAt = null;
 scout.deletedBy = null;
+// 等级保持删除前的状态不变
 ```
 
 ---
@@ -701,24 +706,37 @@ scout.deletedBy = null;
     phone: "13800138000",
     idCard: "110101199001011234"
   },
-  level: {
-    depth: 1, // 1=SP, 2=SS
-    parentScoutId: null,
-    parentScoutName: "",
-    parentInviteCode: ""
+  // 等级信息（三级：rookie/special/partner）
+  grade: "special",
+  gradeUpgradedAt: "2026-06-01",
+  gradeHistory: [],
+  // 申请审核信息
+  application: {
+    reason: "有丰富的主播推荐资源",
+    resourceDesc: "拥有抖音账号10万粉丝",
+    appliedAt: "2026-03-13",
+    status: "approved",
+    reviewedBy: "admin_id",
+    reviewedAt: "2026-03-14",
+    reviewNote: ""
   },
-  inviteCode: "SC-EXT-20260310-A3B9", // SP才有
-  team: {
-    directScouts: 5, // 直接下级数量
-    totalScouts: 15  // 团队总数
+  // 推荐码（所有星探统一拥有）
+  shareCode: "SC-EXT-20260313-A3B9",
+  // 统计数据
+  stats: {
+    referredCount: 15,
+    signedCount: 5,
+    totalCommission: 12500,
+    paidCommission: 10000,
+    pendingCommission: 2500
   },
-  referrals: [], // 推荐的候选人列表
-  commissions: [], // 佣金记录
-  status: "active", // active/deleted
+  referrals: [],
+  commissions: [],
+  status: "active", // pending/active/rejected/deleted
   deletedAt: null,
   deletedBy: null,
-  createdAt: "2026-03-10 09:00",
-  updatedAt: "2026-03-10 14:30"
+  createdAt: "2026-03-13 09:00",
+  updatedAt: "2026-03-13 14:30"
 }
 ```
 
@@ -1563,194 +1581,95 @@ async function batchAssignCandidates(data, token) {
 
 ---
 
-## 6. 星探层级管理流程
+## 6. 星探等级管理流程
 
-### 流程简介 ⭐ 2026-03-10 新增
+### 流程简介 🔄 2026-03-13 改造
 
-管理员可以手动调整星探的层级（升级/降级），系统自动处理层级关系和邀请码。
+星探等级基于签约人数自动升级，管理员可查看等级状态和手动调整。取消了旧的SP/SS手动升降级和上下级关系管理。
 
-### 升级流程（SS → SP）
+### 自动升级机制
 
 ```mermaid
 sequenceDiagram
-    participant AD as 管理员
+    participant C as 候选人
     participant SYS as 系统
     participant DB as 数据库
-    participant PS as 原上级SP
-    
-    AD->>SYS: 1. 选择SS星探
-    AD->>SYS: 2. 点击"升级为SP"
-    SYS->>SYS: 3. 生成唯一邀请码
-    
-    alt 生成成功
-        SYS->>DB: 4. 更新层级为SP
-        SYS->>DB: 5. 保存邀请码
-        
-        alt 有原上级
-            SYS->>DB: 6. 解除上级关系
-            SYS->>PS: 7. 更新统计(-1下级)
-        end
-        
-        SYS->>DB: 8. 记录操作日志
-        SYS->>AD: 9. 升级成功
-    else 生成失败（重试20次）
-        SYS->>AD: 10. 提示稍后重试
+    participant S as 星探
+
+    C->>SYS: 1. 候选人签约成功
+    SYS->>DB: 2. 更新星探签约人数
+    SYS->>SYS: 3. 检查是否满足升级条件
+
+    alt 签约≥5人 且当前为新锐
+        SYS->>DB: 4. 升级为特约星探
+        SYS->>S: 5. 发送升级通知
+    else 签约≥20人 且当前为特约
+        SYS->>DB: 4. 升级为合伙人星探
+        SYS->>S: 5. 发送升级通知
+    else 不满足升级条件
+        SYS->>SYS: 保持当前等级
     end
+
+    SYS->>DB: 6. 记录等级变更历史
 ```
 
-**详细步骤**:
+**升级条件**:
 
-1. **生成唯一邀请码**:
-   ```javascript
-   async function generateUniqueInviteCode(db) {
-     let retryCount = 0;
-     const maxRetries = 20;
-     
-     while (retryCount < maxRetries) {
-       const code = generateInviteCode(); // SC-EXT-20260310-A3B9
-       
-       const check = await db.collection('scouts').where({
-         inviteCode: code
-       }).get();
-       
-       if (check.data.length === 0) {
-         return code; // 找到唯一的邀请码
-       }
-       
-       retryCount++;
-     }
-     
-     throw new Error('无法生成唯一邀请码');
-   }
-   ```
+| 当前等级 | 升级目标 | 条件 |
+|---------|---------|------|
+| 新锐星探 | 特约星探 | 累计签约 ≥ 5 人 |
+| 特约星探 | 合伙人星探 | 累计签约 ≥ 20 人 |
 
-2. **更新层级信息**:
-   ```javascript
-   const updateData = {
-     'level.depth': 1, // 升级为SP
-     inviteCode: inviteCode,
-     updatedAt: db.serverDate()
-   };
-   ```
+**自动升级实现**:
+```javascript
+async function checkAndUpgradeScoutGrade(scoutId) {
+  const scout = await db.collection('scouts').doc(scoutId).get();
+  const signedCount = scout.data.stats.signedCount;
+  const currentGrade = scout.data.grade;
 
-3. **解除上级关系**（如果有原上级）:
-   ```javascript
-   if (scout.level.parentScoutId) {
-     updateData['level.parentScoutId'] = null;
-     updateData['level.parentScoutName'] = '';
-     updateData['level.parentInviteCode'] = '';
-     
-     // 更新原上级的统计
-     await db.collection('scouts').doc(scout.level.parentScoutId).update({
-       data: {
-         'team.directScouts': _.inc(-1),
-         'team.totalScouts': _.inc(-1)
-       }
-     });
-   }
-   ```
+  let newGrade = currentGrade;
+  if (signedCount >= 20 && currentGrade !== 'partner') {
+    newGrade = 'partner';
+  } else if (signedCount >= 5 && currentGrade === 'rookie') {
+    newGrade = 'special';
+  }
 
-4. **记录操作日志**:
-   ```javascript
-   await logAuditAction('update_scout_level', admin.username, scoutId, {
-     scoutName: scout.profile.name,
-     oldLevel: '特约星探 (SS)',
-     newLevel: '星探合伙人 (SP)',
-     reason: reason || '无',
-     inviteCode: inviteCode
-   });
-   ```
+  if (newGrade !== currentGrade) {
+    await db.collection('scouts').doc(scoutId).update({
+      data: {
+        grade: newGrade,
+        gradeUpgradedAt: db.serverDate(),
+        gradeHistory: _.push({
+          from: currentGrade,
+          to: newGrade,
+          signedCount: signedCount,
+          upgradedAt: db.serverDate()
+        })
+      }
+    });
+  }
+}
+```
 
 ---
 
-### 降级流程（SP → SS）
+### 管理员手动调整
+
+特殊情况下管理员可手动调整等级（需填写原因）：
 
 ```mermaid
 sequenceDiagram
     participant AD as 管理员
     participant SYS as 系统
     participant DB as 数据库
-    participant CS as 下级星探们
-    
-    AD->>SYS: 1. 选择SP星探
-    AD->>SYS: 2. 点击"降级为SS"
-    SYS->>SYS: 3. 移除邀请码
-    
-    SYS->>DB: 4. 查询所有下级
-    
-    alt 有下级
-        loop 每个下级
-            SYS->>SYS: 5. 生成唯一邀请码
-            SYS->>DB: 6. 升级为SP
-            SYS->>DB: 7. 解除层级关系
-        end
-    end
-    
-    SYS->>DB: 8. 更新层级为SS
-    SYS->>DB: 9. 清空团队统计
-    SYS->>DB: 10. 记录操作日志
-    SYS->>AD: 11. 降级成功
+
+    AD->>SYS: 1. 选择星探
+    AD->>SYS: 2. 点击"调整等级"
+    AD->>SYS: 3. 选择新等级 + 填写原因
+    SYS->>DB: 4. 更新等级
+    SYS->>DB: 5. 记录操作日志（含原因）
+    SYS->>AD: 6. 调整成功
 ```
-
-**详细步骤**:
-
-1. **移除邀请码**:
-   ```javascript
-   const updateData = {
-     'level.depth': 2, // 降级为SS
-     inviteCode: null,
-     updatedAt: db.serverDate()
-   };
-   ```
-
-2. **处理下级星探**（如果有）:
-   ```javascript
-   if (scout.team.directScouts > 0) {
-     // 查找所有下级
-     const children = await db.collection('scouts').where({
-       'level.parentScoutId': scoutId
-     }).get();
-     
-     // 逐个升级为SP
-     for (const child of children.data) {
-       try {
-         // 生成唯一邀请码
-         const childInviteCode = await generateUniqueInviteCode(db);
-         
-         await db.collection('scouts').doc(child._id).update({
-           data: {
-             'level.depth': 1, // 升级为SP
-             'level.parentScoutId': null,
-             'level.parentScoutName': '',
-             'level.parentInviteCode': '',
-             inviteCode: childInviteCode,
-             updatedAt: db.serverDate()
-           }
-         });
-       } catch (error) {
-         console.error('升级下级失败:', error);
-         // 继续处理其他下级
-       }
-     }
-   }
-   ```
-
-3. **清空团队统计**:
-   ```javascript
-   updateData['team.directScouts'] = 0;
-   updateData['team.totalScouts'] = 0;
-   ```
-
-4. **记录操作日志**:
-   ```javascript
-   await logAuditAction('update_scout_level', admin.username, scoutId, {
-     scoutName: scout.profile.name,
-     oldLevel: '星探合伙人 (SP)',
-     newLevel: '特约星探 (SS)',
-     reason: reason || '无',
-     childrenPromoted: children.data.length // 升级的下级数量
-   });
-   ```
 
 ---
 
@@ -1760,45 +1679,45 @@ sequenceDiagram
 ```
 星探管理
 
-[姓名]  [层级]  [邀请码]  [下级数]  [推荐数]  [操作]
-张三    SP      SC-EXT... 5        12       [编辑层级] [删除]
-李四    SS      -         0        3        [编辑层级] [删除]
-王五    SP      SC-EXT... 2        8        [编辑层级] [删除]
+[姓名]  [等级]      [推荐码]    [推荐数]  [签约数]  [佣金]    [操作]
+张三    合伙人星探   SC-EXT...   25       22       ¥45,000  [详情] [删除]
+李四    特约星探     SC-EXT...   12       8        ¥12,000  [详情] [删除]
+王五    新锐星探     SC-EXT...   5        2        ¥2,000   [详情] [删除]
+赵六    待审核       -           -        -        -        [审核]
 ```
 
-**编辑层级弹窗**:
+**星探详情/等级调整**:
 ```
-调整星探层级
+星探详情
 
-当前信息：
+基本信息：
 姓名：张三
-当前层级：星探合伙人 (SP)
-邀请码：SC-EXT-20260310-A3B9
-下级数：5
+手机号：138****0000
+等级：合伙人星探
+推荐码：SC-EXT-20260313-A3B9
 
-调整为：
-● 星探合伙人 (SP)
-○ 特约星探 (SS)
+统计数据：
+推荐人数：25
+签约人数：22
+累计佣金：¥45,000
+已发放：¥38,000
+待发放：¥7,000
 
-操作说明：
-• 降级为SS将自动升级所有下级为SP
-• 升级为SP将自动生成新邀请码
+等级历史：
+2026-03-13 新锐星探（审核通过）
+2026-05-20 特约星探（签约达5人，自动升级）
+2026-09-15 合伙人星探（签约达20人，自动升级）
 
-调整理由（选填）：
-┌────────────────────┐
-│                    │
-└────────────────────┘
-
-[取消]  [确认调整]
+[调整等级]  [删除]
 ```
 
 ---
 
 ## 7. 星探删除流程
 
-### 流程简介 ⭐ 2026-03-10 新增
+### 流程简介
 
-管理员可以删除星探（软删除），系统自动处理下级关系，并支持恢复功能。
+管理员可以删除星探（软删除），保留历史数据，并支持恢复功能。新模式下无上下级关系，删除逻辑简化。
 
 ### 删除流程
 
@@ -1807,26 +1726,15 @@ sequenceDiagram
     participant AD as 管理员
     participant SYS as 系统
     participant DB as 数据库
-    participant CS as 下级星探们
-    
+
     AD->>SYS: 1. 选择星探
     AD->>SYS: 2. 点击"删除"
-    SYS->>AD: 3. 确认删除
+    SYS->>AD: 3. 确认删除（显示推荐记录数等信息）
     AD->>SYS: 4. 确认
-    
+
     SYS->>DB: 5. 标记 status=deleted
-    
-    alt 是SP且有下级
-        SYS->>DB: 6. 查询所有下级
-        loop 每个下级
-            SYS->>SYS: 7. 生成唯一邀请码
-            SYS->>DB: 8. 升级为SP
-            SYS->>DB: 9. 解除层级关系
-        end
-    end
-    
-    SYS->>DB: 10. 记录操作日志
-    SYS->>AD: 11. 删除成功
+    SYS->>DB: 6. 记录操作日志
+    SYS->>AD: 7. 删除成功
 ```
 
 **软删除实现**:
@@ -1834,8 +1742,8 @@ sequenceDiagram
 async function deleteScout(data, token) {
   const { scoutId } = data;
   const scout = await db.collection('scouts').doc(scoutId).get();
-  
-  // 1. 软删除星探
+
+  // 软删除星探
   await db.collection('scouts').doc(scoutId).update({
     data: {
       status: 'deleted',
@@ -1844,38 +1752,15 @@ async function deleteScout(data, token) {
       updatedAt: db.serverDate()
     }
   });
-  
-  // 2. 如果是SP且有下级
-  if (scout.data.level.depth === 1 && scout.data.team.directScouts > 0) {
-    const children = await db.collection('scouts').where({
-      'level.parentScoutId': scoutId
-    }).get();
-    
-    // 逐个升级下级为SP
-    for (const child of children.data) {
-      const childInviteCode = await generateUniqueInviteCode(db);
-      
-      await db.collection('scouts').doc(child._id).update({
-        data: {
-          'level.depth': 1,
-          'level.parentScoutId': null,
-          'level.parentScoutName': '',
-          'level.parentInviteCode': '',
-          inviteCode: childInviteCode,
-          updatedAt: db.serverDate()
-        }
-      });
-    }
-  }
-  
-  // 3. 记录操作日志
+
+  // 记录操作日志
   await logAuditAction('delete_scout', user.username, scoutId, {
     scoutName: scout.data.profile.name,
-    scoutLevel: scout.data.level.depth === 1 ? 'SP' : 'SS',
-    hadChildren: scout.data.team.directScouts > 0,
-    childrenCount: scout.data.team.directScouts
+    scoutGrade: scout.data.grade,
+    referredCount: scout.data.stats.referredCount,
+    signedCount: scout.data.stats.signedCount
   });
-  
+
   return { success: true, message: '删除成功' };
 }
 ```
@@ -1889,63 +1774,32 @@ sequenceDiagram
     participant AD as 管理员
     participant SYS as 系统
     participant DB as 数据库
-    
+
     AD->>SYS: 1. 选择已删除星探
     AD->>SYS: 2. 点击"恢复"
-    
-    SYS->>DB: 3. 检查原上级是否存在
-    
-    alt 是SS且有原上级
-        alt 原上级存在
-            SYS->>DB: 4. 恢复原层级关系
-        else 原上级已删除
-            SYS->>SYS: 5. 生成邀请码
-            SYS->>DB: 6. 自动升级为SP
-        end
-    end
-    
-    SYS->>DB: 7. 恢复 status=active
-    SYS->>DB: 8. 记录操作日志
-    SYS->>AD: 9. 恢复成功
+    SYS->>DB: 3. 恢复 status=active
+    SYS->>DB: 4. 记录操作日志
+    SYS->>AD: 5. 恢复成功（等级保持不变）
 ```
 
 **恢复实现**:
 ```javascript
 async function restoreScout(data, token) {
   const { scoutId } = data;
-  const scout = await db.collection('scouts').doc(scoutId).get();
-  
-  const updateData = {
-    status: 'active',
-    deletedAt: _.remove(),
-    deletedBy: _.remove(),
-    updatedAt: db.serverDate()
-  };
-  
-  // 检查原层级关系是否有效
-  if (scout.data.level.depth === 2 && scout.data.level.parentScoutId) {
-    const parent = await db.collection('scouts').doc(scout.data.level.parentScoutId).get();
-    
-    if (!parent.data || parent.data.status === 'deleted') {
-      // 原上级已不存在，自动升级为SP
-      const inviteCode = await generateUniqueInviteCode(db);
-      updateData['level.depth'] = 1;
-      updateData['level.parentScoutId'] = null;
-      updateData['level.parentScoutName'] = '';
-      updateData['level.parentInviteCode'] = '';
-      updateData.inviteCode = inviteCode;
-    }
-  }
-  
-  // 恢复星探
+
   await db.collection('scouts').doc(scoutId).update({
-    data: updateData
+    data: {
+      status: 'active',
+      deletedAt: _.remove(),
+      deletedBy: _.remove(),
+      updatedAt: db.serverDate()
+    }
   });
-  
+
   await logAuditAction('restore_scout', user.username, scoutId, {
     scoutName: scout.data.profile.name
   });
-  
+
   return { success: true, message: '恢复成功' };
 }
 ```
@@ -1955,16 +1809,16 @@ async function restoreScout(data, token) {
 ### 数据保护
 
 **软删除的优势**:
-- ✅ 保留所有历史数据
-- ✅ 保留推荐记录和佣金记录
-- ✅ 可以恢复
-- ✅ 支持数据审计
+- 保留所有历史数据
+- 保留推荐记录和佣金记录
+- 可以恢复
+- 支持数据审计
 
 **不会被删除的数据**:
 - 推荐关系记录
 - 佣金计算记录
 - 操作日志
-- 层级变更历史
+- 等级变更历史
 
 ---
 
@@ -1992,7 +1846,7 @@ async function restoreScout(data, token) {
 | uploadInterviewMaterials | 上传资料 | 照片/视频/试镜视频 |
 | viewPersonalInfo | 查看个人信息 | 手机号、微信号 |
 | viewReferralInfo | 查看推荐信息 | 星探信息、推荐码 |
-| manageScouts | 管理星探 | 层级调整、删除 |
+| manageScouts | 管理星探 | 审核申请、等级调整、删除 |
 | viewReports | 查看报表 | 数据统计 |
 
 ---
@@ -2052,26 +1906,64 @@ stateDiagram-v2
     rejected --> [*]
 ```
 
-### 星探层级流转
+### 星探等级流转
 
 ```mermaid
 stateDiagram-v2
-    [*] --> SP: 直接注册
-    [*] --> SS: 通过邀请
-    
-    SP --> SS: 手动降级
-    SS --> SP: 手动升级
-    
-    SP --> deleted: 软删除
-    SS --> deleted: 软删除
-    
-    deleted --> SP: 恢复（原SP或原上级已删除）
-    deleted --> SS: 恢复（原SS且上级存在）
+    [*] --> pending: 提交申请
+    pending --> rookie: 审核通过
+    pending --> rejected: 审核拒绝
+
+    rookie --> special: 签约≥5人（自动升级）
+    special --> partner: 签约≥20人（自动升级）
+
+    rookie --> deleted: 软删除
+    special --> deleted: 软删除
+    partner --> deleted: 软删除
+
+    deleted --> rookie: 恢复
+    deleted --> special: 恢复
+    deleted --> partner: 恢复
+```
+
+### 主播生命周期流转
+
+```mermaid
+stateDiagram-v2
+    [*] --> signed: 签约
+    signed --> nurturing: 第1-2月（培养期）
+    nurturing --> growing: 第3-4月（成长期）
+    growing --> stable: 第5-6月（稳定期）
+    stable --> mature: 第7月+（成熟期）
+    mature --> renewal: 合同到期
 ```
 
 ---
 
 ## 变更历史
+
+### 2026-03-13 - 星探体系改造（分销→直营）
+
+**核心变更**：
+- 星探层级从SP/SS两级改为新锐/特约/合伙人三级
+- 取消上下级关系，实行扁平化管理
+- 新增星探申请审核制
+- 佣金规则改为按等级×主播级别差异化计算
+- 新增主播定级（SS/S/A/B）
+- 新增主播6阶段生命周期管理
+- 结算周期从固定3个月改为按生命周期阶段
+- scouts 集合数据结构重构
+- candidates 集合新增 anchorLevel、lifecycleStage 字段
+
+**移除功能**：
+- 星探邀请码机制（SP邀请SS）
+- 上下级关系管理
+- SP/SS手动升降级
+- 删除时下级自动升级逻辑
+
+**详细设计文档**：[星探体系改造设计文档](../../dev-logs/2026-03/scout-system-redesign-2026-03-13.md)
+
+---
 
 ### 2026-03-10 - 系统优化与功能增强
 

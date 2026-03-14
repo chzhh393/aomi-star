@@ -167,7 +167,7 @@ async function submitCandidate(openId, data) {
     updatedAt: db.serverDate()
   };
 
-  // 如果有推荐码，查找星探并关联
+  // 如果有推荐码，查找星探并关联（扁平推荐，不再构建链条）
   if (data.scoutShareCode) {
     const scoutRes = await db.collection('scouts').where({
       shareCode: data.scoutShareCode,
@@ -177,27 +177,15 @@ async function submitCandidate(openId, data) {
     if (scoutRes.data.length > 0) {
       const scout = scoutRes.data[0];
 
-      // 构建推荐链条
-      const scoutChain = [scout._id];
-      const scoutChainNames = [scout.profile.name];
-
-      // 如果是二级星探，添加一级星探信息
-      if (scout.level && scout.level.parentScoutId) {
-        scoutChain.unshift(scout.level.parentScoutId);
-        scoutChainNames.unshift(scout.level.parentScoutName);
-      }
-
       candidateData.referral = {
         scoutId: scout._id,
         scoutShareCode: data.scoutShareCode,
         scoutName: scout.profile.name,
-        scoutLevel: scout.level?.depth || 1,
-        scoutChain: scoutChain,  // [一级ID, 二级ID] 或 [一级ID]
-        scoutChainNames: scoutChainNames,  // [一级名称, 二级名称] 或 [一级名称]
+        scoutGrade: scout.grade || 'rookie',
         referredAt: db.serverDate()
       };
 
-      console.log('[candidate] 关联星探成功:', scout.profile.name, '层级:', scout.level?.depth || 1);
+      console.log('[candidate] 关联星探成功:', scout.profile.name, '等级:', scout.grade || 'rookie');
     } else {
       console.log('[candidate] 推荐码无效或星探已停用:', data.scoutShareCode);
     }
@@ -227,15 +215,13 @@ async function submitCandidate(openId, data) {
     try {
       await db.collection('scouts').doc(candidateData.referral.scoutId).update({
         data: {
-          'stats.totalReferred': _.inc(1),
-          'stats.pendingCount': _.inc(1),
+          'stats.referredCount': _.inc(1),
           updatedAt: db.serverDate()
         }
       });
       console.log('[candidate] 星探统计数据更新成功');
     } catch (error) {
       console.error('[candidate] 星探统计数据更新失败:', error);
-      // 不影响主流程，继续执行
     }
   }
 
@@ -461,6 +447,21 @@ async function updateCandidateStatus(id, status) {
     }
   }
 
+  // 如果状态变更为已签约，检查星探等级升级
+  if (status === 'signed' && oldStatus !== 'signed' && candidate.referral && candidate.referral.scoutId) {
+    try {
+      await cloud.callFunction({
+        name: 'scout',
+        data: {
+          action: 'checkAndUpgradeGrade',
+          data: { scoutId: candidate.referral.scoutId }
+        }
+      });
+    } catch (error) {
+      console.error('[candidate] 检查星探等级升级失败:', error);
+    }
+  }
+
   // 如果状态变更为已签约，自动触发分账计算
   if (status === 'signed' && oldStatus !== 'signed') {
     try {
@@ -490,30 +491,23 @@ async function updateCandidateStatus(id, status) {
   };
 }
 
-// 根据状态变化更新星探统计数据
+// 根据状态变化更新星探统计数据（新模式：只跟踪 signedCount）
 async function updateScoutStatsOnStatusChange(scoutId, oldStatus, newStatus) {
   const updateData = {
     updatedAt: db.serverDate()
   };
 
-  // 从旧状态中减少计数
-  if (oldStatus === 'pending') {
-    updateData['stats.pendingCount'] = _.inc(-1);
-  } else if (oldStatus === 'approved' || oldStatus === 'interview_scheduled') {
-    updateData['stats.approvedCount'] = _.inc(-1);
-  } else if (oldStatus === 'signed') {
+  // 新增签约
+  if (newStatus === 'signed' && oldStatus !== 'signed') {
+    updateData['stats.signedCount'] = _.inc(1);
+  }
+  // 取消签约（罕见但防御性处理）
+  else if (oldStatus === 'signed' && newStatus !== 'signed') {
     updateData['stats.signedCount'] = _.inc(-1);
   }
-
-  // 在新状态中增加计数
-  if (newStatus === 'pending') {
-    updateData['stats.pendingCount'] = _.inc(1);
-  } else if (newStatus === 'approved' || newStatus === 'interview_scheduled') {
-    updateData['stats.approvedCount'] = _.inc(1);
-  } else if (newStatus === 'signed') {
-    updateData['stats.signedCount'] = _.inc(1);
-  } else if (newStatus === 'rejected') {
-    updateData['stats.rejectedCount'] = _.inc(1);
+  // 其他状态变化不再更新 scout stats（pendingCount 等已移除）
+  else {
+    return;
   }
 
   await db.collection('scouts').doc(scoutId).update({

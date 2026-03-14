@@ -3,9 +3,10 @@
 > 候选人到主播的自动升级流程设计
 
 **创建日期**: 2025-11-05
-**最后更新**: 2025-11-05
+**最后更新**: 2026-03-13
 **维护者**: 产品团队
 **源文档**: multi-role-system.md
+**版本**: v2.0
 
 ---
 
@@ -304,28 +305,40 @@ Page({
 
 ### 推荐记录状态更新
 
-当候选人升级为主播时，自动更新推荐记录状态：
+当候选人升级为主播时，自动更新推荐记录状态，并根据星探等级和主播定级计算差异化佣金：
 
 ```javascript
+// 签约奖金标准表（星探等级 × 主播定级）
+const SIGN_BONUS_TABLE = {
+  rookie:  { SS: 800,  S: 500,  A: 300,  B: 200 },
+  special: { SS: 1200, S: 800,  A: 500,  B: 300 },
+  partner: { SS: 2000, S: 1500, A: 1000, B: 500 }
+};
+
 // 更新推荐记录
+const referral = await db.collection('referral_records')
+  .where({ userId: userId, scoutCode: scoutCode })
+  .get();
+
+const scoutGrade = referral.data[0].scoutGrade; // rookie/special/partner
+const anchorLevel = contract.data.anchorLevel;    // SS/S/A/B
+const signBonus = SIGN_BONUS_TABLE[scoutGrade][anchorLevel];
+
 await db.collection('referral_records')
-  .where({
-    userId: userId,
-    scoutCode: scoutCode
-  })
+  .doc(referral.data[0]._id)
   .update({
     data: {
-      status: 'converted', // 从 pending 变为 converted
+      status: 'converted',
       convertedAt: new Date(),
       contractId: contractId,
+      anchorLevel: anchorLevel,
 
-      // 初始化佣金信息
       commission: {
-        signBonus: 500, // 签约奖金
-        monthlyRate: 0.05, // 月佣金比例 5%
-        totalCommission: 500, // 累计佣金（初始为签约奖金）
-        paidCommission: 0, // 已支付佣金
-        status: 'pending' // pending / approved / paid
+        signBonus: signBonus,
+        scoutGrade: scoutGrade,
+        totalCommission: signBonus,
+        paidCommission: 0,
+        status: 'pending'
       }
     }
   });
@@ -337,6 +350,10 @@ await db.collection('referral_records')
 // 云函数：approveSignBonus
 exports.main = async (event, context) => {
   const { referralId } = event;
+
+  const referral = await db.collection('referral_records')
+    .doc(referralId).get();
+  const signBonus = referral.data.commission.signBonus;
 
   // 1. 更新推荐记录
   await db.collection('referral_records')
@@ -352,9 +369,11 @@ exports.main = async (event, context) => {
   await db.collection('commission_settlements').add({
     data: {
       referralId: referralId,
-      scoutId: scoutId,
+      scoutId: referral.data.scoutId,
       type: 'sign_bonus',
-      amount: 500,
+      amount: signBonus, // 差异化金额
+      scoutGrade: referral.data.scoutGrade,
+      anchorLevel: referral.data.anchorLevel,
       status: 'pending_payment',
       createdAt: new Date()
     }
@@ -363,6 +382,8 @@ exports.main = async (event, context) => {
   return { success: true };
 };
 ```
+
+> **注意**：月度佣金比例也按星探等级和主播生命周期阶段差异化计算，详见 [星探推荐流程](../workflows/scout-referral.md)。
 
 ---
 
@@ -526,6 +547,6 @@ graph TD
 
 ---
 
-**文档版本**: v1.0
-**最后更新**: 2025-11-05
+**文档版本**: v2.0
+**最后更新**: 2026-03-13
 **维护者**: 产品团队

@@ -3,9 +3,10 @@
 > 从报名到成为主播的完整体验流程
 
 **创建日期**: 2025-11-05
-**最后更新**: 2025-11-05
+**最后更新**: 2026-03-13
 **维护者**: 产品团队
 **源文档**: multi-role-system.md
+**版本**: v2.0
 
 ---
 
@@ -27,10 +28,10 @@ graph TD
 
     B -->|有星探推荐码| C[场景1: 星探推荐]
     C --> C1[验证推荐码有效性]
-    C1 -->|有效| C2[自动注册为候选人]
-    C2 --> C3[记录推荐关系]
+    C1 -->|有效且星探已审核通过| C2[自动注册为候选人]
+    C2 --> C3[记录推荐关系含星探等级]
     C3 --> C4[跳转主播报名页]
-    C1 -->|无效| C5[提示错误]
+    C1 -->|无效或星探未激活| C5[提示错误]
 
     B -->|有员工邀请码| D[场景2: 员工邀请]
     D --> D1[验证邀请码]
@@ -272,11 +273,11 @@ exports.main = async (event, context) => {
     let scoutInfo = null;
     if (scoutCode) {
       const scout = await db.collection('scouts')
-        .where({ code: scoutCode, status: 'active' })
+        .where({ shareCode: scoutCode, status: 'active' })
         .get();
 
       if (scout.data.length === 0) {
-        throw new Error('推荐码无效或已失效');
+        throw new Error('推荐码无效或星探未激活');
       }
       scoutInfo = scout.data[0];
     }
@@ -326,9 +327,9 @@ exports.main = async (event, context) => {
           userId: userResult._id,
           scoutId: scoutInfo._id,
           scoutCode: scoutCode,
+          scoutGrade: scoutInfo.grade, // rookie/special/partner
           referredAt: new Date(),
-          status: 'pending', // 待转化
-          commissionRate: 0.05
+          status: 'pending' // 待转化
         }
       });
     }
@@ -912,6 +913,8 @@ async signContract() {
 | **signed** | 已签约 | "恭喜！即将成为正式主播" | 查看合同、等待入职 |
 | **rejected** | 未通过 | 不通过原因（可选）、鼓励语 | 查看反馈、6个月后重新申请 |
 
+> **签约后流程**：候选人签约后进入主播6阶段生命周期管理（签约期→培养期→成长期→稳定期→成熟期→续约期），详见 [业务流程总览](./business-processes-overview.md)。主播定级（SS/S/A/B）将影响星探佣金结算标准。
+
 ### 状态变更通知
 
 ```javascript
@@ -962,6 +965,6 @@ exports.main = async (event, context) => {
 
 ---
 
-**文档版本**: v1.0
-**最后更新**: 2025-11-05
+**文档版本**: v2.0
+**最后更新**: 2026-03-13
 **维护者**: 产品团队

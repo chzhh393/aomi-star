@@ -1,0 +1,210 @@
+<!--pages/scout/grade-intro/grade-intro.wxml-->
+<view class="container">
+
+  <!-- 顶部 Banner -->
+  <view class="hero">
+    <view class="hero-title">星探成长体系</view>
+    <view class="hero-desc">推荐优质主播，解锁更高等级与收益</view>
+  </view>
+
+  <!-- 等级卡片 -->
+  <view class="grade-list">
+
+    <!-- 新锐星探 -->
+    <view class="grade-card {{currentGrade === 'rookie' ? 'current' : ''}}">
+      <view class="grade-header rookie">
+        <view class="grade-icon">🌟</view>
+        <view class="grade-title-area">
+          <view class="grade-name">新锐星探</view>
+          <view class="grade-condition">注册即可成为</view>
+        </view>
+        <view wx:if="{{currentGrade === 'rookie'}}" class="current-badge">当前等级</view>
+      </view>
+      <view class="grade-body">
+        <view class="benefit-title">星探费标准</view>
+        <view class="benefit-grid">
+          <view class="benefit-item ss">
+            <view class="benefit-level">SS级主播</view>
+            <view class="benefit-amount">¥800</view>
+            <view class="benefit-extra">+流水1%×6月</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">S级主播</view>
+            <view class="benefit-amount">¥800</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">A级主播</view>
+            <view class="benefit-amount">¥600</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">B级主播</view>
+            <view class="benefit-amount">¥350</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 升级箭头 -->
+    <view class="upgrade-arrow">
+      <view class="arrow-line"></view>
+      <view class="arrow-text">签约满 2 人升级</view>
+      <view class="arrow-line"></view>
+    </view>
+
+    <!-- 特约星探 -->
+    <view class="grade-card {{currentGrade === 'special' ? 'current' : ''}}">
+      <view class="grade-header special">
+        <view class="grade-icon">⭐</view>
+        <view class="grade-title-area">
+          <view class="grade-name">特约星探</view>
+          <view class="grade-condition">累计签约 2 位主播</view>
+        </view>
+        <view wx:if="{{currentGrade === 'special'}}" class="current-badge">当前等级</view>
+      </view>
+      <view class="grade-body">
+        <view class="benefit-title">星探费标准</view>
+        <view class="benefit-grid">
+          <view class="benefit-item ss">
+            <view class="benefit-level">SS级主播</view>
+            <view class="benefit-amount highlight">¥1200</view>
+            <view class="benefit-extra">+流水1%×6月</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">S级主播</view>
+            <view class="benefit-amount highlight">¥1200</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">A级主播</view>
+            <view class="benefit-amount highlight">¥800</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">B级主播</view>
+            <view class="benefit-amount highlight">¥450</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 升级箭头 -->
+    <view class="upgrade-arrow">
+      <view class="arrow-line"></view>
+      <view class="arrow-text">签约满 5 人升级</view>
+      <view class="arrow-line"></view>
+    </view>
+
+    <!-- 合伙人星探 -->
+    <view class="grade-card {{currentGrade === 'partner' ? 'current' : ''}}">
+      <view class="grade-header partner">
+        <view class="grade-icon">👑</view>
+        <view class="grade-title-area">
+          <view class="grade-name">合伙人星探</view>
+          <view class="grade-condition">累计签约 5 位主播</view>
+        </view>
+        <view wx:if="{{currentGrade === 'partner'}}" class="current-badge">当前等级</view>
+      </view>
+      <view class="grade-body">
+        <view class="benefit-title">星探费标准</view>
+        <view class="benefit-grid">
+          <view class="benefit-item ss">
+            <view class="benefit-level">SS级主播</view>
+            <view class="benefit-amount top">¥1500</view>
+            <view class="benefit-extra">+流水1%×6月</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">S级主播</view>
+            <view class="benefit-amount top">¥1500</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">A级主播</view>
+            <view class="benefit-amount top">¥1000</view>
+          </view>
+          <view class="benefit-item">
+            <view class="benefit-level">B级主播</view>
+            <view class="benefit-amount top">¥500</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 结算说明 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-icon">💰</view>
+      <view class="section-title">结算方式</view>
+    </view>
+    <view class="timeline">
+      <view class="timeline-item">
+        <view class="timeline-dot active"></view>
+        <view class="timeline-content">
+          <view class="timeline-title">签约阶段</view>
+          <view class="timeline-desc">主播正式签约后，先结算 <text class="amount">300元</text></view>
+        </view>
+      </view>
+      <view class="timeline-item">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <view class="timeline-title">考核期（开播后3个月）</view>
+          <view class="timeline-desc">主播开播后进入3个月考核期，期间根据月均流水评定等级</view>
+        </view>
+      </view>
+      <view class="timeline-item">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <view class="timeline-title">考核期结束</view>
+          <view class="timeline-desc">根据最终定级，结算剩余星探费（总额 - 已付300元）</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主播定级标准 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-icon">📊</view>
+      <view class="section-title">主播定级标准</view>
+    </view>
+    <view class="level-table">
+      <view class="level-row header">
+        <view class="level-cell">等级</view>
+        <view class="level-cell">评定标准</view>
+        <view class="level-cell">评定时机</view>
+      </view>
+      <view class="level-row ss">
+        <view class="level-cell label">SS级</view>
+        <view class="level-cell">凭历史流水/粉丝等凭证</view>
+        <view class="level-cell">签约前评定</view>
+      </view>
+      <view class="level-row">
+        <view class="level-cell label">S级</view>
+        <view class="level-cell">月均流水 > 10万</view>
+        <view class="level-cell">考核期后</view>
+      </view>
+      <view class="level-row">
+        <view class="level-cell label">A级</view>
+        <view class="level-cell">月均流水 5万~10万</view>
+        <view class="level-cell">考核期后</view>
+      </view>
+      <view class="level-row">
+        <view class="level-cell label">B级</view>
+        <view class="level-cell">月均流水 ≤ 5万</view>
+        <view class="level-cell">考核期后</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 说明 -->
+  <view class="section note-section">
+    <view class="section-header">
+      <view class="section-icon">📌</view>
+      <view class="section-title">说明</view>
+    </view>
+    <view class="note-list">
+      <view class="note-item">SS级主播除固定星探费外，额外享有该主播6个月流水的1%分成（需提供流水截图/全网粉丝截图/练习生证明等凭证）</view>
+      <view class="note-item">等级根据累计签约人数自动升级，升级后新签约按新等级计算收益</view>
+      <view class="note-item">每季度根据公司实际需求，费用标准可能上下浮动调整，以小程序公示为准</view>
+    </view>
+  </view>
+
+</view>

@@ -1,4 +1,4 @@
-// 云函数入口文件 - 星探分账管理
+// 云函数入口文件 - 星探佣金管理（等级×主播定级矩阵）
 const cloud = require('wx-server-sdk');
 
 cloud.init({
@@ -8,26 +8,39 @@ cloud.init({
 const db = cloud.database();
 const _ = db.command;
 
-// 分账配置
+// 佣金配置 - 星探费（按星探等级 × 主播定级）
+// 结算方式：签约阶段先结算300元，开播3个月考核期后根据定级结算剩余
 const COMMISSION_CONFIG = {
-  // 固定奖励金额
-  SIGNED_BONUS: 1000,        // 签约奖励：1000元
-  
-  // 分账比例
-  LEVEL2_PERCENTAGE: 70,     // 二级星探：70%
-  LEVEL1_PERCENTAGE: 30,     // 一级星探：30%（团队管理费）
-  
+  // 星探费总额（含签约预付300元）
+  SIGN_BONUS: {
+    rookie:  { SS: 800,  S: 800,  A: 600,  B: 350 },
+    special: { SS: 1200, S: 1200, A: 800,  B: 450 },
+    partner: { SS: 1500, S: 1500, A: 1000, B: 500 }
+  },
+  // SS级额外收益：6个月主播流水的1%（需提供流水截图等凭证）
+  SS_BONUS_RATE: 0.01,
+  SS_BONUS_MONTHS: 6,
+  // 签约预付金额
+  SIGN_PREPAY: 300,
+  // 主播定级标准（基于开播后3个月考核期的月均流水）
+  // SS级：签约前凭历史凭证评定；S/A/B级：考核期后评定
+  ANCHOR_LEVEL_CRITERIA: {
+    S: 100000,  // 月均流水 > 10万
+    A: 50000,   // 月均流水 5万-10万
+    B: 0        // 月均流水 ≤ 5万
+  },
+  // 默认主播定级（未评定时使用）
+  DEFAULT_ANCHOR_LEVEL: 'B',
   // 状态
   STATUS: {
-    PENDING: 'pending',      // 待结算
-    CALCULATED: 'calculated', // 已计算
-    PAID: 'paid'             // 已支付
+    PENDING: 'pending',
+    CALCULATED: 'calculated',
+    PAID: 'paid'
   }
 };
 
 // 云函数入口函数
 exports.main = async (event) => {
-  const wxContext = cloud.getWXContext();
   const { action, data } = event;
 
   console.log('[commission] action:', action);
@@ -59,11 +72,11 @@ exports.main = async (event) => {
   }
 };
 
-// 计算分账
+// 计算佣金（单一星探，不再链式分成）
 async function calculateCommission(candidateId) {
-  console.log('[commission] 开始计算分账, candidateId:', candidateId);
+  console.log('[commission] 开始计算佣金, candidateId:', candidateId);
 
-  // 获取候选人信息
+  // 1. 获取候选人信息
   const candidateRes = await db.collection('candidates').doc(candidateId).get();
   if (!candidateRes.data) {
     return { success: false, error: '候选人不存在' };
@@ -71,72 +84,68 @@ async function calculateCommission(candidateId) {
 
   const candidate = candidateRes.data;
 
-  // 检查是否已签约
   if (candidate.status !== 'signed') {
-    return { success: false, error: '候选人未签约，无法计算分账' };
+    return { success: false, error: '候选人未签约，无法计算佣金' };
   }
 
-  // 检查是否已经计算过
   if (candidate.commission && candidate.commission.status !== COMMISSION_CONFIG.STATUS.PENDING) {
-    return { success: false, error: '该候选人分账已计算，请勿重复操作' };
+    return { success: false, error: '该候选人佣金已计算，请勿重复操作' };
   }
 
-  // 检查是否有推荐人
-  if (!candidate.referral || !candidate.referral.scoutChain || candidate.referral.scoutChain.length === 0) {
-    console.log('[commission] 无推荐人，不计算分账');
-    return { success: true, message: '无推荐人，无需分账' };
+  // 2. 检查推荐人（扁平结构，只有 scoutId）
+  if (!candidate.referral || !candidate.referral.scoutId) {
+    console.log('[commission] 无推荐人，不计算佣金');
+    return { success: true, message: '无推荐人，无需计算佣金' };
   }
 
-  const TOTAL_BONUS = COMMISSION_CONFIG.SIGNED_BONUS;
-  const referral = candidate.referral;
-  let distribution = [];
-
-  // 根据推荐链条长度决定分账方式
-  if (referral.scoutChain.length === 1) {
-    // 场景1：一级星探直接推荐 - 100%给一级星探
-    console.log('[commission] 一级星探直接推荐');
-    distribution.push({
-      scoutId: referral.scoutChain[0],
-      scoutName: referral.scoutChainNames[0],
-      level: 1,
-      amount: TOTAL_BONUS,
-      percentage: 100,
-      status: COMMISSION_CONFIG.STATUS.PENDING,
-      type: 'direct'  // 直接推荐
-    });
-  } else if (referral.scoutChain.length === 2) {
-    // 场景2：二级星探推荐 - 70%二级 + 30%一级
-    console.log('[commission] 二级星探推荐');
-    
-    // 二级星探（直接推荐人）
-    distribution.push({
-      scoutId: referral.scoutChain[1],
-      scoutName: referral.scoutChainNames[1],
-      level: 2,
-      amount: TOTAL_BONUS * COMMISSION_CONFIG.LEVEL2_PERCENTAGE / 100,
-      percentage: COMMISSION_CONFIG.LEVEL2_PERCENTAGE,
-      status: COMMISSION_CONFIG.STATUS.PENDING,
-      type: 'direct'  // 直接推荐
-    });
-    
-    // 一级星探（团队管理）
-    distribution.push({
-      scoutId: referral.scoutChain[0],
-      scoutName: referral.scoutChainNames[0],
-      level: 1,
-      amount: TOTAL_BONUS * COMMISSION_CONFIG.LEVEL1_PERCENTAGE / 100,
-      percentage: COMMISSION_CONFIG.LEVEL1_PERCENTAGE,
-      status: COMMISSION_CONFIG.STATUS.PENDING,
-      type: 'team'  // 团队管理费
-    });
+  // 3. 获取星探信息
+  const scoutRes = await db.collection('scouts').doc(candidate.referral.scoutId).get();
+  if (!scoutRes.data) {
+    console.log('[commission] 推荐星探不存在');
+    return { success: false, error: '推荐星探不存在' };
   }
 
-  // 更新候选人分账信息
+  const scout = scoutRes.data;
+  const scoutGrade = scout.grade || 'rookie';
+
+  // 4. 确定主播定级（从面试打分结果中获取）
+  let anchorLevel = COMMISSION_CONFIG.DEFAULT_ANCHOR_LEVEL;
+  const scoreResult = candidate.interview?.score?.result;
+  if (scoreResult) {
+    const levelMap = { pass_ss: 'SS', pass_s: 'S', pass_a: 'A', pass_b: 'B' };
+    anchorLevel = levelMap[scoreResult] || COMMISSION_CONFIG.DEFAULT_ANCHOR_LEVEL;
+  }
+  if (!scoreResult || !['SS', 'S', 'A', 'B'].includes(anchorLevel)) {
+    console.warn(`[commission] 候选人 ${candidateId} 无有效面试评分(result=${scoreResult})，使用默认定级 ${COMMISSION_CONFIG.DEFAULT_ANCHOR_LEVEL}`);
+    anchorLevel = COMMISSION_CONFIG.DEFAULT_ANCHOR_LEVEL;
+  }
+
+  // 5. 查表获得签约奖金
+  const gradeConfig = COMMISSION_CONFIG.SIGN_BONUS[scoutGrade];
+  if (!gradeConfig) {
+    return { success: false, error: `未知的星探等级: ${scoutGrade}` };
+  }
+  const bonusAmount = gradeConfig[anchorLevel] || gradeConfig['B'];
+
+  // 6. 构建分账（单一星探，100%）
+  const distribution = [{
+    scoutId: scout._id,
+    scoutName: scout.profile?.name || '-',
+    scoutGrade: scoutGrade,
+    amount: bonusAmount,
+    percentage: 100,
+    status: COMMISSION_CONFIG.STATUS.PENDING,
+    type: 'direct'
+  }];
+
+  // 7. 更新候选人佣金信息
   await db.collection('candidates').doc(candidateId).update({
     data: {
       commission: {
         status: COMMISSION_CONFIG.STATUS.CALCULATED,
-        totalAmount: TOTAL_BONUS,
+        totalAmount: bonusAmount,
+        anchorLevel: anchorLevel,
+        scoutGrade: scoutGrade,
         signedAt: candidate.updatedAt || db.serverDate(),
         calculatedAt: db.serverDate(),
         paidAt: null,
@@ -145,55 +154,33 @@ async function calculateCommission(candidateId) {
     }
   });
 
-  // 更新星探收益统计
-  for (const item of distribution) {
-    try {
-      // 获取星探当前收益数据
-      const scoutRes = await db.collection('scouts').doc(item.scoutId).get();
-      const scout = scoutRes.data;
-
-      const currentEarnings = scout.earnings || {
-        totalEarned: 0,
-        pendingAmount: 0,
-        paidAmount: 0,
-        fromDirect: 0,
-        fromTeam: 0
-      };
-
-      // 更新收益
-      const updatedEarnings = {
-        totalEarned: currentEarnings.totalEarned + item.amount,
-        pendingAmount: currentEarnings.pendingAmount + item.amount,
-        paidAmount: currentEarnings.paidAmount,
-        fromDirect: item.type === 'direct' ? currentEarnings.fromDirect + item.amount : currentEarnings.fromDirect,
-        fromTeam: item.type === 'team' ? currentEarnings.fromTeam + item.amount : currentEarnings.fromTeam
-      };
-
-      await db.collection('scouts').doc(item.scoutId).update({
-        data: {
-          earnings: updatedEarnings,
-          updatedAt: db.serverDate()
-        }
-      });
-
-      console.log('[commission] 星探收益已更新:', item.scoutName, item.amount);
-    } catch (error) {
-      console.error('[commission] 更新星探收益失败:', item.scoutName, error);
-    }
+  // 8. 更新星探收益统计
+  try {
+    await db.collection('scouts').doc(scout._id).update({
+      data: {
+        'stats.totalCommission': _.inc(bonusAmount),
+        updatedAt: db.serverDate()
+      }
+    });
+    console.log('[commission] 星探收益已更新:', scout.profile?.name, bonusAmount);
+  } catch (error) {
+    console.error('[commission] 更新星探收益失败:', error);
   }
 
-  console.log('[commission] 分账计算完成, 总金额:', TOTAL_BONUS);
+  console.log('[commission] 佣金计算完成, 金额:', bonusAmount, '等级:', scoutGrade, '定级:', anchorLevel);
   return {
     success: true,
-    message: '分账计算成功',
+    message: '佣金计算成功',
     data: {
-      totalAmount: TOTAL_BONUS,
+      totalAmount: bonusAmount,
+      scoutGrade: scoutGrade,
+      anchorLevel: anchorLevel,
       distribution: distribution
     }
   };
 }
 
-// 获取分账详情
+// 获取佣金详情
 async function getCommissionDetail(candidateId) {
   const candidateRes = await db.collection('candidates').doc(candidateId).get();
   if (!candidateRes.data) {
@@ -206,22 +193,22 @@ async function getCommissionDetail(candidateId) {
   };
 }
 
-// 获取星探收益信息
+// 获取星探收益信息（直接按 referral.scoutId 查询）
 async function getScoutEarnings(scoutId) {
   const scoutRes = await db.collection('scouts').doc(scoutId).get();
   if (!scoutRes.data) {
     return { success: false, error: '星探不存在' };
   }
 
-  // 获取该星探相关的所有分账记录
+  // 获取该星探直接推荐的所有有佣金的候选人
   const candidatesRes = await db.collection('candidates')
     .where({
-      'referral.scoutChain': scoutId,
+      'referral.scoutId': scoutId,
       'commission.status': _.neq(null)
     })
     .get();
 
-  // 提取该星探的分账明细
+  // 提取佣金明细
   const commissionDetails = [];
   for (const candidate of candidatesRes.data) {
     if (candidate.commission && candidate.commission.distribution) {
@@ -231,8 +218,7 @@ async function getScoutEarnings(scoutId) {
           candidateId: candidate._id,
           candidateName: candidate.basicInfo?.name || '-',
           amount: myCommission.amount,
-          percentage: myCommission.percentage,
-          type: myCommission.type,
+          anchorLevel: candidate.commission.anchorLevel || '-',
           status: myCommission.status,
           calculatedAt: candidate.commission.calculatedAt,
           paidAt: candidate.commission.paidAt
@@ -241,14 +227,14 @@ async function getScoutEarnings(scoutId) {
     }
   }
 
+  const stats = scoutRes.data.stats || {};
+
   return {
     success: true,
-    earnings: scoutRes.data.earnings || {
-      totalEarned: 0,
-      pendingAmount: 0,
-      paidAmount: 0,
-      fromDirect: 0,
-      fromTeam: 0
+    earnings: {
+      totalCommission: stats.totalCommission || 0,
+      paidCommission: stats.paidCommission || 0,
+      pendingCommission: (stats.totalCommission || 0) - (stats.paidCommission || 0)
     },
     commissionDetails: commissionDetails
   };
@@ -263,10 +249,10 @@ async function confirmPayment(candidateId) {
 
   const candidate = candidateRes.data;
   if (!candidate.commission || candidate.commission.status !== COMMISSION_CONFIG.STATUS.CALCULATED) {
-    return { success: false, error: '分账未计算或已支付' };
+    return { success: false, error: '佣金未计算或已支付' };
   }
 
-  // 更新候选人分账状态
+  // 更新候选人佣金状态
   await db.collection('candidates').doc(candidateId).update({
     data: {
       'commission.status': COMMISSION_CONFIG.STATUS.PAID,
@@ -274,19 +260,18 @@ async function confirmPayment(candidateId) {
     }
   });
 
-  // 更新星探收益状态
+  // 更新星探收益（单一星探）
   for (const item of candidate.commission.distribution) {
-    const scoutRes = await db.collection('scouts').doc(item.scoutId).get();
-    const scout = scoutRes.data;
-    const earnings = scout.earnings || {};
-
-    await db.collection('scouts').doc(item.scoutId).update({
-      data: {
-        'earnings.pendingAmount': (earnings.pendingAmount || 0) - item.amount,
-        'earnings.paidAmount': (earnings.paidAmount || 0) + item.amount,
-        updatedAt: db.serverDate()
-      }
-    });
+    try {
+      await db.collection('scouts').doc(item.scoutId).update({
+        data: {
+          'stats.paidCommission': _.inc(item.amount),
+          updatedAt: db.serverDate()
+        }
+      });
+    } catch (error) {
+      console.error('[commission] 更新星探已支付金额失败:', item.scoutId, error);
+    }
   }
 
   return {
@@ -295,7 +280,7 @@ async function confirmPayment(candidateId) {
   };
 }
 
-// 获取待支付的分账列表
+// 获取待支付的佣金列表
 async function getPendingCommissions() {
   const candidatesRes = await db.collection('candidates')
     .where({
@@ -307,6 +292,8 @@ async function getPendingCommissions() {
     candidateId: candidate._id,
     candidateName: candidate.basicInfo?.name || '-',
     totalAmount: candidate.commission.totalAmount,
+    scoutGrade: candidate.commission.scoutGrade,
+    anchorLevel: candidate.commission.anchorLevel,
     distribution: candidate.commission.distribution,
     calculatedAt: candidate.commission.calculatedAt
   }));

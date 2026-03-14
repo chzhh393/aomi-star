@@ -19,9 +19,11 @@
         <el-col :span="18">
           <el-radio-group v-model="activeFilter" @change="handleFilterChange">
             <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="level1">星探合伙人 (SP)</el-radio-button>
-            <el-radio-button value="level2">特约星探 (SS)</el-radio-button>
-            <el-radio-button value="active">活跃</el-radio-button>
+            <el-radio-button value="pending">待审核</el-radio-button>
+            <el-radio-button value="rookie">新锐</el-radio-button>
+            <el-radio-button value="special">特约</el-radio-button>
+            <el-radio-button value="partner">合伙人</el-radio-button>
+            <el-radio-button value="disabled">已停用</el-radio-button>
           </el-radio-group>
         </el-col>
       </el-row>
@@ -29,7 +31,7 @@
 
     <!-- 统计卡片 -->
     <el-row :gutter="16" class="stats-row">
-      <el-col :span="6">
+      <el-col :span="5">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-value">{{ stats.total }}</div>
@@ -37,27 +39,35 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card level1">
+      <el-col :span="5">
+        <el-card shadow="hover" class="stat-card pending">
           <div class="stat-content">
-            <div class="stat-value">{{ stats.level1 }}</div>
-            <div class="stat-label">星探合伙人 (SP)</div>
+            <div class="stat-value">{{ stats.pending }}</div>
+            <div class="stat-label">待审核</div>
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card level2">
+      <el-col :span="5">
+        <el-card shadow="hover" class="stat-card rookie">
           <div class="stat-content">
-            <div class="stat-value">{{ stats.level2 }}</div>
-            <div class="stat-label">特约星探 (SS)</div>
+            <div class="stat-value">{{ stats.rookie }}</div>
+            <div class="stat-label">新锐星探</div>
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover" class="stat-card active">
+      <el-col :span="5">
+        <el-card shadow="hover" class="stat-card special">
           <div class="stat-content">
-            <div class="stat-value">{{ stats.totalReferred }}</div>
-            <div class="stat-label">总推荐数</div>
+            <div class="stat-value">{{ stats.special }}</div>
+            <div class="stat-label">特约星探</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="4">
+        <el-card shadow="hover" class="stat-card partner">
+          <div class="stat-content">
+            <div class="stat-value">{{ stats.partner }}</div>
+            <div class="stat-label">合伙人</div>
           </div>
         </el-card>
       </el-col>
@@ -71,11 +81,11 @@
         <!-- 左侧：等级标识 -->
         <div class="scout-level-indicator">
           <el-tag
-            :type="(row.level?.depth || 2) === 1 ? 'warning' : 'info'"
+            :type="gradeTagType(row.grade)"
             effect="dark"
             size="large"
           >
-            {{ (row.level?.depth || 2) === 1 ? 'SP' : 'SS' }}
+            {{ gradeLabel(row.grade) }}
           </el-tag>
         </div>
 
@@ -84,54 +94,32 @@
           <div class="scout-header">
             <span class="scout-name">{{ row.profile?.name || '-' }}</span>
             <el-tag
-              :type="(row.level?.depth || 2) === 1 ? 'warning' : 'info'"
+              :type="gradeTagType(row.grade)"
               size="small"
               effect="plain"
             >
-              {{ (row.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)' }}
+              {{ gradeLabel(row.grade) }}
             </el-tag>
             <el-tag
-              v-if="row.status === 'active'"
-              type="success"
+              :type="statusTagType(row.status)"
               size="small"
               effect="plain"
             >
-              活跃
+              {{ statusLabel(row.status) }}
             </el-tag>
           </div>
 
           <div class="scout-meta">
-            <span class="meta-item">📱 {{ row.profile?.phone || '-' }}</span>
+            <span class="meta-item">{{ row.profile?.phone || '-' }}</span>
             <span class="meta-divider">|</span>
-            <span class="meta-item">💬 {{ row.profile?.wechat || '-' }}</span>
-            <span class="meta-divider">|</span>
-            <span class="meta-item">📋 推荐码：{{ row.shareCode }}</span>
-            <template v-if="(row.level?.depth || 1) === 1 && row.inviteCode">
-              <span class="meta-divider">|</span>
-              <span class="meta-item">🔑 邀请码：{{ row.inviteCode }}</span>
-            </template>
-          </div>
-
-          <!-- 特约星探显示上级信息 -->
-          <div v-if="row.level?.depth === 2 && row.level?.parentScoutName" class="scout-parent">
-            <el-icon><TopRight /></el-icon>
-            上级星探：{{ row.level.parentScoutName }}
+            <span class="meta-item">{{ row.profile?.wechat || '-' }}</span>
           </div>
         </div>
 
         <!-- 右侧：统计数据 -->
         <div class="scout-stats">
-          <!-- 星探合伙人显示团队统计 -->
-          <template v-if="(row.level?.depth || 2) === 1">
-            <div class="stat-item">
-              <div class="stat-value">{{ row.team?.directScouts || 0 }}</div>
-              <div class="stat-label">下级星探</div>
-            </div>
-            <div class="stat-divider"></div>
-          </template>
-
           <div class="stat-item">
-            <div class="stat-value">{{ row.stats?.totalReferred || 0 }}</div>
+            <div class="stat-value">{{ row.stats?.referredCount || 0 }}</div>
             <div class="stat-label">总推荐</div>
           </div>
           <div class="stat-divider"></div>
@@ -143,24 +131,71 @@
 
         <!-- 操作按钮（仅管理员可见） -->
         <div v-if="hasPermission('manageUsers')" class="scout-actions" @click.stop>
-          <el-button
-            v-if="row.status === 'active'"
-            type="danger"
-            size="small"
-            plain
-            @click="confirmDelete(row)"
-          >
-            删除
-          </el-button>
-          <el-button
-            v-if="row.status === 'deleted'"
-            type="success"
-            size="small"
-            plain
-            @click="confirmRestore(row)"
-          >
-            恢复
-          </el-button>
+          <!-- 待审核状态：通过 + 拒绝 -->
+          <template v-if="row.status === 'pending'">
+            <el-button
+              type="success"
+              size="small"
+              plain
+              @click="confirmApprove(row)"
+            >
+              通过
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              plain
+              @click="confirmReject(row)"
+            >
+              拒绝
+            </el-button>
+          </template>
+          <!-- 活跃状态：调整等级 + 停用 + 删除 -->
+          <template v-if="row.status === 'active'">
+            <el-button
+              type="primary"
+              size="small"
+              plain
+              @click="handleChangeGrade(row)"
+            >
+              调整等级
+            </el-button>
+            <el-button
+              type="warning"
+              size="small"
+              plain
+              @click="confirmDisable(row)"
+            >
+              停用
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              plain
+              @click="confirmHardDelete(row)"
+            >
+              删除
+            </el-button>
+          </template>
+          <!-- 已停用状态：恢复 + 删除 -->
+          <template v-if="row.status === 'disabled' || row.status === 'deleted'">
+            <el-button
+              type="success"
+              size="small"
+              plain
+              @click="confirmRestore(row)"
+            >
+              恢复
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              plain
+              @click="confirmHardDelete(row)"
+            >
+              删除
+            </el-button>
+          </template>
         </div>
       </div>
     </div>
@@ -191,33 +226,24 @@
               <span class="info-value">{{ currentScout.profile?.wechat || '-' }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">层级</span>
+              <span class="info-label">等级</span>
               <span class="info-value">
                 <el-tag
-                  :type="(currentScout.level?.depth || 2) === 1 ? 'warning' : 'info'"
+                  :type="gradeTagType(currentScout.grade)"
                   effect="plain"
                 >
-                  {{ (currentScout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)' }}
+                  {{ gradeLabel(currentScout.grade) }}
                 </el-tag>
-                <el-button
-                  v-if="hasPermission('manageUsers')"
-                  link
-                  size="small"
-                  style="margin-left: 12px"
-                  @click="openLevelEdit"
-                >
-                  编辑层级
-                </el-button>
               </span>
             </div>
             <div class="info-row">
               <span class="info-label">状态</span>
               <span class="info-value">
                 <el-tag
-                  :type="currentScout.status === 'active' ? 'success' : 'info'"
+                  :type="statusTagType(currentScout.status)"
                   effect="plain"
                 >
-                  {{ currentScout.status === 'active' ? '活跃' : '停用' }}
+                  {{ statusLabel(currentScout.status) }}
                 </el-tag>
               </span>
             </div>
@@ -228,51 +254,46 @@
           </div>
         </div>
 
-        <!-- 2. 推荐码信息 -->
+        <!-- 2. 申请信息 -->
+        <div v-if="currentScout.application" class="detail-section">
+          <div class="section-title">申请信息</div>
+          <div class="info-block">
+            <div v-if="currentScout.application.reason" class="info-row">
+              <span class="info-label">申请理由</span>
+              <span class="info-value">{{ currentScout.application.reason }}</span>
+            </div>
+            <div v-if="currentScout.application.reviewedBy" class="info-row">
+              <span class="info-label">审核人</span>
+              <span class="info-value">{{ currentScout.application.reviewedBy }}</span>
+            </div>
+            <div v-if="currentScout.application.reviewedAt" class="info-row">
+              <span class="info-label">审核时间</span>
+              <span class="info-value">{{ formatDate(currentScout.application.reviewedAt) }}</span>
+            </div>
+            <div v-if="currentScout.application.reviewNote" class="info-row">
+              <span class="info-label">审核备注</span>
+              <span class="info-value">{{ currentScout.application.reviewNote }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 升级进度 -->
         <div class="detail-section">
-          <div class="section-title">推荐码信息</div>
+          <div class="section-title">升级进度</div>
           <div class="info-block">
-            <div class="info-row">
-              <span class="info-label">推荐码（用于推荐候选人）</span>
-              <span class="info-value code-value">{{ currentScout.shareCode }}</span>
-            </div>
-            <div v-if="(currentScout.level?.depth || 1) === 1" class="info-row">
-              <span class="info-label">邀请码（用于邀请下级星探）</span>
-              <span class="info-value code-value">{{ currentScout.inviteCode || '-' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. 层级关系（特约星探） -->
-        <div v-if="currentScout.level?.depth === 2" class="detail-section">
-          <div class="section-title">层级关系</div>
-          <div class="info-block">
-            <div class="info-row">
-              <span class="info-label">上级星探</span>
-              <span class="info-value">{{ currentScout.level?.parentScoutName || '-' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">使用的邀请码</span>
-              <span class="info-value">{{ currentScout.level?.parentInviteCode || '-' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. 团队统计（星探合伙人） -->
-        <div v-if="(currentScout.level?.depth || 2) === 1" class="detail-section">
-          <div class="section-title">团队统计</div>
-          <div class="team-stats-grid">
-            <div class="team-stat-card">
-              <div class="team-stat-value">{{ currentScout.team?.directScouts || 0 }}</div>
-              <div class="team-stat-label">下级星探数量</div>
-            </div>
-            <div class="team-stat-card">
-              <div class="team-stat-value">{{ currentScout.team?.totalReferred || 0 }}</div>
-              <div class="team-stat-label">团队总推荐</div>
-            </div>
-            <div class="team-stat-card">
-              <div class="team-stat-value">{{ currentScout.team?.totalSigned || 0 }}</div>
-              <div class="team-stat-label">团队总签约</div>
+            <div class="upgrade-progress">
+              <div
+                v-for="g in gradeList"
+                :key="g.key"
+                class="upgrade-step"
+                :class="{ active: isGradeReached(currentScout.grade, g.key) }"
+              >
+                <div class="step-dot"></div>
+                <div class="step-info">
+                  <div class="step-name">{{ g.label }}</div>
+                  <div class="step-desc">{{ g.desc }}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -282,7 +303,7 @@
           <div class="section-title">推荐统计</div>
           <div class="stats-grid">
             <div class="stats-card">
-              <div class="stats-value">{{ currentScout.stats?.totalReferred || 0 }}</div>
+              <div class="stats-value">{{ currentScout.stats?.referredCount || 0 }}</div>
               <div class="stats-label">总推荐</div>
             </div>
             <div class="stats-card pending">
@@ -330,90 +351,37 @@
       </div>
     </el-drawer>
 
-    <!-- 层级编辑对话框 -->
-    <el-dialog
-      v-model="levelEditVisible"
-      title="调整星探层级"
-      width="450px"
-      :close-on-click-modal="false"
-    >
-      <div v-if="currentScout" class="level-edit-content">
-        <div class="current-level-info">
-          <span style="font-weight: 500; color: #888">当前层级：</span>
-          <el-tag
-            :type="(currentScout.level?.depth || 2) === 1 ? 'warning' : 'info'"
-            style="margin-left: 8px"
-          >
-            {{ (currentScout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)' }}
+    <!-- 调整等级对话框 -->
+    <el-dialog v-model="gradeDialogVisible" title="调整星探等级" width="420px">
+      <div v-if="gradingScout">
+        <div style="margin-bottom: 16px">
+          <span style="color: #888">星探：</span>
+          <strong>{{ gradingScout.profile?.name || '-' }}</strong>
+          <el-tag :type="gradeTagType(gradingScout.grade)" effect="plain" size="small" style="margin-left: 8px">
+            {{ gradeLabel(gradingScout.grade) }}
           </el-tag>
         </div>
-
-        <el-form :model="levelForm" style="margin-top: 24px" label-width="80px">
-          <el-form-item label="调整为">
-            <el-radio-group v-model="levelForm.newDepth">
-              <el-radio :value="2">特约星探 (SS)</el-radio>
-              <el-radio :value="1">星探合伙人 (SP)</el-radio>
+        <el-form label-width="80px">
+          <el-form-item label="新等级" required>
+            <el-radio-group v-model="newGrade">
+              <el-radio-button
+                v-for="(config, key) in GRADE_CONFIG"
+                :key="key"
+                :value="key"
+                :disabled="key === (gradingScout.grade || 'rookie')"
+              >
+                {{ config.label }}
+              </el-radio-button>
             </el-radio-group>
           </el-form-item>
-
-          <!-- 降级警告 -->
-          <el-alert
-            v-if="(currentScout.level?.depth || 2) === 1 && levelForm.newDepth === 2"
-            type="warning"
-            :closable="false"
-            style="margin-bottom: 16px"
-            title="降级影响"
-          >
-            <div style="font-size: 13px; line-height: 1.8">
-              <div>降级为特约星探后：</div>
-              <ul style="margin: 8px 0 0 0; padding-left: 20px">
-                <li>将失去邀请码，无法再邀请下级</li>
-                <li>现有下级星探（{{ currentScout.team?.directScouts || 0 }}人）将自动升级为星探合伙人</li>
-                <li>推荐数据不受影响</li>
-              </ul>
-            </div>
-          </el-alert>
-
-          <!-- 升级提示 -->
-          <el-alert
-            v-if="(currentScout.level?.depth || 2) === 2 && levelForm.newDepth === 1"
-            type="success"
-            :closable="false"
-            style="margin-bottom: 16px"
-            title="升级效果"
-          >
-            <div style="font-size: 13px; line-height: 1.8">
-              <div>升级为星探合伙人后：</div>
-              <ul style="margin: 8px 0 0 0; padding-left: 20px">
-                <li>将自动获得邀请码</li>
-                <li>可以邀请特约星探加入团队</li>
-                <li>如有上级关系将被解除</li>
-                <li>推荐数据不受影响</li>
-              </ul>
-            </div>
-          </el-alert>
-
           <el-form-item label="调整原因">
-            <el-input
-              v-model="levelForm.reason"
-              type="textarea"
-              :rows="3"
-              placeholder="请输入调整原因（选填）"
-            />
+            <el-input v-model="gradeReason" placeholder="如：业绩优秀特批升级（选填）" />
           </el-form-item>
         </el-form>
       </div>
-
       <template #footer>
-        <el-button @click="levelEditVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          @click="confirmLevelChange"
-          :disabled="levelForm.newDepth === (currentScout?.level?.depth || 2)"
-          :loading="levelChanging"
-        >
-          确认调整
-        </el-button>
+        <el-button @click="gradeDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="gradeSubmitting" :disabled="!newGrade" @click="confirmChangeGrade">确认调整</el-button>
       </template>
     </el-dialog>
   </div>
@@ -421,10 +389,41 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, TopRight } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
 import { getScouts, getScoutDetail } from '../../api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { hasPermission } from '../../utils/permission'
+
+// 等级配置
+const GRADE_CONFIG = {
+  rookie: { label: '新锐', tagType: 'info' },
+  special: { label: '特约', tagType: 'warning' },
+  partner: { label: '合伙人', tagType: 'danger' }
+}
+
+const gradeList = [
+  { key: 'rookie', label: '新锐星探', desc: '初始等级' },
+  { key: 'special', label: '特约星探', desc: '签约 2 人升级' },
+  { key: 'partner', label: '合伙人星探', desc: '签约 5 人升级' }
+]
+
+const gradeOrder = { rookie: 0, special: 1, partner: 2 }
+
+const gradeLabel = (grade) => GRADE_CONFIG[grade]?.label || grade || '新锐'
+const gradeTagType = (grade) => GRADE_CONFIG[grade]?.tagType || 'info'
+
+const statusLabel = (status) => {
+  const map = { pending: '待审核', active: '正常', disabled: '已停用', deleted: '已停用', rejected: '已拒绝' }
+  return map[status] || status
+}
+const statusTagType = (status) => {
+  const map = { pending: 'warning', active: 'success', disabled: 'info', deleted: 'info', rejected: 'danger' }
+  return map[status] || 'info'
+}
+
+const isGradeReached = (currentGrade, targetGrade) => {
+  return (gradeOrder[currentGrade] || 0) >= (gradeOrder[targetGrade] || 0)
+}
 
 // 筛选器
 const keyword = ref('')
@@ -438,9 +437,10 @@ const fullList = ref([])
 // 统计数据
 const stats = reactive({
   total: 0,
-  level1: 0,
-  level2: 0,
-  totalReferred: 0
+  pending: 0,
+  rookie: 0,
+  special: 0,
+  partner: 0
 })
 
 // 详情弹窗
@@ -448,21 +448,16 @@ const detailVisible = ref(false)
 const currentScout = ref(null)
 const scoutReferrals = ref([])
 
-// 层级编辑
-const levelEditVisible = ref(false)
-const levelChanging = ref(false)
-const levelForm = reactive({
-  newDepth: 2,
-  reason: ''
-})
-
 // 候选人状态映射
 const getCandidateStatusType = (status) => {
   const map = {
     pending: 'warning',
-    approved: 'primary',
-    interview_scheduled: 'info',
+    approved: 'success',
+    interview_scheduled: 'primary',
+    training: '',
     signed: 'success',
+    live: 'success',
+    probation: 'warning',
     rejected: 'danger'
   }
   return map[status] || 'info'
@@ -470,11 +465,14 @@ const getCandidateStatusType = (status) => {
 
 const getCandidateStatusLabel = (status) => {
   const map = {
-    pending: '待审核',
-    approved: '已通过',
-    interview_scheduled: '面试中',
-    signed: '已签约',
-    rejected: '已拒绝'
+    pending: '信息审核',
+    approved: '审核通过',
+    interview_scheduled: '面试阶段',
+    training: '培训阶段',
+    signed: '签约阶段',
+    live: '成团开播',
+    probation: '考核期',
+    rejected: '未通过'
   }
   return map[status] || status
 }
@@ -499,13 +497,15 @@ const loadScouts = async () => {
     if (result.success) {
       fullList.value = result.data.list || []
 
-      // 计算统计数据
+      // 1. 计算统计（只统计活跃的按等级分组，以及待审核数）
+      const activeScouts = fullList.value.filter(s => s.status === 'active')
       stats.total = fullList.value.length
-      stats.level1 = fullList.value.filter(s => (s.level?.depth || 1) === 1).length
-      stats.level2 = fullList.value.filter(s => s.level?.depth === 2).length
-      stats.totalReferred = fullList.value.reduce((sum, s) => sum + (s.stats?.totalReferred || 0), 0)
+      stats.pending = fullList.value.filter(s => s.status === 'pending').length
+      stats.rookie = activeScouts.filter(s => s.grade === 'rookie' || !s.grade).length
+      stats.special = activeScouts.filter(s => s.grade === 'special').length
+      stats.partner = activeScouts.filter(s => s.grade === 'partner').length
 
-      // 应用筛选
+      // 2. 应用筛选
       applyFilter()
     } else {
       ElMessage.error(result.error || '获取星探列表失败')
@@ -531,13 +531,23 @@ const applyFilter = () => {
     )
   }
 
-  // 层级筛选
-  if (activeFilter.value === 'level1') {
-    filtered = filtered.filter(s => (s.level?.depth || 1) === 1)
-  } else if (activeFilter.value === 'level2') {
-    filtered = filtered.filter(s => s.level?.depth === 2)
-  } else if (activeFilter.value === 'active') {
-    filtered = filtered.filter(s => s.status === 'active' && s.stats?.totalReferred > 0)
+  // 按状态/等级筛选
+  switch (activeFilter.value) {
+    case 'pending':
+      filtered = filtered.filter(s => s.status === 'pending')
+      break
+    case 'rookie':
+      filtered = filtered.filter(s => s.status === 'active' && (s.grade === 'rookie' || !s.grade))
+      break
+    case 'special':
+      filtered = filtered.filter(s => s.status === 'active' && s.grade === 'special')
+      break
+    case 'partner':
+      filtered = filtered.filter(s => s.status === 'active' && s.grade === 'partner')
+      break
+    case 'disabled':
+      filtered = filtered.filter(s => s.status === 'disabled' || s.status === 'deleted')
+      break
   }
 
   list.value = filtered
@@ -570,85 +580,94 @@ const handleView = async (row) => {
   }
 }
 
-// 打开层级编辑对话框
-const openLevelEdit = () => {
-  if (!currentScout.value) return
-
-  levelForm.newDepth = currentScout.value.level?.depth || 2
-  levelForm.reason = ''
-  levelEditVisible.value = true
-}
-
-// 确认层级调整
-const confirmLevelChange = async () => {
-  if (!currentScout.value) return
-
-  const oldDepth = currentScout.value.level?.depth || 2
-  if (levelForm.newDepth === oldDepth) {
-    ElMessage.warning('层级未发生变化')
-    return
-  }
-
-  levelChanging.value = true
-
-  try {
-    const wxcloud = await import('../../api/wxcloud')
-    const result = await wxcloud.default.callFunction('admin', {
-      action: 'updateScoutLevel',
-      data: {
-        scoutId: currentScout.value._id,
-        newDepth: levelForm.newDepth,
-        reason: levelForm.reason
+// 审核通过
+const confirmApprove = (scout) => {
+  ElMessageBox.confirm(
+    `确定通过 ${scout.profile?.name || '-'} 的星探申请吗？`,
+    '审核通过',
+    { type: 'success', confirmButtonText: '确认通过', cancelButtonText: '取消' }
+  ).then(async () => {
+    try {
+      const wxcloud = await import('../../api/wxcloud')
+      const result = await wxcloud.default.callFunction('admin', {
+        action: 'reviewScoutApplication',
+        data: { scoutId: scout._id, approved: true }
+      })
+      if (result.success) {
+        ElMessage.success('审核通过')
+        await loadScouts()
+      } else {
+        ElMessage.error(result.error || '操作失败')
       }
-    })
-
-    if (result.success) {
-      ElMessage.success('层级调整成功')
-
-      // 如果是升级，显示生成的邀请码
-      if (result.inviteCode) {
-        ElMessage.success(`已自动生成邀请码：${result.inviteCode}`)
-      }
-
-      levelEditVisible.value = false
-
-      // 刷新列表和详情
-      await loadScouts()
-      await handleView(currentScout.value)
-    } else {
-      ElMessage.error(result.error || '层级调整失败')
+    } catch (error) {
+      ElMessage.error('操作失败：' + error.message)
     }
-  } catch (error) {
-    console.error('层级调整失败:', error)
-    ElMessage.error('层级调整失败：' + error.message)
-  } finally {
-    levelChanging.value = false
-  }
+  }).catch(() => {})
 }
 
-// 确认删除星探
-const confirmDelete = (scout) => {
-  const hasChildren = (scout.level?.depth || 2) === 1 && (scout.team?.directScouts || 0) > 0
+// 审核拒绝
+const confirmReject = (scout) => {
+  ElMessageBox.prompt(
+    `请输入拒绝 ${scout.profile?.name || '-'} 的原因（选填）`,
+    '拒绝申请',
+    { type: 'warning', confirmButtonText: '确认拒绝', cancelButtonText: '取消', inputPlaceholder: '拒绝原因' }
+  ).then(async ({ value }) => {
+    try {
+      const wxcloud = await import('../../api/wxcloud')
+      const result = await wxcloud.default.callFunction('admin', {
+        action: 'reviewScoutApplication',
+        data: { scoutId: scout._id, approved: false, reviewNote: value || '' }
+      })
+      if (result.success) {
+        ElMessage.success('已拒绝申请')
+        await loadScouts()
+      } else {
+        ElMessage.error(result.error || '操作失败')
+      }
+    } catch (error) {
+      ElMessage.error('操作失败：' + error.message)
+    }
+  }).catch(() => {})
+}
 
-  let message = `确定要删除星探 ${scout.profile?.name || '-'} 吗？\n\n⚠️ 注意：\n• 该星探将无法登录\n• 推荐的候选人数据保留`
-
-  if (hasChildren) {
-    message += `\n• 该星探有 ${scout.team.directScouts} 个下级，删除后下级将自动升级为星探合伙人`
-  }
-
-  ElMessageBox.confirm(message, '确认删除', {
-    type: 'warning',
-    confirmButtonText: '确认删除',
-    cancelButtonText: '取消',
-    dangerouslyUseHTMLString: false
-  }).then(async () => {
+// 停用星探
+const confirmDisable = (scout) => {
+  ElMessageBox.confirm(
+    `确定要停用星探 ${scout.profile?.name || '-'} 吗？\n\n停用后该星探将无法登录，数据保留，可随时恢复。`,
+    '确认停用',
+    { type: 'warning', confirmButtonText: '确认停用', cancelButtonText: '取消' }
+  ).then(async () => {
     try {
       const wxcloud = await import('../../api/wxcloud')
       const result = await wxcloud.default.callFunction('admin', {
         action: 'deleteScout',
         data: { scoutId: scout._id }
       })
+      if (result.success) {
+        ElMessage.success('停用成功')
+        await loadScouts()
+      } else {
+        ElMessage.error(result.error || '停用失败')
+      }
+    } catch (error) {
+      ElMessage.error('停用失败：' + error.message)
+    }
+  }).catch(() => {})
+}
 
+// 硬删除星探
+const confirmHardDelete = (scout) => {
+  ElMessageBox.confirm(
+    `确定要彻底删除星探 ${scout.profile?.name || '-'} 吗？\n\n⚠️ 此操作不可恢复，数据将从数据库中永久删除！`,
+    '确认删除',
+    { type: 'error', confirmButtonText: '确认删除', cancelButtonText: '取消' }
+  ).then(async () => {
+    try {
+      const wxcloud = await import('../../api/wxcloud')
+      const result = await wxcloud.default.callFunction('admin', {
+        action: 'hardDeleteScout',
+        data: { scoutId: scout._id }
+      })
       if (result.success) {
         ElMessage.success('删除成功')
         await loadScouts()
@@ -656,25 +675,61 @@ const confirmDelete = (scout) => {
         ElMessage.error(result.error || '删除失败')
       }
     } catch (error) {
-      console.error('删除星探失败:', error)
       ElMessage.error('删除失败：' + error.message)
     }
-  }).catch(() => {
-    // 用户取消
-  })
+  }).catch(() => {})
 }
 
-// 确认恢复星探
+// 调整等级
+const gradeDialogVisible = ref(false)
+const gradingScout = ref(null)
+const newGrade = ref('')
+const gradeReason = ref('')
+const gradeSubmitting = ref(false)
+
+const handleChangeGrade = (scout) => {
+  gradingScout.value = scout
+  newGrade.value = ''
+  gradeReason.value = ''
+  gradeDialogVisible.value = true
+}
+
+const confirmChangeGrade = async () => {
+  if (!newGrade.value) return
+  gradeSubmitting.value = true
+  try {
+    const wxcloud = await import('../../api/wxcloud')
+    const result = await wxcloud.default.callFunction('admin', {
+      action: 'updateScoutGrade',
+      data: {
+        scoutId: gradingScout.value._id,
+        newGrade: newGrade.value,
+        reason: gradeReason.value
+      }
+    })
+    if (result.success) {
+      ElMessage.success('等级调整成功')
+      gradeDialogVisible.value = false
+      await loadScouts()
+      if (detailVisible.value && currentScout.value?._id === gradingScout.value._id) {
+        await handleView(gradingScout.value)
+      }
+    } else {
+      ElMessage.error(result.error || '调整失败')
+    }
+  } catch (error) {
+    ElMessage.error('调整失败：' + error.message)
+  } finally {
+    gradeSubmitting.value = false
+  }
+}
+
+// 恢复星探
 const confirmRestore = (scout) => {
   ElMessageBox.confirm(
     `确定要恢复星探 ${scout.profile?.name || '-'} 吗？\n\n恢复后该星探可以重新登录。`,
     '确认恢复',
-    {
-      type: 'info',
-      confirmButtonText: '确认恢复',
-      cancelButtonText: '取消',
-      dangerouslyUseHTMLString: false
-    }
+    { type: 'info', confirmButtonText: '确认恢复', cancelButtonText: '取消' }
   ).then(async () => {
     try {
       const wxcloud = await import('../../api/wxcloud')
@@ -682,7 +737,6 @@ const confirmRestore = (scout) => {
         action: 'restoreScout',
         data: { scoutId: scout._id }
       })
-
       if (result.success) {
         ElMessage.success('恢复成功')
         await loadScouts()
@@ -690,12 +744,9 @@ const confirmRestore = (scout) => {
         ElMessage.error(result.error || '恢复失败')
       }
     } catch (error) {
-      console.error('恢复星探失败:', error)
       ElMessage.error('恢复失败：' + error.message)
     }
-  }).catch(() => {
-    // 用户取消
-  })
+  }).catch(() => {})
 }
 
 onMounted(() => {
@@ -738,30 +789,34 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.stat-card.level1 {
+.stat-card.pending {
   border-left: 3px solid #e6a23c;
 }
 
-.stat-card.level2 {
-  border-left: 3px solid #67c23a;
+.stat-card.rookie {
+  border-left: 3px solid #909399;
 }
 
-.stat-card.active {
-  border-left: 3px solid #409eff;
+.stat-card.special {
+  border-left: 3px solid #e6a23c;
+}
+
+.stat-card.partner {
+  border-left: 3px solid #f56c6c;
 }
 
 .stat-content {
   text-align: center;
 }
 
-.stat-value {
+.stat-content > .stat-value {
   font-size: 32px;
   font-weight: bold;
   color: #fff;
   margin-bottom: 8px;
 }
 
-.stat-label {
+.stat-content > .stat-label {
   font-size: 14px;
   color: #999;
 }
@@ -823,7 +878,6 @@ onMounted(() => {
 .scout-meta {
   font-size: 13px;
   color: #999;
-  margin-bottom: 6px;
 }
 
 .meta-item {
@@ -833,15 +887,6 @@ onMounted(() => {
 .meta-divider {
   margin: 0 8px;
   color: #555;
-}
-
-.scout-parent {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #67c23a;
-  margin-top: 6px;
 }
 
 .scout-stats {
@@ -948,38 +993,70 @@ onMounted(() => {
   text-align: right;
 }
 
-.code-value {
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  color: #13e8dd;
-  letter-spacing: 1px;
+/* 升级进度 */
+.upgrade-progress {
+  display: flex;
+  gap: 0;
 }
 
-/* 团队统计网格 */
-.team-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+.upgrade-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 16px 8px;
 }
 
-.team-stat-card {
-  background: linear-gradient(135deg, rgba(19, 232, 221, 0.1) 0%, rgba(19, 232, 221, 0.05) 100%);
-  border-radius: 10px;
-  padding: 20px;
+.upgrade-step::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #333;
+  z-index: 0;
+}
+
+.upgrade-step:last-child::after {
+  display: none;
+}
+
+.upgrade-step.active .step-dot {
+  background: #13e8dd;
+  border-color: #13e8dd;
+  box-shadow: 0 0 8px rgba(19, 232, 221, 0.4);
+}
+
+.upgrade-step.active::after {
+  background: #13e8dd;
+}
+
+.step-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #333;
+  border: 2px solid #555;
+  z-index: 1;
+  margin-bottom: 10px;
+}
+
+.step-info {
   text-align: center;
-  border: 1px solid rgba(19, 232, 221, 0.2);
 }
 
-.team-stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #13e8dd;
-  margin-bottom: 8px;
+.step-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ccc;
+  margin-bottom: 4px;
 }
 
-.team-stat-label {
-  font-size: 13px;
-  color: #888;
+.step-desc {
+  font-size: 12px;
+  color: #666;
 }
 
 /* 推荐统计网格 */

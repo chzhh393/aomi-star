@@ -3,7 +3,7 @@
 > 本文档包含项目的核心架构、设计理念和关键技术机制。AI 助手首次接触项目时应优先阅读此文档。
 
 **创建日期**: 2025-11-05
-**最后更新**: 2025-11-05
+**最后更新**: 2026-03-13
 **维护者**: 开发团队
 
 ---
@@ -172,25 +172,53 @@ const UserStatus = {
 }
 ```
 
-### 推荐码数据模型
+### 星探数据模型（2026-03-13 改造后）
 
 ```javascript
-// 推荐码表（referral_codes collection）
+// 星探表（scouts collection）- 直营模式，扁平化管理
+{
+  _id: "scout_xxx",
+  openId: "wx_zzz",
+  name: "王推荐",
+  phone: "13700137000",
+  grade: "rookie",               // 三级等级：rookie/special/partner
+  status: "active",              // pending/active/rejected/deleted
+  shareCode: "SC-EXT-20260310-A3B9", // 分享码（原推荐码）
+  application: {                 // 审核信息
+    reason: "有丰富的主播资源",
+    appliedAt: "2026-03-10T10:00:00Z",
+    reviewedAt: "2026-03-10T12:00:00Z",
+    reviewedBy: "admin_001"
+  },
+  stats: {
+    totalReferred: 15,
+    totalSigned: 8,              // 签约数决定等级：≥5特约，≥20合伙人
+    totalCommission: 18500,
+    paidCommission: 15000
+  },
+  createdAt: "2026-03-10T10:00:00Z"
+}
+```
+
+### 推荐记录数据模型
+
+```javascript
+// 推荐记录表（referral_records collection）
 {
   _id: "ref_xxx",
-  code: "REF2025",                 // 推荐码
-  scoutId: "scout_xxx",            // 星探ID
-  scoutType: "external",           // 星探类型：internal/external
-  referredCandidates: [            // 推荐的候选人列表
-    {
-      candidateId: "user_xxx",
-      referredAt: "2025-11-05T10:00:00Z",
-      status: "pending",            // pending/signed/rejected
-      commission: 0                 // 佣金
-    }
-  ],
-  totalCommission: 0,              // 总佣金
-  createdAt: "2025-11-05T10:00:00Z"
+  userId: "user_xxx",
+  scoutId: "scout_xxx",
+  scoutCode: "SC-EXT-20260310-A3B9",
+  scoutGrade: "rookie",           // 推荐时的星探等级
+  referredAt: "2026-03-10T10:00:00Z",
+  status: "pending",              // pending/converted/rejected
+  anchorLevel: "A",               // 主播定级：SS/S/A/B
+  commission: {
+    signBonus: 300,               // 按等级×定级差异化
+    monthlyTotal: 0,
+    totalCommission: 300,
+    paidCommission: 0
+  }
 }
 ```
 
@@ -222,7 +250,7 @@ const UserStatus = {
 │   └── 摄像师 - 面试录制、视频管理
 │
 └── 4. 外部星探（External Scout）
-    └── 外部合作推荐人，推荐候选人获得佣金
+    └── 审核准入制，三级等级（新锐/特约/合伙人），差异化佣金
 ```
 
 ### 角色权限矩阵
@@ -311,7 +339,7 @@ App({
 | 场景 | 参数 | 目标用户 | 流程 |
 |------|------|---------|------|
 | 邀请码扫码 | `?inviteCode=INVITE2025` | 内部员工 | 验证邀请码 → 员工注册 |
-| 推荐码扫码 | `?refCode=REF2025` | 候选人 | 验证推荐码 → 候选人报名 |
+| 分享码扫码 | `?refCode=SC-EXT-xxx` | 候选人 | 验证星探分享码 → 候选人报名 |
 | 直接搜索 | 无参数 | 候选人 | 直接进入候选人报名 |
 | 分享转发 | 携带分享者信息 | 根据分享者角色决定 |
 
@@ -601,7 +629,8 @@ export async function callCloudFunction(name, data = {}) {
 
 - **users**：用户表
 - **invite_codes**：邀请码表
-- **referral_codes**：推荐码表
+- **scouts**：星探表（三级等级，审核准入）
+- **referral_records**：推荐记录表
 - **applications**：候选人申请表
 - **interviews**：面试记录表
 

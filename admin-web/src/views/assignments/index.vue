@@ -139,11 +139,14 @@ const assignForm = ref({
 
 // 状态映射
 const statusMap = {
-  pending: '待审核',
+  pending: '信息审核',
   approved: '审核通过',
-  rejected: '审核拒绝',
-  interview_scheduled: '已安排面试',
-  signed: '已签约'
+  rejected: '未通过',
+  interview_scheduled: '面试阶段',
+  training: '培训阶段',
+  signed: '签约阶段',
+  live: '成团开播',
+  probation: '考核期'
 }
 
 const statusTypeMap = {
@@ -151,7 +154,10 @@ const statusTypeMap = {
   approved: 'success',
   rejected: 'danger',
   interview_scheduled: 'primary',
-  signed: 'success'
+  training: '',
+  signed: 'success',
+  live: 'success',
+  probation: 'warning'
 }
 
 function getStatusText(status) {

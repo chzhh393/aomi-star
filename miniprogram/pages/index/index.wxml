@@ -26,31 +26,31 @@
       <view class="card-accent"></view>
     </view>
 
-    <!-- 员工入口 -->
-    <view class="entry-card employee-card" bindtap="goToEmployee">
-      <view class="card-icon">💼</view>
+    <!-- 星探入口 -->
+    <view class="entry-card scout-card" bindtap="goToScout">
+      <view class="card-icon">🔍</view>
       <view class="card-content">
-        <text class="card-title">员工入口</text>
-        <text class="card-desc">主播/HR/经纪人工作台</text>
+        <text class="card-title">成为星探</text>
+        <text class="card-desc">推荐主播赚奖励</text>
       </view>
       <view class="card-button">
-        <text class="button-text">选择角色</text>
+        <text class="button-text">立即注册</text>
         <text class="button-arrow">→</text>
       </view>
       <view class="card-accent"></view>
     </view>
 
-    <!-- 星探入口 - 小卡片 -->
-    <view class="entry-card scout-card scout-card-small" bindtap="goToScout">
+    <!-- 员工入口 - 小卡片 -->
+    <view class="entry-card employee-card employee-card-small" bindtap="goToEmployee">
       <view class="small-card-left">
-        <view class="card-icon-small">🔍</view>
+        <view class="card-icon-small">💼</view>
         <view class="card-content-small">
-          <text class="card-title-small">成为星探</text>
-          <text class="card-desc-small">推荐主播赚奖励</text>
+          <text class="card-title-small">员工入口</text>
+          <text class="card-desc-small">主播/HR/经纪人工作台</text>
         </view>
       </view>
       <view class="card-button-small">
-        <text class="button-text-small">注册</text>
+        <text class="button-text-small">选择角色</text>
         <text class="button-arrow-small">→</text>
       </view>
     </view>

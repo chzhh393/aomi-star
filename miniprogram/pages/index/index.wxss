@@ -182,8 +182,8 @@
   background: #F8D55D;
 }
 
-/* ==================== 星探小卡片样式 ==================== */
-.scout-card-small {
+/* ==================== 员工入口小卡片样式 ==================== */
+.employee-card-small {
   padding: 24rpx 32rpx;
   display: flex;
   flex-direction: row;
@@ -223,7 +223,7 @@
 }
 
 .card-button-small {
-  background: #A78BFA;
+  background: #F8D55D;
   padding: 16rpx 28rpx;
   display: flex;
   align-items: center;

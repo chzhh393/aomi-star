@@ -309,12 +309,20 @@ exports.main = async (event) => {
         return await batchAssignCandidates(data, token);
 
       // 星探管理
-      case 'updateScoutLevel':
-        return await updateScoutLevel(data, token);
+      case 'reviewScoutApplication':
+        return await reviewScoutApplication(data, token);
+      case 'getPendingScouts':
+        return await getPendingScouts(data, token);
+      case 'updateScoutGrade':
+        return await updateScoutGrade(data, token);
       case 'deleteScout':
         return await deleteScout(data, token);
+      case 'hardDeleteScout':
+        return await hardDeleteScout(data, token);
       case 'restoreScout':
         return await restoreScout(data, token);
+      case 'updateCandidateReferral':
+        return await updateCandidateReferral(data, token);
 
       // 操作日志
       case 'getAuditLogs':
@@ -616,30 +624,23 @@ async function updateCandidateStatus(id, status, reason) {
   return { success: true, message: '状态更新成功' };
 }
 
-// 根据状态变化更新星探统计数据
+// 根据状态变化更新星探统计数据（新模式：只跟踪 signedCount）
 async function updateScoutStatsOnStatusChange(scoutId, oldStatus, newStatus) {
   const updateData = {
     updatedAt: db.serverDate()
   };
 
-  // 从旧状态中减少计数
-  if (oldStatus === 'pending') {
-    updateData['stats.pendingCount'] = _.inc(-1);
-  } else if (oldStatus === 'approved' || oldStatus === 'interview_scheduled') {
-    updateData['stats.approvedCount'] = _.inc(-1);
-  } else if (oldStatus === 'signed') {
+  // 新增签约
+  if (newStatus === 'signed' && oldStatus !== 'signed') {
+    updateData['stats.signedCount'] = _.inc(1);
+  }
+  // 取消签约
+  else if (oldStatus === 'signed' && newStatus !== 'signed') {
     updateData['stats.signedCount'] = _.inc(-1);
   }
-
-  // 在新状态中增加计数
-  if (newStatus === 'pending') {
-    updateData['stats.pendingCount'] = _.inc(1);
-  } else if (newStatus === 'approved' || newStatus === 'interview_scheduled') {
-    updateData['stats.approvedCount'] = _.inc(1);
-  } else if (newStatus === 'signed') {
-    updateData['stats.signedCount'] = _.inc(1);
-  } else if (newStatus === 'rejected') {
-    updateData['stats.rejectedCount'] = _.inc(1);
+  // 其他状态变化不再更新 scout stats
+  else {
+    return;
   }
 
   await db.collection('scouts').doc(scoutId).update({
@@ -821,17 +822,12 @@ async function deleteCandidate(id, token) {
     if (candidate.referral && candidate.referral.scoutId) {
       const scoutUpdateData = {
         updatedAt: db.serverDate(),
-        'stats.totalReferred': _.inc(-1)
+        'stats.referredCount': _.inc(-1)
       };
 
-      if (candidate.status === 'pending') {
-        scoutUpdateData['stats.pendingCount'] = _.inc(-1);
-      } else if (candidate.status === 'approved' || candidate.status === 'interview_scheduled') {
-        scoutUpdateData['stats.approvedCount'] = _.inc(-1);
-      } else if (candidate.status === 'signed') {
+      // 仅签约状态需要回滚 signedCount
+      if (candidate.status === 'signed') {
         scoutUpdateData['stats.signedCount'] = _.inc(-1);
-      } else if (candidate.status === 'rejected') {
-        scoutUpdateData['stats.rejectedCount'] = _.inc(-1);
       }
 
       try {
@@ -1426,191 +1422,362 @@ async function batchAssignCandidates(data, token) {
 
 // ==================== 星探管理相关 ====================
 
-// 更新星探层级
-async function updateScoutLevel(data, token) {
+// 等级配置
+const SCOUT_GRADES = {
+  rookie: { zh: '新锐星探', upgradeAt: 0 },
+  special: { zh: '特约星探', upgradeAt: 2 },
+  partner: { zh: '合伙人星探', upgradeAt: 5 }
+};
+
+// 审核星探申请
+async function reviewScoutApplication(data, token) {
   const user = await getUserFromToken(token);
   if (!user) {
     return { success: false, error: '未授权，请重新登录' };
   }
 
-  // 权限检查 - 只有管理员可以调整层级
   if (!user.permissions.manageUsers) {
-    return { success: false, error: '只有管理员可以调整星探层级' };
+    return { success: false, error: '只有管理员可以审核星探申请' };
   }
 
-  const { scoutId, newDepth, reason } = data;
+  const { scoutId, approved, reviewNote } = data;
 
-  // 验证新层级
-  if (![1, 2].includes(newDepth)) {
-    return { success: false, error: '无效的层级' };
+  if (!scoutId) {
+    return { success: false, error: '缺少星探ID' };
   }
 
   try {
-    // 获取星探当前信息
     const scoutRes = await db.collection('scouts').doc(scoutId).get();
     if (!scoutRes.data) {
       return { success: false, error: '星探不存在' };
     }
 
     const scout = scoutRes.data;
-    const oldDepth = scout.level?.depth || 2;
-
-    // 如果层级没有变化
-    if (oldDepth === newDepth) {
-      return { success: false, error: '层级未发生变化' };
+    if (scout.status !== 'pending') {
+      return { success: false, error: '该星探不在待审核状态' };
     }
 
     const updateData = {
-      'level.depth': newDepth,
-      updatedAt: db.serverDate()
+      updatedAt: db.serverDate(),
+      'application.reviewedBy': user.username,
+      'application.reviewedAt': db.serverDate(),
+      'application.reviewNote': reviewNote || ''
     };
 
-    // 情况1：升级为星探合伙人（SS → SP）
-    if (oldDepth === 2 && newDepth === 1) {
-      // 生成唯一邀请码
-      try {
-        const inviteCode = await generateUniqueInviteCode(db);
-        updateData.inviteCode = inviteCode;
-      } catch (error) {
-        console.error('生成邀请码失败:', error);
-        return { success: false, error: '生成邀请码失败，请重试' };
-      }
-
-      // 如果原来有上级，需要解除上级关系
-      if (scout.level?.parentScoutId) {
-        updateData['level.parentScoutId'] = null;
-        updateData['level.parentScoutName'] = '';
-        updateData['level.parentInviteCode'] = '';
-
-        // 更新原上级的下级统计
-        try {
-          await db.collection('scouts').doc(scout.level.parentScoutId).update({
-            data: {
-              'team.directScouts': _.inc(-1),
-              'team.totalScouts': _.inc(-1),
-              updatedAt: db.serverDate()
-            }
-          });
-        } catch (error) {
-          console.error('更新原上级统计失败:', error);
-          // 不阻断主流程
-        }
-      }
+    if (approved) {
+      updateData.status = 'active';
+    } else {
+      updateData.status = 'rejected';
     }
 
-    // 情况2：降级为特约星探（SP → SS）
-    if (oldDepth === 1 && newDepth === 2) {
-      // 移除邀请码
-      updateData.inviteCode = null;
-
-      // 处理下级星探 - 自动升级为星探合伙人
-      if (scout.team?.directScouts > 0) {
-        // 查找所有下级星探
-        const childrenRes = await db.collection('scouts').where({
-          'level.parentScoutId': scoutId
-        }).get();
-
-        if (childrenRes.data.length > 0) {
-          // 逐个更新下级星探，确保邀请码唯一
-          for (const child of childrenRes.data) {
-            try {
-              // 生成唯一邀请码
-              const childInviteCode = await generateUniqueInviteCode(db);
-
-              await db.collection('scouts').doc(child._id).update({
-                data: {
-                  'level.depth': 1, // 升级为星探合伙人
-                  'level.parentScoutId': null,
-                  'level.parentScoutName': '',
-                  'level.parentInviteCode': '',
-                  inviteCode: childInviteCode,
-                  updatedAt: db.serverDate()
-                }
-              });
-            } catch (error) {
-              console.error(`升级下级星探 ${child._id} 失败:`, error);
-              // 继续处理其他下级星探
-            }
-          }
-        }
-      }
-
-      // 清空团队统计
-      updateData['team.directScouts'] = 0;
-      updateData['team.totalScouts'] = 0;
-    }
-
-    // 更新星探信息
     await db.collection('scouts').doc(scoutId).update({
       data: updateData
     });
 
-    // 记录操作日志
     await logAuditAction(
-      'update_scout_level',
+      approved ? 'approve_scout_application' : 'reject_scout_application',
       user.username,
       scoutId,
       {
         scoutName: scout.profile?.name || '-',
-        oldLevel: oldDepth === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)',
-        newLevel: newDepth === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)',
-        reason: reason || '无',
-        inviteCode: updateData.inviteCode || null
+        reviewNote: reviewNote || ''
       }
     );
 
     return {
       success: true,
-      message: '层级调整成功',
-      inviteCode: updateData.inviteCode || null
+      message: approved ? '审核通过' : '已拒绝申请'
     };
   } catch (error) {
-    console.error('更新星探层级失败:', error);
-    return { success: false, error: '层级调整失败：' + error.message };
+    console.error('审核星探申请失败:', error);
+    return { success: false, error: '审核失败：' + error.message };
   }
 }
 
-// 生成邀请码（简单版本，不检查重复）
-function generateInviteCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = 'INV';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+// 获取待审核星探列表
+async function getPendingScouts(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
   }
-  return code;
+
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以查看待审核列表' };
+  }
+
+  const { page = 1, pageSize = 20 } = data || {};
+
+  try {
+    const query = db.collection('scouts').where({
+      status: 'pending'
+    });
+
+    const countRes = await query.count();
+    const total = countRes.total;
+
+    const skip = (page - 1) * pageSize;
+    const res = await query
+      .orderBy('createdAt', 'desc')
+      .skip(skip)
+      .limit(pageSize)
+      .get();
+
+    return {
+      success: true,
+      data: {
+        list: res.data,
+        total,
+        page,
+        pageSize
+      }
+    };
+  } catch (error) {
+    console.error('获取待审核星探列表失败:', error);
+    return { success: false, error: '获取列表失败：' + error.message };
+  }
 }
 
-// 生成唯一邀请码（检查数据库确保不重复）
-async function generateUniqueInviteCode(db) {
-  let retryCount = 0;
-  const maxRetries = 20; // 增加重试次数
+// 管理员手动调整星探等级
+async function updateScoutGrade(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
 
-  while (retryCount < maxRetries) {
-    const code = generateInviteCode();
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以调整星探等级' };
+  }
 
-    // 检查邀请码是否已存在
-    const checkRes = await db.collection('scouts').where({
-      inviteCode: code
-    }).get();
+  const { scoutId, newGrade, reason } = data;
 
-    if (checkRes.data.length === 0) {
-      return code; // 找到唯一的邀请码
+  const validGrades = ['rookie', 'special', 'partner'];
+  if (!validGrades.includes(newGrade)) {
+    return { success: false, error: '无效的等级' };
+  }
+
+  try {
+    const scoutRes = await db.collection('scouts').doc(scoutId).get();
+    if (!scoutRes.data) {
+      return { success: false, error: '星探不存在' };
     }
 
-    retryCount++;
-  }
+    const scout = scoutRes.data;
+    const oldGrade = scout.grade || 'rookie';
 
-  throw new Error('无法生成唯一邀请码，请稍后重试');
+    if (oldGrade === newGrade) {
+      return { success: false, error: '等级未发生变化' };
+    }
+
+    await db.collection('scouts').doc(scoutId).update({
+      data: {
+        grade: newGrade,
+        gradeHistory: _.push({
+          from: oldGrade,
+          to: newGrade,
+          reason: reason || '管理员手动调整',
+          operator: user.username,
+          upgradedAt: db.serverDate()
+        }),
+        updatedAt: db.serverDate()
+      }
+    });
+
+    await logAuditAction(
+      'update_scout_grade',
+      user.username,
+      scoutId,
+      {
+        scoutName: scout.profile?.name || '-',
+        oldGrade: SCOUT_GRADES[oldGrade]?.zh || oldGrade,
+        newGrade: SCOUT_GRADES[newGrade]?.zh || newGrade,
+        reason: reason || '无'
+      }
+    );
+
+    return {
+      success: true,
+      message: '等级调整成功'
+    };
+  } catch (error) {
+    console.error('调整星探等级失败:', error);
+    return { success: false, error: '等级调整失败：' + error.message };
+  }
 }
 
-// 删除星探（软删除）
+// 修改候选人与星探的归属关系
+async function updateCandidateReferral(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以修改推荐关系' };
+  }
+
+  const { candidateId, newScoutId, reason } = data;
+  if (!candidateId) {
+    return { success: false, error: '缺少候选人ID' };
+  }
+
+  try {
+    // 1. 获取候选人信息
+    const candidateRes = await db.collection('candidates').doc(candidateId).get();
+    if (!candidateRes.data) {
+      return { success: false, error: '候选人不存在' };
+    }
+    const candidate = candidateRes.data;
+    const oldReferral = candidate.referral || null;
+    const oldScoutId = oldReferral?.scoutId || null;
+
+    // 移除推荐关系
+    if (!newScoutId) {
+      if (!oldScoutId) {
+        return { success: false, error: '该候选人没有推荐星探' };
+      }
+
+      await db.collection('candidates').doc(candidateId).update({
+        data: { referral: _.remove(), updatedAt: db.serverDate() }
+      });
+
+      // 回滚旧星探统计
+      const oldUpdate = { 'stats.referredCount': _.inc(-1), updatedAt: db.serverDate() };
+      if (candidate.status === 'signed') {
+        oldUpdate['stats.signedCount'] = _.inc(-1);
+      }
+      try {
+        await db.collection('scouts').doc(oldScoutId).update({ data: oldUpdate });
+      } catch (err) {
+        console.error('[admin] 回滚旧星探统计失败:', err);
+      }
+
+      await logAuditAction('remove_candidate_referral', user.username, candidateId, {
+        candidateName: candidate.basicInfo?.name || '-',
+        oldScoutName: oldReferral?.scoutName || '-',
+        reason: reason || '无'
+      });
+
+      return { success: true, message: '已移除推荐关系' };
+    }
+
+    // 变更推荐星探
+    if (oldScoutId === newScoutId) {
+      return { success: false, error: '新星探与当前星探相同' };
+    }
+
+    // 2. 获取新星探信息
+    const newScoutRes = await db.collection('scouts').doc(newScoutId).get();
+    if (!newScoutRes.data) {
+      return { success: false, error: '目标星探不存在' };
+    }
+    const newScout = newScoutRes.data;
+    if (newScout.status !== 'active') {
+      return { success: false, error: '目标星探状态异常，无法分配' };
+    }
+
+    // 3. 更新候选人的 referral
+    const newReferral = {
+      scoutId: newScoutId,
+      scoutName: newScout.profile?.name || '-',
+      scoutShareCode: newScout.shareCode || '',
+      scoutGrade: newScout.grade || 'rookie',
+      referredAt: oldReferral?.referredAt || db.serverDate(),
+      reassignedAt: db.serverDate(),
+      reassignedBy: user.username
+    };
+
+    await db.collection('candidates').doc(candidateId).update({
+      data: { referral: newReferral, updatedAt: db.serverDate() }
+    });
+
+    // 4. 回滚旧星探统计
+    if (oldScoutId) {
+      const oldUpdate = { 'stats.referredCount': _.inc(-1), updatedAt: db.serverDate() };
+      if (candidate.status === 'signed') {
+        oldUpdate['stats.signedCount'] = _.inc(-1);
+      }
+      try {
+        await db.collection('scouts').doc(oldScoutId).update({ data: oldUpdate });
+      } catch (err) {
+        console.error('[admin] 回滚旧星探统计失败:', err);
+      }
+    }
+
+    // 5. 增加新星探统计
+    const newUpdate = { 'stats.referredCount': _.inc(1), updatedAt: db.serverDate() };
+    if (candidate.status === 'signed') {
+      newUpdate['stats.signedCount'] = _.inc(1);
+    }
+    await db.collection('scouts').doc(newScoutId).update({ data: newUpdate });
+
+    // 6. 审计日志
+    await logAuditAction('update_candidate_referral', user.username, candidateId, {
+      candidateName: candidate.basicInfo?.name || '-',
+      oldScoutName: oldReferral?.scoutName || '无',
+      newScoutName: newScout.profile?.name || '-',
+      reason: reason || '无'
+    });
+
+    return { success: true, message: '推荐关系变更成功' };
+  } catch (error) {
+    console.error('修改推荐关系失败:', error);
+    return { success: false, error: '修改推荐关系失败：' + error.message };
+  }
+}
+
+// 停用星探（软禁用，保留数据）
 async function deleteScout(data, token) {
   const user = await getUserFromToken(token);
   if (!user) {
     return { success: false, error: '未授权，请重新登录' };
   }
 
-  // 权限检查 - 只有管理员可以删除星探
+  if (!user.permissions.manageUsers) {
+    return { success: false, error: '只有管理员可以停用星探' };
+  }
+
+  const { scoutId } = data;
+
+  try {
+    const scoutRes = await db.collection('scouts').doc(scoutId).get();
+    if (!scoutRes.data) {
+      return { success: false, error: '星探不存在' };
+    }
+
+    const scout = scoutRes.data;
+
+    await db.collection('scouts').doc(scoutId).update({
+      data: {
+        status: 'disabled',
+        disabledAt: db.serverDate(),
+        disabledBy: user._id,
+        updatedAt: db.serverDate()
+      }
+    });
+
+    await logAuditAction(
+      'disable_scout',
+      user.username,
+      scoutId,
+      {
+        scoutName: scout.profile?.name || '-',
+        scoutGrade: SCOUT_GRADES[scout.grade]?.zh || scout.grade || 'unknown'
+      }
+    );
+
+    return { success: true, message: '停用成功' };
+  } catch (error) {
+    console.error('停用星探失败:', error);
+    return { success: false, error: '停用失败：' + error.message };
+  }
+}
+
+// 硬删除星探（从数据库彻底删除）
+async function hardDeleteScout(data, token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
   if (!user.permissions.manageUsers) {
     return { success: false, error: '只有管理员可以删除星探' };
   }
@@ -1618,7 +1785,6 @@ async function deleteScout(data, token) {
   const { scoutId } = data;
 
   try {
-    // 获取星探信息
     const scoutRes = await db.collection('scouts').doc(scoutId).get();
     if (!scoutRes.data) {
       return { success: false, error: '星探不存在' };
@@ -1626,79 +1792,32 @@ async function deleteScout(data, token) {
 
     const scout = scoutRes.data;
 
-    // 软删除星探
-    await db.collection('scouts').doc(scoutId).update({
-      data: {
-        status: 'deleted',
-        deletedAt: db.serverDate(),
-        deletedBy: user._id,
-        updatedAt: db.serverDate()
-      }
-    });
+    await db.collection('scouts').doc(scoutId).remove();
 
-    // 如果是星探合伙人，处理下级星探
-    if ((scout.level?.depth || 2) === 1 && (scout.team?.directScouts || 0) > 0) {
-      // 查找所有下级星探
-      const childrenRes = await db.collection('scouts').where({
-        'level.parentScoutId': scoutId
-      }).get();
-
-      if (childrenRes.data.length > 0) {
-        // 逐个升级下级星探为星探合伙人，确保邀请码唯一
-        for (const child of childrenRes.data) {
-          try {
-            // 生成唯一邀请码
-            const childInviteCode = await generateUniqueInviteCode(db);
-
-            await db.collection('scouts').doc(child._id).update({
-              data: {
-                'level.depth': 1, // 升级为星探合伙人
-                'level.parentScoutId': null,
-                'level.parentScoutName': '',
-                'level.parentInviteCode': '',
-                inviteCode: childInviteCode,
-                updatedAt: db.serverDate()
-              }
-            });
-          } catch (error) {
-            console.error(`升级下级星探 ${child._id} 失败:`, error);
-            // 继续处理其他下级星探
-          }
-        }
-      }
-    }
-
-    // 记录操作日志
     await logAuditAction(
-      'delete_scout',
+      'hard_delete_scout',
       user.username,
       scoutId,
       {
         scoutName: scout.profile?.name || '-',
-        scoutLevel: (scout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)',
-        hadChildren: (scout.team?.directScouts || 0) > 0,
-        childrenCount: scout.team?.directScouts || 0
+        scoutGrade: SCOUT_GRADES[scout.grade]?.zh || scout.grade || 'unknown'
       }
     );
 
-    return {
-      success: true,
-      message: '删除成功'
-    };
+    return { success: true, message: '删除成功，数据已彻底清除' };
   } catch (error) {
-    console.error('删除星探失败:', error);
+    console.error('硬删除星探失败:', error);
     return { success: false, error: '删除失败：' + error.message };
   }
 }
 
-// 恢复星探
+// 恢复星探（从停用状态恢复为活跃）
 async function restoreScout(data, token) {
   const user = await getUserFromToken(token);
   if (!user) {
     return { success: false, error: '未授权，请重新登录' };
   }
 
-  // 权限检查 - 只有管理员可以恢复星探
   if (!user.permissions.manageUsers) {
     return { success: false, error: '只有管理员可以恢复星探' };
   }
@@ -1706,7 +1825,6 @@ async function restoreScout(data, token) {
   const { scoutId } = data;
 
   try {
-    // 获取星探信息
     const scoutRes = await db.collection('scouts').doc(scoutId).get();
     if (!scoutRes.data) {
       return { success: false, error: '星探不存在' };
@@ -1714,63 +1832,28 @@ async function restoreScout(data, token) {
 
     const scout = scoutRes.data;
 
-    // 准备更新数据
-    const updateData = {
-      status: 'active',
-      deletedAt: _.remove(),
-      deletedBy: _.remove(),
-      updatedAt: db.serverDate()
-    };
-
-    // 检查原层级关系是否有效
-    if ((scout.level?.depth || 2) === 2 && scout.level?.parentScoutId) {
-      // SS 星探有上级，检查上级是否还存在且未删除
-      try {
-        const parentRes = await db.collection('scouts').doc(scout.level.parentScoutId).get();
-
-        if (!parentRes.data || parentRes.data.status === 'deleted') {
-          // 上级已不存在或已删除，自动升级为 SP
-          console.log(`星探 ${scoutId} 的上级已不存在，自动升级为 SP`);
-
-          const inviteCode = await generateUniqueInviteCode(db);
-          updateData['level.depth'] = 1;
-          updateData['level.parentScoutId'] = null;
-          updateData['level.parentScoutName'] = '';
-          updateData['level.parentInviteCode'] = '';
-          updateData.inviteCode = inviteCode;
-        }
-      } catch (error) {
-        console.error('检查上级星探失败:', error);
-        // 保守处理：升级为 SP
-        const inviteCode = await generateUniqueInviteCode(db);
-        updateData['level.depth'] = 1;
-        updateData['level.parentScoutId'] = null;
-        updateData['level.parentScoutName'] = '';
-        updateData['level.parentInviteCode'] = '';
-        updateData.inviteCode = inviteCode;
-      }
-    }
-
-    // 恢复星探
     await db.collection('scouts').doc(scoutId).update({
-      data: updateData
+      data: {
+        status: 'active',
+        disabledAt: _.remove(),
+        disabledBy: _.remove(),
+        deletedAt: _.remove(),
+        deletedBy: _.remove(),
+        updatedAt: db.serverDate()
+      }
     });
 
-    // 记录操作日志
     await logAuditAction(
       'restore_scout',
       user.username,
       scoutId,
       {
         scoutName: scout.profile?.name || '-',
-        scoutLevel: (scout.level?.depth || 2) === 1 ? '星探合伙人 (SP)' : '特约星探 (SS)'
+        scoutGrade: SCOUT_GRADES[scout.grade]?.zh || scout.grade || 'unknown'
       }
     );
 
-    return {
-      success: true,
-      message: '恢复成功'
-    };
+    return { success: true, message: '恢复成功' };
   } catch (error) {
     console.error('恢复星探失败:', error);
     return { success: false, error: '恢复失败：' + error.message };

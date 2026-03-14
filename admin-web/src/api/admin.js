@@ -198,6 +198,14 @@ export const adminAPI = {
     })
   },
 
+  // 修改候选人推荐星探归属
+  updateCandidateReferral(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'updateCandidateReferral',
+      data
+    })
+  },
+
   // 删除面试资料
   deleteInterviewMaterial(candidateId, type, fileId) {
     return wxcloud.callFunction('admin', {

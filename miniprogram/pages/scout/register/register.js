@@ -6,43 +6,39 @@ Page({
     formData: {
       name: '',
       phone: '',
-      wechat: ''
+      idCard: '',
+      wechat: '',
+      reason: ''
     },
-    inviteCode: '',
-    parentScoutInfo: null,
-    verifying: false,
-    submitting: false
+    submitting: false,
+    // 申请状态（用于显示审核结果）
+    applicationStatus: null, // null | 'pending' | 'rejected'
+    existingScout: null
   },
 
   onLoad() {
-    // 确保用户已登录，然后检查是否已注册
-    this.ensureLoginAndCheckRegistration();
+    this.ensureLoginAndCheckStatus();
   },
 
-  // 确保用户已登录，并检查是否已注册
-  async ensureLoginAndCheckRegistration() {
+  async ensureLoginAndCheckStatus() {
     const openId = getCurrentOpenId();
     if (!openId) {
       await requireLogin({
         title: '需要登录',
-        content: '请先登录后再注册成为星探',
+        content: '请先登录后再申请成为星探',
         onSuccess: () => {
-          console.log('[星探注册] 登录成功');
-          // 登录成功后检查是否已注册
-          this.checkIfAlreadyRegistered();
+          this.checkExistingApplication();
         },
         onCancel: () => {
           wx.navigateBack();
         }
       });
     } else {
-      // 已登录，检查是否已注册
-      this.checkIfAlreadyRegistered();
+      this.checkExistingApplication();
     }
   },
 
-  // 检查用户是否已注册星探
-  async checkIfAlreadyRegistered() {
+  async checkExistingApplication() {
     wx.showLoading({ title: '检查中...' });
 
     try {
@@ -54,32 +50,40 @@ Page({
       wx.hideLoading();
 
       if (res.result && res.result.success && res.result.isRegistered) {
-        // 已经注册过了，直接跳转到工作台
-        wx.showModal({
-          title: '提示',
-          content: '您已经是星探了，现在前往工作台？',
-          confirmText: '前往',
-          cancelText: '取消',
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              wx.redirectTo({
-                url: '/pages/scout/home/home'
-              });
-            } else {
-              wx.navigateBack();
+        const scout = res.result.scout;
+
+        if (scout.status === 'active') {
+          wx.showModal({
+            title: '提示',
+            content: '您已经是星探了，现在前往工作台？',
+            confirmText: '前往',
+            cancelText: '取消',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.redirectTo({ url: '/pages/scout/home/home' });
+              } else {
+                wx.navigateBack();
+              }
             }
-          }
-        });
+          });
+        } else if (scout.status === 'pending') {
+          this.setData({
+            applicationStatus: 'pending',
+            existingScout: scout
+          });
+        } else if (scout.status === 'rejected') {
+          this.setData({
+            applicationStatus: 'rejected',
+            existingScout: scout
+          });
+        }
       }
-      // 如果未注册，继续显示注册表单（不做任何操作）
     } catch (error) {
-      console.error('[星探注册] 检查注册状态失败:', error);
+      console.error('[星探申请] 检查状态失败:', error);
       wx.hideLoading();
-      // 检查失败时继续显示注册表单
     }
   },
 
-  // 表单输入处理
   onInput(e) {
     const { field } = e.currentTarget.dataset;
     const { value } = e.detail;
@@ -88,74 +92,8 @@ Page({
     });
   },
 
-  // 邀请码输入处理
-  onInviteCodeInput(e) {
-    const { value } = e.detail;
-    this.setData({
-      inviteCode: value,
-      parentScoutInfo: null  // 清空之前的验证结果
-    });
-  },
-
-  // 验证邀请码
-  async verifyInviteCode() {
-    const { inviteCode } = this.data;
-
-    if (!inviteCode || !inviteCode.trim()) {
-      wx.showToast({ title: '请输入邀请码', icon: 'none' });
-      return;
-    }
-
-    this.setData({ verifying: true });
-    wx.showLoading({ title: '验证中...' });
-
-    try {
-      const res = await wx.cloud.callFunction({
-        name: 'scout',
-        data: {
-          action: 'verifyInviteCode',
-          data: { inviteCode: inviteCode.trim() }
-        }
-      });
-
-      wx.hideLoading();
-
-      if (res.result && res.result.success && res.result.valid) {
-        // 验证成功
-        this.setData({
-          parentScoutInfo: res.result.scout
-        });
-        wx.showToast({
-          title: '邀请码验证成功',
-          icon: 'success'
-        });
-      } else {
-        // 验证失败
-        const errorMsg = res.result?.error || '邀请码无效';
-        wx.showToast({
-          title: errorMsg,
-          icon: 'none'
-        });
-        this.setData({
-          parentScoutInfo: null
-        });
-      }
-
-    } catch (error) {
-      console.error('[星探注册] 验证邀请码失败:', error);
-      wx.hideLoading();
-      wx.showToast({
-        title: '验证失败，请重试',
-        icon: 'none'
-      });
-    } finally {
-      this.setData({ verifying: false });
-    }
-  },
-
-  // 验证表单
   validateForm() {
-    const { name, phone, wechat } = this.data.formData;
+    const { name, phone, idCard, reason } = this.data.formData;
 
     if (!name || !name.trim()) {
       wx.showToast({ title: '请输入真实姓名', icon: 'none' });
@@ -167,21 +105,25 @@ Page({
       return false;
     }
 
-    if (!wechat || !wechat.trim()) {
-      wx.showToast({ title: '请输入微信号', icon: 'none' });
+    if (!idCard || !/^\d{17}[\dXx]$/.test(idCard.trim())) {
+      wx.showToast({ title: '请输入正确的18位身份证号', icon: 'none' });
+      return false;
+    }
+
+    if (!reason || !reason.trim()) {
+      wx.showToast({ title: '请填写申请理由', icon: 'none' });
       return false;
     }
 
     return true;
   },
 
-  // 提交注册
-  async submitRegister() {
+  async submitApply() {
     if (!this.validateForm()) return;
 
     const openId = getCurrentOpenId();
     if (!openId) {
-      await this.ensureLogin();
+      await this.ensureLoginAndCheckStatus();
       return;
     }
 
@@ -189,69 +131,50 @@ Page({
     wx.showLoading({ title: '提交中...' });
 
     try {
-      // 准备注册数据，包含邀请码
-      const registerData = {
-        ...this.data.formData,
-        inviteCode: this.data.inviteCode?.trim() || ''
-      };
-
       const res = await wx.cloud.callFunction({
         name: 'scout',
         data: {
-          action: 'register',
-          data: registerData
+          action: 'apply',
+          data: this.data.formData
         }
       });
 
       wx.hideLoading();
 
       if (res.result && res.result.success) {
+        this.setData({
+          applicationStatus: 'pending'
+        });
         wx.showToast({
-          title: '注册成功！',
+          title: '申请已提交',
           icon: 'success',
           duration: 2000
         });
-
-        // 跳转到星探工作台
-        setTimeout(() => {
-          wx.redirectTo({
-            url: '/pages/scout/home/home'
-          });
-        }, 2000);
-
       } else {
-        const errorMsg = res.result?.error || '注册失败';
-        if (errorMsg === '您已经注册过了') {
-          wx.showModal({
-            title: '提示',
-            content: '您已经是星探了，现在前往工作台？',
-            confirmText: '前往',
-            cancelText: '取消',
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                wx.redirectTo({
-                  url: '/pages/scout/home/home'
-                });
-              }
-            }
-          });
-        } else {
-          wx.showToast({
-            title: errorMsg,
-            icon: 'none'
-          });
-        }
+        const errorMsg = res.result?.error || '提交失败';
+        wx.showToast({ title: errorMsg, icon: 'none' });
       }
-
     } catch (error) {
-      console.error('[星探注册] 提交失败:', error);
+      console.error('[星探申请] 提交失败:', error);
       wx.hideLoading();
-      wx.showToast({
-        title: '提交失败，请重试',
-        icon: 'none'
-      });
+      wx.showToast({ title: '提交失败，请重试', icon: 'none' });
     } finally {
       this.setData({ submitting: false });
     }
+  },
+
+  // 被拒绝后重新申请
+  reApply() {
+    this.setData({
+      applicationStatus: null,
+      existingScout: null,
+      formData: {
+        name: '',
+        phone: '',
+        idCard: '',
+        wechat: '',
+        reason: ''
+      }
+    });
   }
 });

@@ -67,23 +67,45 @@ Page({
 
   // 跳转到报名表单（需要登录）
   async goToApply() {
-    // 检查是否已报名
+    // 检查本地是否有报名记录
     const candidateId = wx.getStorageSync('myCandidateId');
     if (candidateId) {
-      wx.showModal({
-        title: '提示',
-        content: '您已报名，是否查看报名状态？',
-        confirmText: '查看状态',
-        cancelText: '取消',
-        success: (res) => {
-          if (res.confirm) {
-            wx.navigateTo({
-              url: `/pages/recruit/status/status?id=${candidateId}`
-            });
-          }
+      // 向云端验证记录是否仍存在（后台可能已删除）
+      try {
+        wx.showLoading({ title: '检查中...' });
+        const res = await wx.cloud.callFunction({
+          name: 'candidate',
+          data: { action: 'get', data: { id: candidateId } }
+        });
+        wx.hideLoading();
+
+        if (res.result && res.result.success && res.result.candidate) {
+          // 记录仍存在，提示已报名
+          wx.showModal({
+            title: '提示',
+            content: '您已报名，是否查看报名状态？',
+            confirmText: '查看状态',
+            cancelText: '取消',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.navigateTo({
+                  url: `/pages/recruit/status/status?id=${candidateId}`
+                });
+              }
+            }
+          });
+          return;
+        } else {
+          // 记录已被删除，清除本地缓存
+          wx.removeStorageSync('myCandidateId');
+          console.log('[招募首页] 候选人记录已被删除，清除本地缓存');
         }
-      });
-      return;
+      } catch (error) {
+        wx.hideLoading();
+        // 查询失败时也清除缓存，允许重新报名
+        wx.removeStorageSync('myCandidateId');
+        console.error('[招募首页] 验证候选人记录失败:', error);
+      }
     }
 
     // 需要登录后才能报名
@@ -108,17 +130,7 @@ Page({
       title: '登录提示',
       content: '查看报名状态需要先登录',
       onSuccess: async () => {
-        // 先检查本地是否有报名记录
-        let candidateId = wx.getStorageSync('myCandidateId');
-
-        if (candidateId) {
-          wx.navigateTo({
-            url: `/pages/recruit/status/status?id=${candidateId}`
-          });
-          return;
-        }
-
-        // 本地没有记录，从云端查询
+        // 从云端查询最新状态（本地缓存可能已过期）
         wx.showLoading({ title: '查询中...' });
 
         try {

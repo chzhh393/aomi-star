@@ -5,8 +5,7 @@
 
 // ==================== 邀请码类型 ====================
 export const INVITE_TYPE = {
-  EMPLOYEE: 'employee',     // 员工邀请码
-  SCOUT: 'scout'            // 星探邀请码
+  EMPLOYEE: 'employee'      // 员工邀请码（星探已改为申请制，不再使用邀请码）
 };
 
 // ==================== 邀请码状态 ====================
@@ -99,33 +98,6 @@ let inviteCodes = [
     createdAt: '2025-11-01'
   },
 
-  // ===== 星探邀请码 =====
-  {
-    code: 'SCOUT2025001',
-    type: INVITE_TYPE.SCOUT,
-    presetRole: null,               // 星探无需预设角色
-    maxUses: 1,
-    usedCount: 1,
-    expiresAt: '2025-12-31',
-    status: INVITE_STATUS.USED,
-    createdBy: 'ADMIN',
-    note: '外部星探郑哥',
-    usedBy: ['mock_scout_001'],
-    createdAt: '2025-08-01'
-  },
-  {
-    code: 'SCOUT2025TEST',
-    type: INVITE_TYPE.SCOUT,
-    presetRole: null,
-    maxUses: 10,
-    usedCount: 0,
-    expiresAt: '2025-12-31',
-    status: INVITE_STATUS.ACTIVE,
-    createdBy: 'ADMIN',
-    note: '测试用星探邀请码',
-    usedBy: [],
-    createdAt: '2025-11-01'
-  }
 ];
 
 // ==================== 辅助函数 ====================

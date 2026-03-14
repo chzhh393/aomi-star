@@ -281,7 +281,19 @@
           </div>
           <!-- 星探推荐 - 仅非经纪人可见 -->
           <div v-if="currentCandidate.referral && !isAgent()" class="info-block">
-            <div class="info-block-title">星探推荐</div>
+            <div class="info-block-title">
+              星探推荐
+              <el-button
+                v-if="hasPermission('manageUsers')"
+                type="primary"
+                link
+                size="small"
+                style="float: right; margin-top: -4px"
+                @click="handleChangeReferral"
+              >
+                更改星探
+              </el-button>
+            </div>
 
             <!-- 推荐链条 -->
             <div class="info-row" v-if="currentCandidate.referral.scoutChainNames && currentCandidate.referral.scoutChainNames.length > 0">
@@ -331,6 +343,15 @@
             <div class="info-row">
               <span class="info-label">推荐时间</span>
               <span class="info-value">{{ formatDate(currentCandidate.referral.referredAt) }}</span>
+            </div>
+          </div>
+          <!-- 无推荐关系时，管理员可手动指定 -->
+          <div v-if="!currentCandidate.referral && !isAgent() && hasPermission('manageUsers')" class="info-block">
+            <div class="info-block-title">星探推荐</div>
+            <div style="text-align: center; padding: 12px">
+              <el-button type="primary" plain size="small" @click="handleChangeReferral">
+                指定推荐星探
+              </el-button>
             </div>
           </div>
         </div>
@@ -743,6 +764,60 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 更改推荐星探对话框 -->
+    <el-dialog v-model="referralDialogVisible" title="更改推荐星探" width="500px">
+      <div>
+        <div v-if="currentCandidate?.referral" style="margin-bottom: 16px">
+          <span style="color: #888">当前推荐星探：</span>
+          <el-tag type="success" effect="plain">
+            {{ currentCandidate.referral.scoutName || currentCandidate.referral.scoutShareCode }}
+          </el-tag>
+        </div>
+        <el-form label-width="80px">
+          <el-form-item label="新星探" required>
+            <el-select
+              v-model="newScoutId"
+              placeholder="输入姓名搜索星探"
+              style="width: 100%"
+              filterable
+              remote
+              :remote-method="searchScoutList"
+              :loading="searchingScouts"
+              clearable
+            >
+              <el-option
+                v-for="scout in scoutSearchResults"
+                :key="scout._id"
+                :label="`${scout.profile?.name || '-'} (${referralGradeLabel(scout.grade)})`"
+                :value="scout._id"
+              >
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <span>{{ scout.profile?.name || '-' }}</span>
+                  <span style="color: #909399; font-size: 12px">
+                    {{ referralGradeLabel(scout.grade) }} | {{ scout.profile?.phone || '-' }}
+                  </span>
+                </div>
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="变更原因">
+            <el-input v-model="referralChangeReason" placeholder="如：星探离职转移（选填）" />
+          </el-form-item>
+        </el-form>
+        <div v-if="currentCandidate?.referral" style="margin-top: 16px; border-top: 1px solid #333; padding-top: 16px">
+          <el-button type="danger" plain size="small" @click="handleRemoveReferral">
+            移除推荐关系
+          </el-button>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="referralDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="referralSubmitting" :disabled="!newScoutId" @click="confirmChangeReferral">
+          确认更改
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -750,7 +825,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { Search, Plus, Connection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminAPI } from '../../api/admin'
+import { adminAPI, getScouts } from '../../api/admin'
 import { STATUS_MAP, formatDate } from '../../utils/constants'
 import { resolveCandidateImages } from '../../utils/cloudfile'
 import { hasPermission, getUserRole, isAgent } from '../../utils/permission'
@@ -1389,6 +1464,104 @@ async function handleDelete(row) {
     ElMessage.error('删除失败')
   } finally {
     submitting.value = false
+  }
+}
+
+// ==================== 更改推荐星探 ====================
+const referralGradeLabel = (grade) => {
+  const map = { rookie: '新锐', special: '特约', partner: '合伙人' }
+  return map[grade] || grade || '新锐'
+}
+
+const referralDialogVisible = ref(false)
+const newScoutId = ref('')
+const referralChangeReason = ref('')
+const referralSubmitting = ref(false)
+const scoutSearchResults = ref([])
+const searchingScouts = ref(false)
+
+const handleChangeReferral = () => {
+  newScoutId.value = ''
+  referralChangeReason.value = ''
+  scoutSearchResults.value = []
+  referralDialogVisible.value = true
+  searchScoutList('')
+}
+
+const searchScoutList = async (query) => {
+  searchingScouts.value = true
+  try {
+    const result = await getScouts({ keyword: query, pageSize: 100 })
+    if (result.success) {
+      const currentScoutId = currentCandidate.value?.referral?.scoutId
+      scoutSearchResults.value = (result.data?.list || [])
+        .filter(s => s.status === 'active' && s._id !== currentScoutId)
+    }
+  } catch (error) {
+    console.error('搜索星探失败:', error)
+  } finally {
+    searchingScouts.value = false
+  }
+}
+
+const confirmChangeReferral = async () => {
+  if (!newScoutId.value) return
+  referralSubmitting.value = true
+  try {
+    const res = await adminAPI.updateCandidateReferral({
+      candidateId: currentCandidate.value._id,
+      newScoutId: newScoutId.value,
+      reason: referralChangeReason.value
+    })
+    if (res.success) {
+      ElMessage.success('推荐关系变更成功')
+      referralDialogVisible.value = false
+      // 刷新详情
+      const detailRes = await adminAPI.getCandidateDetail(currentCandidate.value._id)
+      if (detailRes.success && detailRes.candidate) {
+        const detail = await resolveCandidateImages([detailRes.candidate])
+        currentCandidate.value = detail[0]
+      }
+      fetchList()
+    } else {
+      ElMessage.error(res.error || '变更失败')
+    }
+  } catch (error) {
+    ElMessage.error('变更失败：' + error.message)
+  } finally {
+    referralSubmitting.value = false
+  }
+}
+
+const handleRemoveReferral = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要移除该候选人的推荐关系吗？移除后星探将不再与此候选人关联。',
+      '移除推荐关系',
+      { type: 'warning', confirmButtonText: '确认移除', cancelButtonText: '取消' }
+    )
+    referralSubmitting.value = true
+    const res = await adminAPI.updateCandidateReferral({
+      candidateId: currentCandidate.value._id,
+      newScoutId: '',
+      reason: referralChangeReason.value || '管理员手动移除'
+    })
+    if (res.success) {
+      ElMessage.success('已移除推荐关系')
+      referralDialogVisible.value = false
+      const detailRes = await adminAPI.getCandidateDetail(currentCandidate.value._id)
+      if (detailRes.success && detailRes.candidate) {
+        const detail = await resolveCandidateImages([detailRes.candidate])
+        currentCandidate.value = detail[0]
+      }
+      fetchList()
+    } else {
+      ElMessage.error(res.error || '移除失败')
+    }
+  } catch {
+    // 用户取消
+  } finally {
+    referralSubmitting.value = false
   }
 }
 

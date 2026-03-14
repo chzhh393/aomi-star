@@ -2,14 +2,31 @@
 <view class="container">
   <!-- 顶部标题 -->
   <view class="header">
-    <view class="title">成为特约星探</view>
-    <view class="subtitle">Special Scout - 推荐优秀主播，赚取推荐奖励</view>
+    <view class="title">申请成为星探</view>
+    <view class="subtitle">推荐优秀主播，赚取推荐奖励</view>
   </view>
 
-  <!-- 表单 -->
-  <view class="form-content">
+  <!-- 等待审核状态 -->
+  <view wx:if="{{applicationStatus === 'pending'}}" class="status-card pending">
+    <view class="status-icon">⏳</view>
+    <view class="status-title">申请已提交</view>
+    <view class="status-desc">您的申请正在审核中，请耐心等待</view>
+  </view>
+
+  <!-- 被拒绝状态 -->
+  <view wx:elif="{{applicationStatus === 'rejected'}}" class="status-card rejected">
+    <view class="status-icon">❌</view>
+    <view class="status-title">申请未通过</view>
+    <view class="status-desc" wx:if="{{existingScout.application.reviewNote}}">
+      原因：{{existingScout.application.reviewNote}}
+    </view>
+    <button class="reapply-btn" bindtap="reApply">重新申请</button>
+  </view>
+
+  <!-- 申请表单 -->
+  <view wx:else class="form-content">
     <view class="form-section">
-      <view class="section-title">📝 基本信息</view>
+      <view class="section-title">基本信息</view>
 
       <view class="form-field">
         <text class="field-label">真实姓名 *</text>
@@ -28,6 +45,7 @@
           class="field-input"
           type="number"
           placeholder="请输入手机号"
+          maxlength="11"
           value="{{formData.phone}}"
           data-field="phone"
           bindinput="onInput"
@@ -35,43 +53,39 @@
       </view>
 
       <view class="form-field">
-        <text class="field-label">微信号 *</text>
+        <text class="field-label">身份证号 *</text>
         <input
           class="field-input"
-          placeholder="请输入微信号"
+          placeholder="请输入18位身份证号"
+          maxlength="18"
+          value="{{formData.idCard}}"
+          data-field="idCard"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">微信号</text>
+        <input
+          class="field-input"
+          placeholder="请输入微信号（选填）"
           value="{{formData.wechat}}"
           data-field="wechat"
           bindinput="onInput"
         />
       </view>
 
-      <!-- 邀请码（可选） -->
       <view class="form-field">
-        <text class="field-label">邀请码（选填）</text>
-        <view class="invite-code-input">
-          <input
-            class="field-input invite-input"
-            placeholder="请输入上级星探邀请码"
-            value="{{inviteCode}}"
-            bindinput="onInviteCodeInput"
-          />
-          <button
-            class="verify-btn"
-            size="mini"
-            bindtap="verifyInviteCode"
-            disabled="{{!inviteCode || verifying}}"
-          >
-            {{verifying ? '验证中' : '验证'}}
-          </button>
-        </view>
-
-        <!-- 验证成功后显示上级信息 -->
-        <view wx:if="{{parentScoutInfo}}" class="parent-info">
-          <view class="parent-info-icon">✓</view>
-          <view class="parent-info-text">
-            上级星探：{{parentScoutInfo.name}}
-          </view>
-        </view>
+        <text class="field-label">申请理由 *</text>
+        <textarea
+          class="field-textarea"
+          placeholder="请简述您为什么想成为星探，有哪些资源优势"
+          maxlength="500"
+          value="{{formData.reason}}"
+          data-field="reason"
+          bindinput="onInput"
+        />
+        <view class="char-count">{{formData.reason.length || 0}}/500</view>
       </view>
     </view>
 
@@ -79,10 +93,10 @@
     <view class="submit-section">
       <button
         class="submit-btn"
-        bindtap="submitRegister"
+        bindtap="submitApply"
         disabled="{{submitting}}"
       >
-        {{submitting ? '提交中...' : '提交注册'}}
+        {{submitting ? '提交中...' : '提交申请'}}
       </button>
     </view>
   </view>

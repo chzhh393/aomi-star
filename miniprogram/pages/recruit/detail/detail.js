@@ -4,11 +4,15 @@
 Page({
   data: {
     candidate: null,
-    loading: true
+    loading: true,
+    readOnly: false
   },
 
   onLoad(options) {
-    const { id } = options;
+    const { id, from } = options;
+    if (from === 'scout') {
+      this.setData({ readOnly: true });
+    }
     if (id) {
       this.loadCandidate(id);
     } else {

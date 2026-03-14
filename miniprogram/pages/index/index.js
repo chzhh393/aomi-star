@@ -40,17 +40,17 @@ Page({
           url: '/pages/scout/home/home'
         });
       } else {
-        // 未注册，跳转到注册页面
+        // 未注册，跳转到星探介绍页
         wx.navigateTo({
-          url: '/pages/scout/register/register'
+          url: '/pages/scout/intro/intro'
         });
       }
     } catch (error) {
       console.error('[首页] 检查星探状态失败:', error);
       wx.hideLoading();
-      // 检查失败时，默认跳转到注册页面
+      // 检查失败时，默认跳转到星探介绍页
       wx.navigateTo({
-        url: '/pages/scout/register/register'
+        url: '/pages/scout/intro/intro'
       });
     }
   },

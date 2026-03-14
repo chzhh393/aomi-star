@@ -5,102 +5,95 @@
     <view class="loading-text">加载中...</view>
   </view>
 
-  <!-- 内容 -->
+  <!-- 等待审核 -->
+  <view wx:elif="{{scout.status === 'pending'}}" class="pending-container">
+    <view class="pending-card">
+      <view class="pending-icon">⏳</view>
+      <view class="pending-title">申请审核中</view>
+      <view class="pending-desc">您的星探申请正在审核，请耐心等待</view>
+    </view>
+  </view>
+
+  <!-- 被拒绝 -->
+  <view wx:elif="{{scout.status === 'rejected'}}" class="pending-container">
+    <view class="pending-card rejected">
+      <view class="pending-icon">❌</view>
+      <view class="pending-title">申请未通过</view>
+      <view class="pending-desc" wx:if="{{scout.application.reviewNote}}">
+        原因：{{scout.application.reviewNote}}
+      </view>
+      <navigator url="/pages/scout/register/register" class="reapply-link">重新申请</navigator>
+    </view>
+  </view>
+
+  <!-- 正常工作台 -->
   <view wx:else class="content">
     <!-- 头部卡片 -->
     <view class="header-card">
       <view class="welcome">
         <text class="name">{{scout.profile.name}}</text>
-        <text class="role">星探</text>
+        <view class="grade-badge grade-{{scout.grade || 'rookie'}}" bindtap="goGradeIntro">{{gradeLabel}} ›</view>
       </view>
 
-      <!-- 推荐码 -->
-      <view class="share-code-section">
-        <view class="code-label">我的推荐码</view>
-        <view class="code-value">{{scout.shareCode}}</view>
-        <view class="code-actions">
-          <button class="action-btn primary" open-type="share">
-            📤 分享小程序给好友
-          </button>
+      <!-- 升级进度 -->
+      <view wx:if="{{upgradeProgress && upgradeProgress.nextGrade}}" class="upgrade-section">
+        <view class="upgrade-label">
+          升级进度：{{upgradeProgress.current}}/{{upgradeProgress.target}} 签约
         </view>
-        <view class="code-hint">分享时自动携带推荐码</view>
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{upgradeProgress.percentage}}%"></view>
+        </view>
+      </view>
+      <view wx:else class="upgrade-section">
+        <view class="upgrade-label max-grade">已达最高等级</view>
       </view>
 
-      <!-- 邀请码（仅星探合伙人显示） -->
-      <view wx:if="{{scout.level.depth === 1}}" class="invite-code-section">
-        <view class="invite-header">
-          <view class="code-label">我的邀请码</view>
-          <view class="level-badge">SP 星探合伙人</view>
+      <!-- 等级权益入口（醒目按钮） -->
+      <view class="grade-entry-btn" bindtap="goGradeIntro">
+        <view class="grade-entry-left">
+          <text class="grade-entry-icon">💰</text>
+          <view class="grade-entry-text">
+            <text class="grade-entry-title">等级权益与费用</text>
+            <text class="grade-entry-desc">查看各等级星探费标准和结算方式</text>
+          </view>
         </view>
-        <view class="code-value">{{scout.inviteCode}}</view>
-        <view class="code-actions">
-          <button class="action-btn secondary" bindtap="copyInviteCode">
-            📋 复制邀请码
-          </button>
-          <button class="action-btn secondary" bindtap="shareInvite">
-            🔗 分享给特约星探
-          </button>
-        </view>
-        <view class="code-hint">邀请特约星探组建团队</view>
+        <text class="grade-entry-arrow">›</text>
       </view>
 
-      <!-- 特约星探标识 -->
-      <view wx:if="{{scout.level.depth === 2}}" class="level-info">
-        <view class="level-badge secondary">SS 特约星探</view>
-        <view class="parent-info-text">
-          上级星探：{{scout.level.parentScoutName}}
-        </view>
-      </view>
-    </view>
-
-    <!-- 团队统计（仅一级星探显示） -->
-    <view wx:if="{{scout.level.depth === 1 && teamInfo}}" class="team-section">
-      <view class="section-title">
-        👥 我的团队
-        <button class="view-team-btn" bindtap="viewTeam">查看详情</button>
-      </view>
-      <view class="team-stats">
-        <view class="team-stat-item">
-          <view class="team-stat-value">{{teamInfo.summary.totalScouts}}</view>
-          <view class="team-stat-label">特约星探</view>
-        </view>
-        <view class="team-stat-item">
-          <view class="team-stat-value">{{teamInfo.summary.totalReferred}}</view>
-          <view class="team-stat-label">团队推荐</view>
-        </view>
-        <view class="team-stat-item">
-          <view class="team-stat-value">{{teamInfo.summary.totalSigned}}</view>
-          <view class="team-stat-label">团队签约</view>
-        </view>
+      <!-- 分享入口 -->
+      <view class="share-section">
+        <button class="action-btn primary" open-type="share">
+          分享小程序给好友
+        </button>
       </view>
     </view>
 
     <!-- 统计数据 -->
     <view class="stats-section">
-      <view class="section-title">📊 数据概览</view>
+      <view class="section-title">数据概览</view>
       <view class="stats-grid">
         <view class="stat-item">
-          <view class="stat-value">{{scout.stats.totalReferred}}</view>
+          <view class="stat-value">{{scout.stats.referredCount || 0}}</view>
           <view class="stat-label">总推荐</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">{{scout.stats.pendingCount}}</view>
-          <view class="stat-label">待审核</view>
-        </view>
-        <view class="stat-item">
-          <view class="stat-value">{{scout.stats.approvedCount}}</view>
-          <view class="stat-label">已通过</view>
-        </view>
-        <view class="stat-item">
-          <view class="stat-value">{{scout.stats.signedCount}}</view>
+          <view class="stat-value">{{scout.stats.signedCount || 0}}</view>
           <view class="stat-label">已签约</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{scout.stats.totalCommission || 0}}</view>
+          <view class="stat-label">总佣金</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{scout.stats.paidCommission || 0}}</view>
+          <view class="stat-label">已提现</view>
         </view>
       </view>
     </view>
 
     <!-- 筛选器 -->
     <view class="filter-section">
-      <view class="section-title">👥 推荐的候选人</view>
+      <view class="section-title">推荐的候选人</view>
       <view class="filter-tabs">
         <view
           class="filter-tab {{currentFilter === 'all' ? 'active' : ''}}"
@@ -110,25 +103,25 @@
           全部({{referrals.length}})
         </view>
         <view
-          class="filter-tab {{currentFilter === 'pending' ? 'active' : ''}}"
-          data-filter="pending"
+          class="filter-tab {{currentFilter === 'in_progress' ? 'active' : ''}}"
+          data-filter="in_progress"
           bindtap="onFilterChange"
         >
-          待审核
+          进行中
         </view>
         <view
-          class="filter-tab {{currentFilter === 'approved' ? 'active' : ''}}"
-          data-filter="approved"
-          bindtap="onFilterChange"
-        >
-          已通过
-        </view>
-        <view
-          class="filter-tab {{currentFilter === 'signed' ? 'active' : ''}}"
-          data-filter="signed"
+          class="filter-tab {{currentFilter === 'settled' ? 'active' : ''}}"
+          data-filter="settled"
           bindtap="onFilterChange"
         >
           已签约
+        </view>
+        <view
+          class="filter-tab {{currentFilter === 'rejected' ? 'active' : ''}}"
+          data-filter="rejected"
+          bindtap="onFilterChange"
+        >
+          未通过
         </view>
       </view>
     </view>
@@ -136,7 +129,6 @@
     <!-- 候选人列表 -->
     <view class="referrals-section">
       <view wx:if="{{filteredReferrals.length === 0}}" class="empty-state">
-        <text class="empty-icon">📭</text>
         <text class="empty-text">暂无推荐记录</text>
         <text class="empty-hint">分享小程序给潜在主播，开始赚取推荐奖励！</text>
       </view>
@@ -157,18 +149,35 @@
               </text>
             </view>
             <view class="status-badge status-{{item.status}}">
-              {{statusMap[item.status]}}
+              {{statusMap[item.status] || item.status}}
             </view>
+          </view>
+
+          <!-- 生命周期进度条（拒绝状态不显示） -->
+          <view wx:if="{{item.status !== 'rejected'}}" class="lifecycle-bar">
+            <view
+              wx:for="{{item._stages}}"
+              wx:for-item="stage"
+              wx:key="key"
+              class="lifecycle-step {{stage.state}}"
+            >
+              <view class="lc-dot"></view>
+              <text class="lc-label">{{lifecycleStages[index].label}}</text>
+            </view>
+          </view>
+
+          <!-- 结算提示 -->
+          <view wx:if="{{item.status === 'signed'}}" class="settlement-hint">
+            已结算预付 ¥300，待考核期后结算剩余
+          </view>
+          <view wx:elif="{{item.status === 'probation'}}" class="settlement-hint probation">
+            考核期中，开播满3个月后定级结算
           </view>
 
           <view class="referral-details">
             <view class="detail-row">
               <text class="detail-label">报名时间</text>
               <text class="detail-value">{{item.createdAtText}}</text>
-            </view>
-            <view class="detail-row" wx:if="{{item.basicInfo.phone}}">
-              <text class="detail-label">联系方式</text>
-              <text class="detail-value">{{item.basicInfo.phone}}</text>
             </view>
           </view>
         </view>
@@ -177,9 +186,10 @@
 
     <!-- 刷新按钮 -->
     <view class="refresh-section">
-      <button class="refresh-btn" bindtap="onRefresh">
-        🔄 刷新数据
-      </button>
+      <button class="refresh-btn" bindtap="onRefresh">刷新数据</button>
     </view>
   </view>
+
+  <!-- 隐藏的分享海报 canvas -->
+  <canvas type="2d" id="shareCanvas" style="position:fixed;left:-9999px;width:500px;height:400px;"></canvas>
 </view>

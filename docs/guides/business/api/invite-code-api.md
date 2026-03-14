@@ -1,11 +1,12 @@
-# 邀请码和推荐码 API
+# 邀请码和分享码 API
 
-> 邀请码生成、验证、使用相关的云函数接口
+> 员工邀请码、星探分享码相关的云函数接口
 
 **创建日期**: 2025-11-05
-**最后更新**: 2025-11-05
+**最后更新**: 2026-03-13
 **维护者**: 技术团队
 **源文档**: multi-role-system.md
+**版本**: v2.0
 
 ---
 
@@ -297,40 +298,69 @@ exports.main = async (event, context) => {
 
 ---
 
-## 星探推荐码 API
+## 星探分享码 API
 
-### 5. 生成推荐码
+> 星探体系已从分销模式改为直营模式（2026-03-13），采用审核准入制和三级等级体系（新锐/特约/合伙人），详见 [星探推荐流程](../workflows/scout-referral.md)。
 
-**云函数名称**：`generateScoutCode`
+### 5. 星探申请注册
 
-**功能**：为星探生成专属推荐码
+**云函数名称**：`applyScout`
+
+**功能**：提交星探申请（需管理员审核）
+
+**请求参数**：
+```javascript
+{
+  name: '王推荐',
+  phone: '13700137000',
+  idCard: '110101199001011234',
+  reason: '有丰富的主播资源' // 必填：申请理由
+}
+```
+
+**返回数据**：
+```javascript
+{
+  success: true,
+  scoutId: 'scout_003',
+  status: 'pending' // 待审核
+}
+```
+
+---
+
+### 6. 生成分享码
+
+**云函数名称**：`generateShareCode`
+
+**功能**：审核通过后为星探生成专属分享码（系统自动调用）
 
 **实现代码**：
 ```javascript
-// cloudfunctions/generateScoutCode/index.js
+// cloudfunctions/generateShareCode/index.js
 exports.main = async (event, context) => {
-  const { OPENID } = cloud.getWXContext();
-  const { scoutType } = event; // 'internal' 或 'external'
+  const { scoutId } = event;
 
   try {
-    // 1. 生成推荐码
-    const timestamp = Date.now().toString(36);
+    // 1. 生成分享码
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const typePrefix = scoutType === 'internal' ? 'INT' : 'EXT';
-    const scoutCode = `SC-${typePrefix}-${timestamp}-${random}`;
+    const shareCode = `SC-EXT-${date}-${random}`;
 
     // 2. 更新星探记录
     await db.collection('scouts')
-      .where({ openid: OPENID })
+      .doc(scoutId)
       .update({
         data: {
-          scout_code: scoutCode
+          shareCode: shareCode,
+          status: 'active',
+          grade: 'rookie' // 初始等级：新锐
         }
       });
 
     return {
       success: true,
-      scoutCode: scoutCode
+      shareCode: shareCode
     };
 
   } catch (err) {
@@ -344,7 +374,7 @@ exports.main = async (event, context) => {
 
 ---
 
-### 6. 获取推荐记录
+### 7. 获取推荐记录
 
 **云函数名称**：`getScoutReferrals`
 
@@ -367,22 +397,28 @@ exports.main = async (event, context) => {
       candidate_name: '张三',
       referred_at: '2025-01-05',
       status: 'signed',
+      anchorLevel: 'A', // 主播定级
+      lifecycleStage: 'nurturing', // 生命周期阶段
       commission: {
-        total_commission: 2750.00,
-        paid_commission: 2750.00
+        signBonus: 300, // 按等级×定级计算
+        monthlyTotal: 450,
+        total_commission: 750,
+        paid_commission: 750
       }
     }
-  ]
+  ],
+  scoutGrade: 'rookie', // 当前星探等级
+  upgradeProgress: { current: 3, next: 5, nextGrade: 'special' }
 }
 ```
 
 ---
 
-### 7. 获取佣金明细
+### 8. 获取佣金明细
 
 **云函数名称**：`getScoutCommissions`
 
-**功能**：获取星探的佣金明细
+**功能**：获取星探的佣金明细（差异化佣金）
 
 **返回数据**：
 ```javascript
@@ -391,27 +427,32 @@ exports.main = async (event, context) => {
   commissions: [
     {
       type: 'sign_bonus',
-      amount: 500,
+      amount: 300, // 按星探等级×主播定级计算
+      scoutGrade: 'rookie',
+      anchorLevel: 'A',
       status: 'paid',
-      created_at: '2025-01-20'
+      created_at: '2026-01-20'
     },
     {
       type: 'monthly_commission',
-      amount: 750,
-      month: '2025-02',
+      amount: 300, // 按星探等级×生命周期阶段计算
+      scoutGrade: 'rookie',
+      lifecycleStage: 'nurturing',
+      rate: 0.03, // 新锐×培养期 = 3%
+      month: '2026-02',
       status: 'paid',
-      created_at: '2025-03-01'
+      created_at: '2026-03-01'
     }
   ],
-  total: 28900,
-  paid: 20000,
-  pending: 8900
+  total: 18500,
+  paid: 15000,
+  pending: 3500
 }
 ```
 
 ---
 
-### 8. 提现申请
+### 9. 提现申请
 
 **云函数名称**：`submitWithdrawRequest`
 
@@ -480,11 +521,11 @@ async function checkRecommendFrequency(scoutId) {
 ## 下一步阅读
 
 - [员工入职流程](../workflows/employee-onboarding.md) - 邀请码使用流程
-- [星探推荐流程](../workflows/scout-referral.md) - 推荐码和佣金机制
+- [星探推荐流程](../workflows/scout-referral.md) - 分享码和差异化佣金机制
 - [认证 API](./auth-api.md) - 登录认证接口
 
 ---
 
-**文档版本**: v1.0
-**最后更新**: 2025-11-05
+**文档版本**: v2.0
+**最后更新**: 2026-03-13
 **维护者**: 技术团队
