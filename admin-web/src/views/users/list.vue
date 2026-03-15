@@ -17,8 +17,8 @@
       </el-radio-group>
     </div>
 
-    <!-- 用户列表 -->
-    <el-table :data="users" v-loading="loading" stripe>
+    <!-- 桌面端：表格 -->
+    <el-table v-if="!isMobile" :data="users" v-loading="loading" stripe>
       <el-table-column prop="username" label="用户名" width="150" />
       <el-table-column prop="name" label="姓名" width="120" />
 
@@ -76,6 +76,55 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 移动端：卡片列表 -->
+    <div v-else v-loading="loading" class="mobile-user-list">
+      <div v-for="row in users" :key="row._id" class="mobile-user-card">
+        <div class="mobile-user-top">
+          <span class="mobile-user-name">{{ row.name || '-' }}</span>
+          <el-tag
+            size="small"
+            :type="row.status === 'active' ? 'success' :
+                   row.status === 'pending' ? 'warning' : 'danger'">
+            {{ getStatusLabel(row.status) }}
+          </el-tag>
+        </div>
+        <div class="mobile-user-meta">
+          <span class="mobile-user-username">@{{ row.username }}</span>
+          <el-tag v-if="row.role !== 'pending'" :type="getRoleType(row.role)" size="small">
+            {{ getRoleLabel(row.role) }}
+          </el-tag>
+        </div>
+        <div class="mobile-user-bottom">
+          <span class="mobile-user-time">{{ formatDate(row.application?.appliedAt) }}</span>
+          <div class="mobile-user-actions">
+            <el-button
+              v-if="row.status === 'pending'"
+              type="primary"
+              size="small"
+              @click="reviewUser(row)">
+              审核
+            </el-button>
+            <el-button
+              v-if="row.status === 'active'"
+              link
+              size="small"
+              @click="editUser(row)">
+              编辑
+            </el-button>
+            <el-button
+              v-if="row.status === 'active'"
+              link
+              size="small"
+              style="color: #f56c6c;"
+              @click="deactivateUser(row)">
+              停用
+            </el-button>
+          </div>
+        </div>
+      </div>
+      <div v-if="users.length === 0 && !loading" class="empty-tip">暂无数据</div>
+    </div>
 
     <!-- 审核弹窗 -->
     <el-dialog v-model="showReview" title="审核用户申请" width="500px">
@@ -141,10 +190,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminAPI } from '../../api/admin'
 import { formatDate } from '../../utils/constants'
+
+// 响应式
+const windowWidth = ref(window.innerWidth)
+const isMobile = computed(() => windowWidth.value < 768)
+function onResize() { windowWidth.value = window.innerWidth }
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 const users = ref([])
 const filterStatus = ref('')
@@ -183,14 +239,12 @@ async function loadUsers() {
 
 function reviewUser(user) {
   currentUser.value = user
-  // 默认选中用户期望的角色，如果没有则默认为hr
   reviewForm.value.role = user.application?.desiredRole || 'hr'
   reviewForm.value.note = ''
   showReview.value = true
 }
 
 async function approveUser() {
-  // 验证角色选择
   if (!reviewForm.value.role) {
     ElMessage.warning('请选择要分配的角色')
     return
@@ -325,5 +379,87 @@ function getStatusLabel(status) {
 .info-row .value {
   flex: 1;
   color: #303133;
+}
+
+/* 移动端卡片列表 */
+.mobile-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-user-card {
+  background: #252525;
+  border-radius: 8px;
+  padding: 14px;
+  border: 1px solid #3a3a3a;
+}
+
+.mobile-user-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mobile-user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.mobile-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mobile-user-username {
+  font-size: 13px;
+  color: #888;
+}
+
+.mobile-user-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #333;
+}
+
+.mobile-user-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.mobile-user-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.empty-tip {
+  text-align: center;
+  padding: 40px 0;
+  color: #666;
+}
+
+@media (max-width: 767px) {
+  .users-page {
+    padding: 12px;
+  }
+
+  .page-header {
+    margin-bottom: 12px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .info-row .label {
+    width: 80px;
+    font-size: 13px;
+  }
 }
 </style>

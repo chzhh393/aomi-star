@@ -249,6 +249,29 @@
   font-weight: 700;
 }
 
+/* ==================== 面试详情入口 ==================== */
+.interview-detail-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin-top: 24rpx;
+  padding: 20rpx;
+  background: #13E8DD;
+}
+
+.interview-detail-text {
+  font-size: 26rpx;
+  font-weight: 900;
+  color: #000000;
+}
+
+.interview-detail-arrow {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+}
+
 /* ==================== 操作按钮 ==================== */
 .actions-block {
   padding: 0 24rpx;

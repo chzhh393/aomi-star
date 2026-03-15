@@ -9,8 +9,21 @@
     <text class="banner-subtitle">主播候选人</text>
   </view>
 
-  <!-- 状态卡片 -->
-  <view class="status-card">
+  <!-- 状态卡片：审核通过时显示面试流程入口 -->
+  <view class="status-card status-card-approved" wx:if="{{candidate.status === 'approved'}}" bindtap="viewInterviewInvite">
+    <view class="status-icon-wrapper">
+      <text class="status-icon">🎉</text>
+    </view>
+    <view class="status-title">恭喜，审核已通过！</view>
+    <view class="status-desc">请查看面试流程，提前做好准备</view>
+    <view class="interview-detail-btn" style="margin-top: 24rpx;">
+      <text class="interview-detail-text">查看面试流程</text>
+      <text class="interview-detail-arrow">→</text>
+    </view>
+  </view>
+
+  <!-- 状态卡片：其他状态 -->
+  <view class="status-card" wx:else>
     <view class="status-icon-wrapper">
       <text class="status-icon">{{statusInfo.title.includes('成功') || statusInfo.title.includes('通过') || statusInfo.title.includes('恭喜') ? '✅' : statusInfo.title.includes('遗憾') ? '❌' : '⏳'}}</text>
     </view>
@@ -101,7 +114,7 @@
         </view>
       </view>
 
-      <view class="interview-row" wx:if="{{candidate.interview.interviewers.length > 0}}">
+      <view class="interview-row" wx:if="{{candidate.interview.interviewers && candidate.interview.interviewers.length > 0}}">
         <text class="interview-icon">👤</text>
         <view class="interview-info">
           <view class="interview-label">面试官</view>
@@ -116,6 +129,11 @@
           <view class="interview-value">{{candidate.interview.notes}}</view>
         </view>
       </view>
+    </view>
+
+    <view class="interview-detail-btn" bindtap="viewInterviewInvite">
+      <text class="interview-detail-text">查看完整面试流程</text>
+      <text class="interview-detail-arrow">→</text>
     </view>
   </view>
 

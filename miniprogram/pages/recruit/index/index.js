@@ -143,7 +143,7 @@ Page({
 
           if (res.result && res.result.success && res.result.candidate) {
             // 找到报名记录，保存到本地并跳转
-            candidateId = res.result.candidate._id;
+            const candidateId = res.result.candidate._id;
             wx.setStorageSync('myCandidateId', candidateId);
             wx.navigateTo({
               url: `/pages/recruit/status/status?id=${candidateId}`

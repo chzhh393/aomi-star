@@ -105,7 +105,7 @@ function desensitizeCandidateForAgent(candidate) {
 }
 
 const SUBSCRIBE_TEMPLATE = {
-  reviewResult: 'Y0HUyqrKLrK1RWzKeE44xwUmoxU1pp7DCHIrDY1EYYQ', // 授权审核通过通知
+  reviewResult: '-0O7BnI57E_sDWOYezEjF8hlFAB3kaWQPOniWmkDXvc', // 报名审核通知
   interviewSchedule: 'hIAElgobOhB20TJwf7TKvxkiR0G9w2m-KCDZRFORCC8' // 日程提醒
 };
 
@@ -117,11 +117,13 @@ function truncateText(value, max = 20) {
 }
 
 function formatDateTime(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hour = String(date.getHours()).padStart(2, '0');
-  const minute = String(date.getMinutes()).padStart(2, '0');
+  // 云函数运行在 UTC 时区，需转换为北京时间（UTC+8）
+  const bjTime = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+  const year = bjTime.getUTCFullYear();
+  const month = String(bjTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(bjTime.getUTCDate()).padStart(2, '0');
+  const hour = String(bjTime.getUTCHours()).padStart(2, '0');
+  const minute = String(bjTime.getUTCMinutes()).padStart(2, '0');
   return `${year}-${month}-${day} ${hour}:${minute}`;
 }
 
@@ -196,27 +198,42 @@ async function sendReviewResultNotification(candidate, status, reason) {
 
   const dataCandidates = [
     {
-      phrase1: { value: statusText },
+      thing1: { value: truncateText('主播报名') },
       date2: { value: formatDateTime() },
-      thing3: { value: truncateText(remark) },
-      thing4: { value: truncateText('主播报名') },
-      thing5: { value: truncateText(targetName) }
+      thing3: { value: truncateText(targetName) },
+      phrase4: { value: statusText }
     },
     {
-      thing1: { value: truncateText(statusText) },
-      date2: { value: formatDateTime() },
-      thing3: { value: truncateText(remark) },
-      thing4: { value: truncateText('主播报名') },
-      thing5: { value: truncateText(targetName) }
+      thing1: { value: truncateText('主播报名') },
+      time2: { value: formatDateTime() },
+      thing3: { value: truncateText(targetName) },
+      phrase4: { value: statusText }
     }
   ];
 
-  await trySendSubscribeMessage(
-    candidate.openId,
-    SUBSCRIBE_TEMPLATE.reviewResult,
-    dataCandidates,
-    '审核结果'
-  );
+  // 审核通过跳转面试邀请详情页，拒绝跳转状态页
+  const candidateId = candidate._id || '';
+  const reviewPage = (status === 'approved' && candidateId)
+    ? `pages/recruit/interview-invite/interview-invite?id=${candidateId}`
+    : SUBSCRIBE_PAGE;
+
+  for (let i = 0; i < dataCandidates.length; i++) {
+    try {
+      await cloud.openapi.subscribeMessage.send({
+        touser: candidate.openId,
+        templateId: SUBSCRIBE_TEMPLATE.reviewResult,
+        page: reviewPage,
+        data: dataCandidates[i]
+      });
+      console.log(`[admin] 审核结果 订阅消息发送成功，dataPattern=${i + 1}，跳转页面=${reviewPage}`);
+      return true;
+    } catch (error) {
+      console.warn(`[admin] 审核结果 订阅消息发送失败，dataPattern=${i + 1}:`, {
+        errCode: error.errCode,
+        errMsg: error.errMsg || error.message
+      });
+    }
+  }
 }
 
 async function sendInterviewScheduleNotification(candidate, interview) {
@@ -227,7 +244,13 @@ async function sendInterviewScheduleNotification(candidate, interview) {
   const scheduleTime = formatInterviewTime(interview.date, interview.time);
   const locationText = truncateText(interview.location || '面试地点待确认');
   const interviewerText = normalizeInterviewerText(interview.interviewers);
-  const note = truncateText(interview.notes || interviewerText || '请提前15分钟到场');
+  const note = truncateText(interview.notes || interviewerText || '点击查看面试详情');
+
+  // 面试安排通知跳转到面试邀请详情页
+  const candidateId = candidate._id || '';
+  const interviewPage = candidateId
+    ? `pages/recruit/interview-invite/interview-invite?id=${candidateId}`
+    : SUBSCRIBE_PAGE;
 
   const dataCandidates = [
     {
@@ -235,23 +258,36 @@ async function sendInterviewScheduleNotification(candidate, interview) {
       time2: { value: scheduleTime },
       thing3: { value: locationText },
       thing4: { value: note },
-      thing5: { value: truncateText('请提前15分钟到场') }
+      thing5: { value: truncateText('点击查看面试详情') }
     },
     {
       thing1: { value: truncateText('主播面试') },
       date2: { value: scheduleTime },
       thing3: { value: locationText },
       thing4: { value: note },
-      thing5: { value: truncateText('请提前15分钟到场') }
+      thing5: { value: truncateText('点击查看面试详情') }
     }
   ];
 
-  await trySendSubscribeMessage(
-    candidate.openId,
-    SUBSCRIBE_TEMPLATE.interviewSchedule,
-    dataCandidates,
-    '面试安排'
-  );
+  for (let i = 0; i < dataCandidates.length; i++) {
+    try {
+      await cloud.openapi.subscribeMessage.send({
+        touser: candidate.openId,
+        templateId: SUBSCRIBE_TEMPLATE.interviewSchedule,
+        page: interviewPage,
+        data: dataCandidates[i]
+      });
+      console.log(`[admin] 面试安排 订阅消息发送成功，dataPattern=${i + 1}，跳转页面=${interviewPage}`);
+      return true;
+    } catch (error) {
+      console.warn(`[admin] 面试安排 订阅消息发送失败，dataPattern=${i + 1}:`, {
+        errCode: error.errCode,
+        errMsg: error.errMsg || error.message
+      });
+    }
+  }
+
+  return false;
 }
 
 exports.main = async (event) => {
@@ -327,6 +363,10 @@ exports.main = async (event) => {
       // 操作日志
       case 'getAuditLogs':
         return await getAuditLogs(data, token);
+
+      // 经纪人统计
+      case 'getAgentStats':
+        return await getAgentStats(token);
 
       // 面试打分
       case 'scoreInterview':
@@ -1914,6 +1954,76 @@ async function getAuditLogs(data, token) {
       pageSize
     }
   };
+}
+
+// ==================== 经纪人统计相关 ====================
+
+// 获取经纪人工作统计
+async function getAgentStats(token) {
+  const user = await getUserFromToken(token);
+  if (!user) {
+    return { success: false, error: '未授权，请重新登录' };
+  }
+
+  if (user.role !== 'agent') {
+    return { success: false, error: '仅经纪人可访问此接口' };
+  }
+
+  try {
+    const assignedIds = user.assignedCandidates || [];
+
+    // 没有分配候选人，直接返回空统计
+    if (assignedIds.length === 0) {
+      return {
+        success: true,
+        stats: {
+          totalCount: 0,
+          scoredCount: 0,
+          pendingCount: 0,
+          monthCount: 0
+        }
+      };
+    }
+
+    // 查询分配给该经纪人的所有候选人
+    const candidatesRes = await db.collection('candidates').where({
+      _id: _.in(assignedIds),
+      deletedAt: _.exists(false)
+    }).get();
+
+    const candidates = candidatesRes.data || [];
+    const totalCount = candidates.length;
+
+    // 已打分数量
+    const scoredCount = candidates.filter(c =>
+      c.interview && c.interview.score && c.interview.score.result
+    ).length;
+
+    // 待打分数量
+    const pendingCount = totalCount - scoredCount;
+
+    // 本月新增数量
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthCount = candidates.filter(c => {
+      if (!c.createdAt) return false;
+      const created = new Date(c.createdAt);
+      return created >= monthStart;
+    }).length;
+
+    return {
+      success: true,
+      stats: {
+        totalCount,
+        scoredCount,
+        pendingCount,
+        monthCount
+      }
+    };
+  } catch (error) {
+    console.error('[admin] 获取经纪人统计失败:', error);
+    return { success: false, error: '获取统计数据失败' };
+  }
 }
 
 // ==================== 面试打分相关 ====================

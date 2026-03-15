@@ -3,7 +3,7 @@
     <!-- 筛选栏 -->
     <el-card class="filter-card" shadow="never">
       <el-row :gutter="16" align="middle">
-        <el-col :span="6">
+        <el-col :xs="24" :sm="6">
           <el-input
             v-model="keyword"
             placeholder="搜索姓名"
@@ -16,7 +16,7 @@
             </template>
           </el-input>
         </el-col>
-        <el-col :span="18">
+        <el-col :xs="24" :sm="18" class="filter-radio-col">
           <el-radio-group v-model="activeFilter" @change="handleFilterChange">
             <el-radio-button value="all">全部</el-radio-button>
             <el-radio-button value="pending">待审核</el-radio-button>
@@ -172,7 +172,7 @@
     </div>
 
     <!-- 详情弹窗 -->
-    <el-dialog v-model="drawerVisible" width="900px" top="3vh" align-center class="detail-dialog" :show-close="true">
+    <el-dialog v-model="drawerVisible" :width="dialogWidth" top="3vh" align-center class="detail-dialog" :show-close="true">
       <template #header>
         <span></span>
       </template>
@@ -535,12 +535,13 @@
         </div>
 
         <!-- 7. 底部操作 -->
-        <div class="detail-footer" v-if="currentCandidate.status === 'pending' || currentCandidate.status === 'approved'">
+        <div class="detail-footer" v-if="currentCandidate.status === 'pending' || currentCandidate.status === 'approved' || isAdmin">
           <template v-if="currentCandidate.status === 'pending'">
             <el-button type="success" size="large" @click="handleApprove(currentCandidate)">审核通过</el-button>
             <el-button type="danger" size="large" @click="handleReject(currentCandidate)">拒绝</el-button>
           </template>
           <el-button v-if="currentCandidate.status === 'approved'" type="primary" size="large" @click="handleSchedule(currentCandidate)">安排面试</el-button>
+          <el-button v-if="isAdmin" type="danger" size="large" plain @click="handleDelete(currentCandidate)">删除</el-button>
         </div>
       </template>
     </el-dialog>
@@ -822,7 +823,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { Search, Plus, Connection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminAPI, getScouts } from '../../api/admin'
@@ -837,6 +838,17 @@ const currentPage = ref(1)
 const pageSize = ref(20)
 const activeFilter = ref('all')
 const keyword = ref('')
+
+// 响应式
+const windowWidth = ref(window.innerWidth)
+const isMobile = computed(() => windowWidth.value < 768)
+const dialogWidth = computed(() => isMobile.value ? '95vw' : '900px')
+
+function onResize() {
+  windowWidth.value = window.innerWidth
+}
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 // 详情抽屉
 const drawerVisible = ref(false)
@@ -856,13 +868,13 @@ const candidateVideos = computed(() => {
   return (currentCandidate.value?.talent?.videos || []).filter(v => v.url)
 })
 
-// 判断是否是admin账号（有删除权限）
+// 判断是否是admin角色（有删除权限）
 const isAdmin = computed(() => {
   try {
-    const adminInfo = localStorage.getItem('admin_info')
-    if (!adminInfo) return false
-    const info = JSON.parse(adminInfo)
-    return info.username === 'admin'
+    const userInfo = localStorage.getItem('userInfo')
+    if (!userInfo) return false
+    const info = JSON.parse(userInfo)
+    return info.role === 'admin'
   } catch {
     return false
   }
@@ -2354,5 +2366,105 @@ onMounted(fetchList)
 
 .required-field {
   font-weight: 500;
+}
+
+/* ========== 移动端适配 ========== */
+.filter-radio-col {
+  margin-top: 0;
+}
+
+@media (max-width: 767px) {
+  .filter-radio-col {
+    margin-top: 10px;
+  }
+
+  .batch-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .batch-bar-right {
+    flex-wrap: wrap;
+  }
+
+  .candidate-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .candidate-avatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .candidate-actions {
+    display: none;
+  }
+
+  .candidate-meta {
+    flex-wrap: wrap;
+  }
+
+  .candidate-extra {
+    flex-wrap: wrap;
+  }
+
+  .pagination-wrap {
+    justify-content: center;
+  }
+
+  /* 详情弹窗内部 */
+  .detail-profile {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-footer {
+    flex-wrap: wrap;
+  }
+
+  .detail-stats {
+    justify-content: center;
+  }
+
+  .detail-talents {
+    justify-content: center;
+  }
+
+  .detail-profile-top {
+    justify-content: center;
+  }
+
+  .detail-name-extra {
+    justify-content: center;
+  }
+
+  .distribution-item {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .interview-main {
+    flex-direction: column;
+  }
+
+  .materials-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

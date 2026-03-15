@@ -28,8 +28,9 @@
       </div>
     </div>
 
-    <!-- 日志列表 -->
+    <!-- 桌面端：表格 -->
     <el-table
+      v-if="!isMobile"
       :data="logs"
       style="width: 100%"
       v-loading="loading"
@@ -64,6 +65,26 @@
       </el-table-column>
     </el-table>
 
+    <!-- 移动端：卡片列表 -->
+    <div v-else v-loading="loading" class="mobile-log-list">
+      <div v-for="row in logs" :key="row._id" class="mobile-log-card">
+        <div class="mobile-log-top">
+          <el-tag :type="getActionType(row.action)" size="small">
+            {{ getActionText(row.action) }}
+          </el-tag>
+          <span class="mobile-log-operator">{{ row.operator }}</span>
+        </div>
+        <div class="mobile-log-target">{{ getTargetText(row) }}</div>
+        <div v-if="row.details" class="mobile-log-details">
+          <span v-for="(value, key) in row.details" :key="key" class="detail-item">
+            <strong>{{ getDetailKeyText(key) }}:</strong> {{ formatDetailValue(key, value) }}
+          </span>
+        </div>
+        <div class="mobile-log-time">{{ formatDate(row.createdAt) }}</div>
+      </div>
+      <div v-if="logs.length === 0 && !loading" class="empty-tip">暂无日志</div>
+    </div>
+
     <!-- 分页 -->
     <el-pagination
       v-model:current-page="pagination.page"
@@ -79,9 +100,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminAPI } from '../../api/admin'
+
+// 响应式
+const windowWidth = ref(window.innerWidth)
+const isMobile = computed(() => windowWidth.value < 768)
+function onResize() { windowWidth.value = window.innerWidth }
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 const loading = ref(false)
 const logs = ref([])
@@ -342,5 +370,86 @@ onMounted(() => {
 .pagination {
   display: flex;
   justify-content: flex-end;
+}
+
+/* 移动端卡片列表 */
+.mobile-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mobile-log-card {
+  background: #252525;
+  border-radius: 8px;
+  padding: 14px;
+  border: 1px solid #3a3a3a;
+}
+
+.mobile-log-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-log-operator {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.mobile-log-target {
+  font-size: 12px;
+  color: #aaa;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  word-break: break-all;
+  margin-bottom: 6px;
+}
+
+.mobile-log-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.mobile-log-time {
+  font-size: 12px;
+  color: #666;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+}
+
+.empty-tip {
+  text-align: center;
+  padding: 40px 0;
+  color: #666;
+}
+
+@media (max-width: 767px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .filter-group {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .filter-group .el-select {
+    width: 100% !important;
+  }
+
+  .pagination {
+    justify-content: center;
+  }
 }
 </style>

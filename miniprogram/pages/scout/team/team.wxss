@@ -1,0 +1,250 @@
+/* pages/scout/team/team.wxss */
+.container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding-bottom: 40rpx;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.content {
+  padding: 30rpx;
+}
+
+/* 我的信息卡片 */
+.my-info-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.my-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.my-name {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.my-level {
+  font-size: 20rpx;
+  color: #fff;
+  background: rgba(255, 215, 0, 0.3);
+  padding: 5rpx 15rpx;
+  border-radius: 15rpx;
+  border: 1rpx solid rgba(255, 215, 0, 0.5);
+}
+
+.my-codes {
+  display: flex;
+  gap: 20rpx;
+}
+
+.code-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 15rpx;
+  padding: 20rpx;
+  text-align: center;
+}
+
+.code-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.code-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 2rpx;
+}
+
+/* 团队统计卡片 */
+.team-summary-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.summary-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25rpx;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25rpx;
+}
+
+.summary-item {
+  text-align: center;
+  padding: 25rpx 15rpx;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-radius: 15rpx;
+}
+
+.summary-value {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #667eea;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.summary-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 下级星探列表 */
+.scouts-section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25rpx;
+}
+
+.empty-state {
+  padding: 80rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 20rpx;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 15rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #ccc;
+  display: block;
+}
+
+.scouts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.scout-card {
+  background: #f8f9fa;
+  border-radius: 15rpx;
+  padding: 25rpx;
+  border: 2rpx solid #e9ecef;
+}
+
+.scout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #e9ecef;
+}
+
+.scout-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.scout-badge {
+  font-size: 20rpx;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 5rpx 15rpx;
+  border-radius: 15rpx;
+  border: 1rpx solid rgba(102, 126, 234, 0.3);
+}
+
+.scout-info {
+  margin-bottom: 20rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.info-value {
+  font-size: 26rpx;
+  color: #333;
+}
+
+.scout-stats {
+  display: flex;
+  gap: 15rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #e9ecef;
+}
+
+.scout-stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 15rpx;
+  background: #fff;
+  border-radius: 10rpx;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.stat-value {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #667eea;
+  display: block;
+}

@@ -2,7 +2,7 @@
   <div class="commissions-page">
     <!-- 统计卡片 -->
     <el-row :gutter="16" class="stats-row">
-      <el-col :span="6">
+      <el-col :xs="12" :sm="6">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-value">{{ stats.totalPending }}</div>
@@ -10,7 +10,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="12" :sm="6">
         <el-card shadow="hover" class="stat-card pending">
           <div class="stat-content">
             <div class="stat-value">¥{{ stats.pendingAmount }}</div>
@@ -18,7 +18,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="12" :sm="6">
         <el-card shadow="hover" class="stat-card paid">
           <div class="stat-content">
             <div class="stat-value">¥{{ stats.paidAmount }}</div>
@@ -26,7 +26,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="12" :sm="6">
         <el-card shadow="hover" class="stat-card total">
           <div class="stat-content">
             <div class="stat-value">¥{{ stats.totalAmount }}</div>
@@ -456,5 +456,32 @@ onMounted(() => {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #333;
+}
+
+@media (max-width: 767px) {
+  .commissions-page {
+    padding: 12px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .distribution-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
 }
 </style>

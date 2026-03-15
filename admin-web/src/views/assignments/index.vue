@@ -27,7 +27,9 @@
             </div>
           </template>
 
+          <!-- 桌面端：表格 -->
           <el-table
+            v-if="!isMobile"
             :data="assignment.candidates"
             style="width: 100%"
             class="candidate-table"
@@ -58,6 +60,29 @@
               </template>
             </el-table-column>
           </el-table>
+
+          <!-- 移动端：卡片列表 -->
+          <div v-else class="mobile-candidate-list">
+            <div v-for="row in assignment.candidates" :key="row.id" class="mobile-candidate-card">
+              <div class="mobile-card-top">
+                <span class="mobile-card-name">{{ row.name }}</span>
+                <el-tag :type="getStatusType(row.status)" size="small">
+                  {{ getStatusText(row.status) }}
+                </el-tag>
+              </div>
+              <div class="mobile-card-meta">
+                <span class="mobile-card-time">{{ formatDate(row.createdAt) }}</span>
+                <el-button
+                  link
+                  type="danger"
+                  size="small"
+                  @click="handleUnassign(row.id, assignment.agentName)"
+                >
+                  取消分配
+                </el-button>
+              </div>
+            </div>
+          </div>
 
           <el-empty v-if="assignment.candidates.length === 0" description="暂无分配的候选人" />
         </el-collapse-item>
@@ -117,10 +142,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { adminAPI } from '../../api/admin'
+
+// 响应式
+const windowWidth = ref(window.innerWidth)
+const isMobile = computed(() => windowWidth.value < 768)
+function onResize() { windowWidth.value = window.innerWidth }
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 const loading = ref(false)
 const assignments = ref([])
@@ -384,5 +416,64 @@ onMounted(() => {
 
 :deep(.el-collapse-item__content) {
   padding: 16px;
+}
+
+/* 移动端卡片列表 */
+.mobile-candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mobile-candidate-card {
+  background: #252525;
+  border-radius: 8px;
+  padding: 14px;
+  border: 1px solid #3a3a3a;
+}
+
+.mobile-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mobile-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.mobile-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-card-time {
+  font-size: 12px;
+  color: #888;
+}
+
+@media (max-width: 767px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .agent-header {
+    flex-wrap: wrap;
+  }
+
+  :deep(.el-collapse-item__content) {
+    padding: 10px;
+  }
 }
 </style>

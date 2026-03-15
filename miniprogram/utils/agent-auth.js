@@ -29,8 +29,10 @@ export async function agentLogin(username, password) {
       name: 'admin',
       data: {
         action: 'login',
-        username: username.trim(),
-        password: password
+        data: {
+          username: username.trim(),
+          password: password
+        }
       }
     });
 

@@ -4,37 +4,51 @@
 
   <!-- 顶部横幅 -->
   <view class="header-banner">
-    <view class="banner-slash"></view>
-    <text class="banner-text">未来星探</text>
-    <text class="banner-subtitle">你负责发现，我们负责让光芒闪耀</text>
+    <view class="banner-deco-top"></view>
+    <view class="banner-deco-bottom"></view>
+    <view class="banner-content">
+      <text class="banner-label">STAR SCOUT</text>
+      <text class="banner-text">未来星探</text>
+      <text class="banner-subtitle">你负责发现，我们负责让光芒闪耀</text>
+      <view class="banner-divider"></view>
+      <text class="banner-slogan">发掘下一位顶流，从你开始</text>
+    </view>
   </view>
 
   <!-- 公司介绍卡片 -->
   <view class="intro-card">
     <view class="card-header">
-      <view class="header-slash"></view>
+      <view class="header-icon">🏢</view>
       <text class="header-title">关于奥米光年</text>
     </view>
     <view class="company-intro">
       <text class="intro-text">我们是深耕男团IP系统化运营的内容机构，核心团队来自阿里巴巴、字节跳动等一线互联网大厂。</text>
       <text class="intro-text">斥巨资打造5000平顶级实景直播基地，致力于将潜力新人锻造为具有长期生命力的"品牌资产"。</text>
     </view>
+    <view class="company-tags">
+      <text class="tag">阿里系团队</text>
+      <text class="tag">5000平基地</text>
+      <text class="tag">系统化运营</text>
+    </view>
   </view>
 
   <!-- 我们需要这样的你 -->
   <view class="intro-card">
     <view class="card-header">
-      <view class="header-slash"></view>
+      <view class="header-icon">🔍</view>
       <text class="header-title">我们需要这样的你</text>
     </view>
     <view class="intro-content">
       <view class="intro-item">
+        <view class="item-number">01</view>
         <text class="intro-value">年龄20-35岁，热爱偶像产业，对潮流审美有独到见解</text>
       </view>
       <view class="intro-item">
+        <view class="item-number">02</view>
         <text class="intro-value">拥有校园渠道、模特资源或社交达人资源者优先</text>
       </view>
       <view class="intro-item">
+        <view class="item-number">03</view>
         <text class="intro-value">无经验可带教，但需要敏锐的洞察力与强大的沟通力</text>
       </view>
     </view>
@@ -43,22 +57,37 @@
   <!-- 我们提供 -->
   <view class="benefits-section">
     <view class="section-header">
-      <view class="header-slash"></view>
+      <view class="header-icon">🎁</view>
       <text class="section-title">我们提供</text>
     </view>
 
     <view class="features-list">
       <view class="feature-item">
-        <text class="feature-title">国际视野</text>
-        <text class="feature-desc">系统学习韩国练习生甄选体系，掌握顶尖造星标准</text>
+        <view class="feature-icon-wrap">
+          <text class="feature-icon">🌏</text>
+        </view>
+        <view class="feature-text">
+          <text class="feature-title">国际视野</text>
+          <text class="feature-desc">系统学习韩国练习生甄选体系，掌握顶尖造星标准</text>
+        </view>
       </view>
       <view class="feature-item">
-        <text class="feature-title">丰厚回报</text>
-        <text class="feature-desc">业内领先分成 + 新人发现奖金，上不封顶</text>
+        <view class="feature-icon-wrap">
+          <text class="feature-icon">💰</text>
+        </view>
+        <view class="feature-text">
+          <text class="feature-title">丰厚回报</text>
+          <text class="feature-desc">业内领先分成 + 新人发现奖金，上不封顶</text>
+        </view>
       </view>
       <view class="feature-item">
-        <text class="feature-title">顶级人脉</text>
-        <text class="feature-desc">直连明星、头部网红、金牌制作人，积累黄金资源</text>
+        <view class="feature-icon-wrap">
+          <text class="feature-icon">👥</text>
+        </view>
+        <view class="feature-text">
+          <text class="feature-title">顶级人脉</text>
+          <text class="feature-desc">直连明星、头部网红、金牌制作人，积累黄金资源</text>
+        </view>
       </view>
     </view>
   </view>
@@ -66,15 +95,18 @@
   <!-- CTA区域 -->
   <view class="cta-section">
     <view class="cta-card">
-      <view class="cta-text">
-        <text class="cta-title">加入我们</text>
-        <text class="cta-subtitle">用你的眼光定义下一个顶流</text>
-      </view>
+      <view class="cta-badge">限时招募</view>
+      <text class="cta-title">加入我们</text>
+      <text class="cta-subtitle">用你的眼光定义下一个顶流</text>
     </view>
 
-    <button class="btn-primary" bindtap="goToRegister">
-      立即注册
+    <button class="btn-primary pulse-btn" bindtap="goToRegister">
+      立即注册成为星探
     </button>
+
+    <view class="cta-hint">
+      <text class="hint-text">注册免费 · 无门槛 · 立即开始</text>
+    </view>
   </view>
 
   <!-- 底部标语 -->

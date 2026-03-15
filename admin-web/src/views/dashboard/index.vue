@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-page">
     <el-row :gutter="16">
-      <el-col :span="6" v-for="item in statCards" :key="item.key">
+      <el-col :xs="12" :sm="6" v-for="item in statCards" :key="item.key">
         <el-card shadow="never" class="stat-card">
           <div class="stat-value">{{ stats[item.key] ?? '-' }}</div>
           <div class="stat-label">{{ item.label }}</div>

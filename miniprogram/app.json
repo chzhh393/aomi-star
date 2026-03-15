@@ -45,7 +45,8 @@
     "pages/recruit/makeup-artist-evaluation/makeup-artist-evaluation",
     "pages/recruit/stylist-evaluation/stylist-evaluation",
     "pages/recruit/rating-review/rating-review",
-    "pages/recruit/contract-upload/contract-upload"
+    "pages/recruit/contract-upload/contract-upload",
+    "pages/recruit/interview-invite/interview-invite"
   ],
   "window": {
     "backgroundColor": "#F6F6F6",

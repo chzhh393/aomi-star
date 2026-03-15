@@ -5,75 +5,108 @@
 .container {
   min-height: 100vh;
   background: #F0F0F0;
-  padding-bottom: 40rpx;
+  padding-bottom: 60rpx;
 }
 
 /* ==================== 顶部横幅 ==================== */
 .header-banner {
   background: #000000;
-  padding: 60rpx 32rpx 48rpx;
+  padding: 80rpx 40rpx 60rpx;
   position: relative;
   overflow: hidden;
 }
 
-.banner-slash {
+.banner-deco-top {
   position: absolute;
-  top: 0;
-  right: -40rpx;
-  width: 200rpx;
-  height: 100%;
+  top: -20rpx;
+  right: -60rpx;
+  width: 260rpx;
+  height: 260rpx;
   background: #FFD700;
-  transform: skewX(-15deg);
+  transform: rotate(45deg);
+  opacity: 0.15;
+}
+
+.banner-deco-bottom {
+  position: absolute;
+  bottom: -40rpx;
+  left: -30rpx;
+  width: 160rpx;
+  height: 160rpx;
+  border: 6rpx solid #FFD700;
+  transform: rotate(20deg);
+  opacity: 0.2;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 1;
+}
+
+.banner-label {
+  font-size: 24rpx;
+  color: rgba(255, 215, 0, 0.6);
+  letter-spacing: 8rpx;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 12rpx;
 }
 
 .banner-text {
-  font-size: 56rpx;
+  font-size: 72rpx;
   font-weight: 900;
   color: #FFFFFF;
-  letter-spacing: 4rpx;
-  position: relative;
-  z-index: 1;
+  letter-spacing: 8rpx;
   display: block;
   margin-bottom: 16rpx;
 }
 
 .banner-subtitle {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #FFD700;
   font-weight: 700;
   letter-spacing: 2rpx;
-  position: relative;
-  z-index: 1;
+  display: block;
+}
+
+.banner-divider {
+  width: 80rpx;
+  height: 6rpx;
+  background: #FFD700;
+  margin: 24rpx 0;
+}
+
+.banner-slogan {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 2rpx;
   display: block;
 }
 
 /* ==================== 通用卡片样式 ==================== */
-.intro-card,
-.cta-card {
+.intro-card {
   background: #FFFFFF;
   margin: 24rpx;
-  padding: 32rpx;
+  padding: 36rpx;
   border: 4rpx solid #000000;
-  box-shadow: 6rpx 6rpx 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 8rpx 8rpx 0 rgba(0, 0, 0, 0.12);
 }
 
 .card-header,
 .section-header {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  margin-bottom: 24rpx;
+  gap: 14rpx;
+  margin-bottom: 28rpx;
 }
 
-.header-slash {
-  width: 6rpx;
-  height: 32rpx;
-  background: #FFD700;
+.header-icon {
+  font-size: 36rpx;
 }
 
 .header-title,
 .section-title {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 900;
   color: #000000;
   letter-spacing: 2rpx;
@@ -84,12 +117,28 @@
   display: flex;
   flex-direction: column;
   gap: 16rpx;
+  margin-bottom: 24rpx;
 }
 
 .intro-text {
   font-size: 26rpx;
   color: #333333;
   line-height: 1.8;
+}
+
+.company-tags {
+  display: flex;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 22rpx;
+  color: #000000;
+  font-weight: 700;
+  background: #FFD700;
+  padding: 8rpx 20rpx;
+  letter-spacing: 1rpx;
 }
 
 /* ==================== 要求列表 ==================== */
@@ -101,11 +150,20 @@
 
 .intro-item {
   display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding: 20rpx;
-  background: #F5F5F5;
-  border-left: 4rpx solid #FFD700;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 24rpx;
+  background: #FAFAFA;
+  border-left: 6rpx solid #FFD700;
+}
+
+.item-number {
+  font-size: 36rpx;
+  font-weight: 900;
+  color: #FFD700;
+  line-height: 1;
+  min-width: 56rpx;
+  font-family: -apple-system, "Helvetica Neue", sans-serif;
 }
 
 .intro-value {
@@ -113,6 +171,7 @@
   color: #000000;
   font-weight: 600;
   line-height: 1.6;
+  flex: 1;
 }
 
 /* ==================== 我们提供 ==================== */
@@ -123,103 +182,154 @@
 .features-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  margin-top: 24rpx;
+  gap: 20rpx;
+  margin-top: 8rpx;
 }
 
 .feature-item {
   background: #FFFFFF;
   border: 4rpx solid #000000;
-  padding: 24rpx;
+  padding: 28rpx;
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  box-shadow: 4rpx 4rpx 0 rgba(0, 0, 0, 0.1);
+  gap: 24rpx;
+  box-shadow: 6rpx 6rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon-wrap {
+  width: 80rpx;
+  height: 80rpx;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feature-icon {
+  font-size: 40rpx;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  flex: 1;
 }
 
 .feature-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 900;
-  color: #FFD700;
-  white-space: nowrap;
-  min-width: 140rpx;
+  color: #000000;
+  letter-spacing: 1rpx;
 }
 
 .feature-desc {
   font-size: 26rpx;
-  color: #333333;
+  color: #555555;
   line-height: 1.5;
-  flex: 1;
 }
 
 /* ==================== CTA区域 ==================== */
 .cta-section {
-  margin: 0 24rpx 24rpx;
+  margin: 12rpx 24rpx 24rpx;
 }
 
 .cta-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24rpx;
   background: #FFD700;
-  border-color: #000000;
-  padding: 40rpx 32rpx;
+  border: 4rpx solid #000000;
+  box-shadow: 8rpx 8rpx 0 rgba(0, 0, 0, 0.12);
+  padding: 48rpx 32rpx;
+  margin-bottom: 24rpx;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.cta-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12rpx;
+.cta-badge {
+  display: inline-block;
+  background: #000000;
+  color: #FFD700;
+  font-size: 22rpx;
+  font-weight: 700;
+  padding: 6rpx 24rpx;
+  letter-spacing: 2rpx;
+  margin-bottom: 20rpx;
 }
 
 .cta-title {
-  font-size: 36rpx;
+  font-size: 44rpx;
   font-weight: 900;
   color: #000000;
-  letter-spacing: 2rpx;
+  letter-spacing: 4rpx;
   display: block;
+  margin-bottom: 12rpx;
 }
 
 .cta-subtitle {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #000000;
   font-weight: 600;
-  opacity: 0.8;
+  opacity: 0.75;
   display: block;
 }
 
 .btn-primary {
   width: 100%;
-  height: 96rpx;
+  height: 104rpx;
   background: #000000;
-  color: #FFFFFF;
+  color: #FFD700;
   border: none;
   font-size: 36rpx;
   font-weight: 900;
-  letter-spacing: 2rpx;
+  letter-spacing: 4rpx;
   border-radius: 0;
   margin-bottom: 16rpx;
+  line-height: 104rpx;
 }
 
 .btn-primary:active {
-  opacity: 0.9;
+  opacity: 0.85;
+}
+
+/* 呼吸动画 */
+.pulse-btn {
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 16rpx rgba(255, 215, 0, 0);
+  }
+}
+
+.cta-hint {
+  text-align: center;
+  margin-top: 8rpx;
+}
+
+.hint-text {
+  font-size: 22rpx;
+  color: #999999;
+  letter-spacing: 1rpx;
 }
 
 /* ==================== 底部标语 ==================== */
 .footer-motto {
   margin: 24rpx;
-  padding: 32rpx;
+  padding: 36rpx;
   background: #000000;
   text-align: center;
   border: 4rpx solid #FFD700;
 }
 
 .motto-text {
-  font-size: 24rpx;
+  font-size: 26rpx;
   font-weight: 700;
   color: #FFD700;
-  letter-spacing: 2rpx;
+  letter-spacing: 4rpx;
   line-height: 1.6;
 }

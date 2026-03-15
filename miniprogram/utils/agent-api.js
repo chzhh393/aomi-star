@@ -25,7 +25,7 @@ async function callAdminFunction(action, data = {}) {
       data: {
         action,
         token,
-        ...data
+        data
       }
     });
 
@@ -96,7 +96,7 @@ export async function getCandidateDetail(candidateId) {
     wx.showLoading({ title: '加载中...', mask: true });
 
     const result = await callAdminFunction('getCandidateDetail', {
-      candidateId
+      id: candidateId
     });
 
     wx.hideLoading();

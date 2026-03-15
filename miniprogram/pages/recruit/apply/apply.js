@@ -2,7 +2,7 @@
 import { getCurrentOpenId, requireLogin } from '../../../utils/auth.js';
 
 const RECRUIT_SUBSCRIBE_TEMPLATE_IDS = [
-  'Y0HUyqrKLrK1RWzKeE44xwUmoxU1pp7DCHIrDY1EYYQ', // 授权审核通过通知
+  '-0O7BnI57E_sDWOYezEjF8hlFAB3kaWQPOniWmkDXvc', // 报名审核通知
   'hIAElgobOhB20TJwf7TKvxkiR0G9w2m-KCDZRFORCC8'  // 日程提醒
 ];
 const DRAFT_STORAGE_KEY = 'applyDraft';
@@ -823,6 +823,11 @@ Page({
       return;
     }
 
+    // 在用户点击上下文中立即请求订阅消息授权（异步操作后会丢失交互上下文）
+    if (!this.data.isEditMode) {
+      await this.requestRecruitmentSubscribe();
+    }
+
     this.setData({ uploading: true });
     wx.showLoading({ title: '正在提交...' });
 
@@ -932,10 +937,6 @@ Page({
 
       if (res.result && res.result.success) {
         wx.hideLoading();
-
-        if (!isEdit) {
-          await this.requestRecruitmentSubscribe();
-        }
 
         // 保存候选人ID到本地
         wx.setStorageSync('myCandidateId', res.result.candidateId);

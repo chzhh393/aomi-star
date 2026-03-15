@@ -88,11 +88,18 @@ async function handleLogin() {
 
 .login-card {
   width: 400px;
+  max-width: 90vw;
   padding: 40px;
   background: var(--card-dark);
   border-radius: 16px;
   box-shadow: var(--shadow-card);
   border: 1px solid #333;
+}
+
+@media (max-width: 767px) {
+  .login-card {
+    padding: 24px;
+  }
 }
 
 .login-card h2 {

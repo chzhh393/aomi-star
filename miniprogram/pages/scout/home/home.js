@@ -175,52 +175,80 @@ Page({
         canvas.height = 400 * dpr;
         ctx.scale(dpr, dpr);
 
-        // 1. 渐变背景
-        const grad = ctx.createLinearGradient(0, 0, 500, 400);
-        grad.addColorStop(0, '#667eea');
-        grad.addColorStop(1, '#764ba2');
-        ctx.fillStyle = grad;
+        // 1. 纯黑背景
+        ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, 500, 400);
 
-        // 2. 装饰圆
-        ctx.globalAlpha = 0.1;
-        ctx.fillStyle = '#fff';
+        // 2. 右侧斜切装饰色块（与报名页 banner 一致）
+        ctx.save();
         ctx.beginPath();
-        ctx.arc(400, 80, 120, 0, Math.PI * 2);
+        ctx.moveTo(400, 0);
+        ctx.lineTo(500, 0);
+        ctx.lineTo(500, 400);
+        ctx.lineTo(340, 400);
+        ctx.closePath();
+        ctx.fillStyle = '#13E8DD';
         ctx.fill();
-        ctx.beginPath();
-        ctx.arc(80, 350, 80, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        ctx.restore();
 
-        // 3. 主标题
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 44px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('奥米光年', 250, 130);
-
-        // 4. 副标题
-        ctx.font = 'bold 36px sans-serif';
-        ctx.fillText('主播招募中', 250, 185);
-
-        // 5. 分割线
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        // 3. 左上角装饰线条
+        ctx.strokeStyle = 'rgba(19, 232, 221, 0.3)';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(150, 210);
-        ctx.lineTo(350, 210);
+        ctx.moveTo(30, 30);
+        ctx.lineTo(30, 80);
+        ctx.lineTo(80, 80);
         ctx.stroke();
 
-        // 6. 描述文字
-        ctx.font = '24px sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillText('你负责发光', 250, 255);
-        ctx.fillText('我们负责让全世界看见', 250, 290);
+        // 4. 顶部英文标签
+        ctx.fillStyle = 'rgba(19, 232, 221, 0.6)';
+        ctx.font = '600 13px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('AOMI LIGHTYEAR', 40, 120);
 
-        // 7. 底部提示
+        // 5. 主标题 - 奥米光年
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 50px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('奥米光年', 40, 180);
+
+        // 6. 青色横线分隔
+        ctx.fillStyle = '#13E8DD';
+        ctx.fillRect(40, 200, 60, 4);
+
+        // 7. 副标题
+        ctx.fillStyle = '#13E8DD';
+        ctx.font = 'bold 32px sans-serif';
+        ctx.fillText('主播招募中', 40, 248);
+
+        // 8. 英文副标题
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.font = '600 13px sans-serif';
+        ctx.fillText('STREAMER WANTED', 40, 275);
+
+        // 9. Slogan文字
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.font = '20px sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.fillText('点击进入报名 →', 250, 360);
+        ctx.fillText('你负责发光', 40, 318);
+        ctx.fillText('我们负责让全世界看见', 40, 346);
+
+        // 10. 底部CTA - 青色背景按钮
+        ctx.fillStyle = '#13E8DD';
+        ctx.fillRect(40, 362, 180, 30);
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('点击进入报名 →', 130, 382);
+
+        // 11. 右侧斜切区域上的英文竖排装饰
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.translate(460, 200);
+        ctx.rotate(Math.PI / 2);
+        ctx.fillText('TALENT RECRUITMENT', 0, 0);
+        ctx.restore();
 
         // 导出为临时文件
         wx.canvasToTempFilePath({
@@ -253,7 +281,7 @@ Page({
   onShareAppMessage() {
     const shareCode = this.data.scout?.shareCode;
     const result = {
-      title: '奥米光年招募主播，快来报名吧！',
+      title: '奥米光年 AOMI｜主播招募进行中，期待你的加入！',
       path: `/pages/recruit/index/index?ref=${shareCode}`
     };
     if (this.data.shareImagePath) {

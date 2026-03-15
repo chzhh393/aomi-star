@@ -1,0 +1,128 @@
+<!--pages/recruit/interview-invite/interview-invite.wxml-->
+<!--面试邀请详情页 - 街头运动风格-->
+<view class="container" wx:if="{{!loading}}">
+
+  <!-- 顶部横幅 -->
+  <view class="header-banner">
+    <view class="banner-slash"></view>
+    <text class="banner-text">INTERVIEW</text>
+    <text class="banner-subtitle">面试邀请</text>
+  </view>
+
+  <!-- 欢迎卡片 -->
+  <view class="welcome-card">
+    <view class="welcome-title">{{candidateName ? candidateName + '，' : ''}}你好！</view>
+    <view class="welcome-desc">很高兴邀请你参加我们的线下面试。为了全方位评估你的潜力和特质，我们安排了以下面试流程：</view>
+  </view>
+
+  <!-- 面试流程 -->
+  <view class="flow-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">PROCESS</text>
+    </view>
+
+    <!-- 流程1：参观公司 -->
+    <view class="flow-item">
+      <view class="flow-number">01</view>
+      <view class="flow-content">
+        <view class="flow-title">参观公司</view>
+        <view class="flow-desc">带你实地感受我们的办公与直播环境。</view>
+      </view>
+    </view>
+
+    <!-- 流程2：妆前拍摄 -->
+    <view class="flow-item">
+      <view class="flow-number">02</view>
+      <view class="flow-content">
+        <view class="flow-title">妆前拍摄（外形打分）</view>
+        <view class="flow-desc">拍摄 4 方位全身照 + 1 张半身特写。</view>
+      </view>
+    </view>
+
+    <!-- 流程3：舞蹈考核 -->
+    <view class="flow-item">
+      <view class="flow-number">03</view>
+      <view class="flow-content">
+        <view class="flow-title">舞蹈考核</view>
+        <view class="flow-detail">
+          <view class="detail-row">
+            <view class="detail-dot"></view>
+            <text class="detail-text">自行准备：3 段 20 秒以上的舞蹈展示</text>
+          </view>
+          <view class="detail-row">
+            <view class="detail-dot"></view>
+            <text class="detail-text">现场学习：现场学习 2 个 8 拍的舞蹈动作</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 流程4：镜头采访 -->
+    <view class="flow-item">
+      <view class="flow-number">04</view>
+      <view class="flow-content">
+        <view class="flow-title">镜头采访</view>
+        <view class="flow-desc">进行自我介绍，并回答 3 个相关问题。</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 面试信息 -->
+  <view class="info-block">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">DETAILS</text>
+    </view>
+
+    <view class="info-card">
+      <view class="info-row" wx:if="{{interview && interview.date}}">
+        <text class="info-icon">&#x1F4C5;</text>
+        <view class="info-content">
+          <view class="info-label">面试时间</view>
+          <view class="info-value">{{interview.date}} {{interview.time}}</view>
+        </view>
+      </view>
+
+      <view class="info-row">
+        <text class="info-icon">&#x1F4CD;</text>
+        <view class="info-content">
+          <view class="info-label">面试地点</view>
+          <view class="info-value">{{interview && interview.location ? interview.location : defaultLocation}}</view>
+        </view>
+        <view class="copy-btn" bindtap="copyAddress">复制</view>
+      </view>
+
+      <view class="info-row">
+        <text class="info-icon">&#x1F4DE;</text>
+        <view class="info-content">
+          <view class="info-label">联系电话</view>
+          <view class="info-value">{{contactPhone}}</view>
+        </view>
+        <view class="copy-btn" bindtap="callPhone">拨打</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="footer-block">
+    <view class="footer-text">请在准备完成后与我们确认时间。</view>
+    <view class="footer-highlight">期待在奥米光年与你见面，共同开启造星之旅！</view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="actions-block">
+    <button class="action-btn btn-primary" bindtap="callPhone">
+      <text class="btn-text">电话确认面试时间</text>
+    </button>
+    <button class="action-btn btn-ghost" bindtap="viewStatus">
+      <text class="btn-text">查看报名状态</text>
+    </button>
+  </view>
+
+</view>
+
+<!-- 加载中 -->
+<view class="empty-state" wx:if="{{loading}}">
+  <text class="empty-text">加载中...</text>
+</view>

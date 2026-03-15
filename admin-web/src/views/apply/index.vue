@@ -167,10 +167,17 @@ function goBack() {
 
 .register-container {
   width: 480px;
+  max-width: 90vw;
   background: #fff;
   border-radius: 16px;
   padding: 40px 36px 32px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 767px) {
+  .register-container {
+    padding: 24px 20px 20px;
+  }
 }
 
 .register-header {

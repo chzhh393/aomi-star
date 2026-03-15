@@ -174,6 +174,17 @@ Page({
     };
   },
 
+  // 查看面试邀请详情
+  viewInterviewInvite() {
+    const { candidate } = this.data;
+    const id = candidate._id || wx.getStorageSync('myCandidateId');
+    if (id) {
+      wx.navigateTo({
+        url: `/pages/recruit/interview-invite/interview-invite?id=${id}`
+      });
+    }
+  },
+
   // 查看报名详情
   viewDetail() {
     const { candidate } = this.data;

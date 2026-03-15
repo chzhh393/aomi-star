@@ -3,7 +3,7 @@
     <!-- 筛选栏 -->
     <el-card class="filter-card" shadow="never">
       <el-row :gutter="16" align="middle">
-        <el-col :span="6">
+        <el-col :xs="24" :sm="6">
           <el-input
             v-model="keyword"
             placeholder="搜索姓名或手机号"
@@ -16,7 +16,7 @@
             </template>
           </el-input>
         </el-col>
-        <el-col :span="18">
+        <el-col :xs="24" :sm="18" class="filter-radio-col">
           <el-radio-group v-model="activeFilter" @change="handleFilterChange">
             <el-radio-button value="all">全部</el-radio-button>
             <el-radio-button value="pending">待审核</el-radio-button>
@@ -30,48 +30,48 @@
     </el-card>
 
     <!-- 统计卡片 -->
-    <el-row :gutter="16" class="stats-row">
-      <el-col :span="5">
+    <div class="stats-row-flex">
+      <div class="stat-card-wrap">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
             <div class="stat-value">{{ stats.total }}</div>
             <div class="stat-label">总星探数</div>
           </div>
         </el-card>
-      </el-col>
-      <el-col :span="5">
+      </div>
+      <div class="stat-card-wrap">
         <el-card shadow="hover" class="stat-card pending">
           <div class="stat-content">
             <div class="stat-value">{{ stats.pending }}</div>
             <div class="stat-label">待审核</div>
           </div>
         </el-card>
-      </el-col>
-      <el-col :span="5">
+      </div>
+      <div class="stat-card-wrap">
         <el-card shadow="hover" class="stat-card rookie">
           <div class="stat-content">
             <div class="stat-value">{{ stats.rookie }}</div>
             <div class="stat-label">新锐星探</div>
           </div>
         </el-card>
-      </el-col>
-      <el-col :span="5">
+      </div>
+      <div class="stat-card-wrap">
         <el-card shadow="hover" class="stat-card special">
           <div class="stat-content">
             <div class="stat-value">{{ stats.special }}</div>
             <div class="stat-label">特约星探</div>
           </div>
         </el-card>
-      </el-col>
-      <el-col :span="4">
+      </div>
+      <div class="stat-card-wrap">
         <el-card shadow="hover" class="stat-card partner">
           <div class="stat-content">
             <div class="stat-value">{{ stats.partner }}</div>
             <div class="stat-label">合伙人</div>
           </div>
         </el-card>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
     <!-- 星探列表 -->
     <div class="scout-list" v-loading="loading">
@@ -204,7 +204,7 @@
     <el-drawer
       v-model="detailVisible"
       title="星探详情"
-      :size="800"
+      :size="drawerSize"
       direction="rtl"
       class="scout-detail-drawer"
     >
@@ -388,7 +388,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { getScouts, getScoutDetail } from '../../api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -426,6 +426,14 @@ const isGradeReached = (currentGrade, targetGrade) => {
 }
 
 // 筛选器
+// 响应式
+const windowWidth = ref(window.innerWidth)
+const isMobile = computed(() => windowWidth.value < 768)
+const drawerSize = computed(() => isMobile.value ? '95%' : 800)
+function onResize() { windowWidth.value = window.innerWidth }
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
+
 const keyword = ref('')
 const activeFilter = ref('all')
 
@@ -773,8 +781,15 @@ onMounted(() => {
 }
 
 /* 统计卡片 */
-.stats-row {
+.stats-row-flex {
+  display: flex;
+  gap: 12px;
   margin-bottom: 20px;
+}
+
+.stat-card-wrap {
+  flex: 1;
+  min-width: 0;
 }
 
 .stat-card {
@@ -1140,5 +1155,52 @@ onMounted(() => {
   font-size: 12px;
   color: #888;
   flex: 1;
+}
+
+.filter-radio-col {
+  margin-top: 0;
+}
+
+@media (max-width: 767px) {
+  .filter-radio-col {
+    margin-top: 10px;
+  }
+
+  .stats-row-flex {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .stat-card :deep(.el-card__body) {
+    padding: 8px 4px;
+  }
+
+  .stat-content > .stat-value {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .stat-content > .stat-label {
+    font-size: 10px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .scout-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .scout-actions {
+    display: none;
+  }
+
+  .scout-detail-drawer :deep(.el-drawer__body) {
+    padding: 12px;
+  }
 }
 </style>
