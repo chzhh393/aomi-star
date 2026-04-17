@@ -1,15 +1,10 @@
-<!--
-  主播欢迎页面
--->
-<view class="welcome-page">
-  <!-- 欢迎横幅 -->
+<view class="welcome-page" wx:if="{{!loading && candidate && isWelcomeMode}}">
   <view class="welcome-banner">
     <view class="banner-icon">🎉</view>
     <text class="banner-title">{{welcomeMessage}}</text>
-    <text class="banner-subtitle">您已成功签约成为平台主播</text>
+    <text class="banner-subtitle">您已进入主播中台，可继续查看训练与签约流程</text>
   </view>
 
-  <!-- 主播信息卡片 -->
   <view class="info-card">
     <view class="card-header">
       <text class="card-title">主播信息</text>
@@ -17,53 +12,46 @@
     <view class="info-content">
       <view class="info-row">
         <text class="label">姓名：</text>
-        <text class="value">{{streamer.basicInfo.name}}</text>
+        <text class="value">{{candidate.basicInfo.name || '-'}}</text>
       </view>
       <view class="info-row">
-        <text class="label">底薪：</text>
-        <text class="value highlight">{{streamer.streamerInfo.salary}}元/月</text>
+        <text class="label">直播名：</text>
+        <text class="value highlight">{{candidate.liveName || '-'}}</text>
       </view>
       <view class="info-row">
-        <text class="label">提成比例：</text>
-        <text class="value highlight">{{streamer.streamerInfo.commission}}%</text>
+        <text class="label">当前状态：</text>
+        <text class="value highlight">{{candidate.status || '-'}}</text>
       </view>
       <view class="info-row">
-        <text class="label">签约日期：</text>
-        <text class="value">{{streamer.streamerInfo.signedDate}}</text>
+        <text class="label">主播编号：</text>
+        <text class="value">{{candidate.candidateNo || candidate._id || '-'}}</text>
       </view>
     </view>
   </view>
 
-  <!-- 经纪人信息卡片 -->
   <view class="info-card">
     <view class="card-header">
       <text class="card-title">您的经纪人</text>
     </view>
     <view class="agent-content">
       <view class="agent-info">
-        <view class="agent-avatar">{{agent.profile.name[0]}}</view>
+        <view class="agent-avatar">{{agentInitial}}</view>
         <view class="agent-details">
-          <text class="agent-name">{{agent.profile.name}}</text>
+          <text class="agent-name">{{agent.name}}</text>
           <text class="agent-role">专属经纪人</text>
+          <text class="agent-role">电话：{{agent.phone}}</text>
         </view>
       </view>
-      <button class="contact-btn" bindtap="onContactAgent">
-        联系TA
-      </button>
+      <button class="contact-btn" bindtap="onContactAgent">联系TA</button>
     </view>
   </view>
 
-  <!-- 下一步指引 -->
   <view class="steps-card">
     <view class="card-header">
       <text class="card-title">接下来要做什么？</text>
     </view>
     <view class="steps-list">
-      <view
-        wx:for="{{nextSteps}}"
-        wx:key="title"
-        class="step-item"
-      >
+      <view wx:for="{{nextSteps}}" wx:key="title" class="step-item">
         <view class="step-icon">{{item.icon}}</view>
         <view class="step-content">
           <text class="step-title">{{item.title}}</text>
@@ -73,10 +61,144 @@
     </view>
   </view>
 
-  <!-- 进入工作台按钮 -->
   <view class="action-section">
-    <button class="enter-btn" bindtap="onEnterWorkstation">
-      进入主播工作台
-    </button>
+    <button class="enter-btn" bindtap="onEnterWorkstation">进入主播工作台</button>
+  </view>
+</view>
+
+<view class="detail-page" wx:if="{{!loading && candidate && isSkillsMode}}">
+  <view class="detail-hero">
+    <text class="detail-kicker">SKILL TREE</text>
+    <text class="detail-title">{{heroTitle}} · 技能树</text>
+    <text class="detail-copy">4 类舞蹈能力实时刷新，达到 80% 即点亮“已掌握”勋章。</text>
+    <text class="detail-badge">{{masteredCount}} 枚勋章已点亮</text>
+  </view>
+  <view class="skill-list">
+    <view class="skill-card" wx:for="{{skillTree}}" wx:key="key">
+      <view class="skill-head">
+        <text class="skill-name">{{item.name}}</text>
+        <text class="skill-badge {{item.mastered ? 'is-mastered' : ''}}">{{item.badgeText}}</text>
+      </view>
+      <view class="skill-bar">
+        <view class="skill-bar-fill" style="width: {{item.progress}}%;"></view>
+      </view>
+      <view class="skill-meta">
+        <text class="skill-progress">{{item.progressText}}</text>
+        <text class="skill-status">{{item.mastered ? '已掌握' : '继续闯关'}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="detail-page" wx:if="{{!loading && candidate && isLearningMode}}">
+  <view class="detail-hero">
+    <text class="detail-kicker">LEARNING CENTER</text>
+    <text class="detail-title">资料学习中心</text>
+    <text class="detail-copy">在线观看老师上传的标准 Demo，支持切到 0.5x 慢速跟练。</text>
+  </view>
+  <view class="rate-switcher">
+    <view
+      wx:for="{{playbackRateOptions}}"
+      wx:key="label"
+      class="rate-chip {{selectedPlaybackRate === item.value ? 'active' : ''}}"
+      bindtap="switchPlaybackRate"
+      data-value="{{item.value}}"
+    >
+      {{item.label}}
+    </view>
+  </view>
+  <view class="demo-list" wx:if="{{demoVideos.length}}">
+    <view class="demo-card" wx:for="{{demoVideos}}" wx:key="id">
+      <view class="demo-head">
+        <view>
+          <text class="demo-title">{{item.title}}</text>
+          <text class="demo-scene">{{item.scene}}</text>
+        </view>
+        <text class="demo-duration">{{item.duration}}</text>
+      </view>
+      <video
+        wx:if="{{item.canPlay}}"
+        class="demo-video"
+        src="{{item.url}}"
+        controls
+        show-center-play-btn
+        playbackRate="{{selectedPlaybackRate}}"
+        object-fit="cover"
+      />
+      <view class="demo-empty" wx:else>
+        <text class="demo-empty-title">Demo 已登记</text>
+        <text class="demo-empty-copy">当前环境未同步可播放视频源，老师标准说明仍可先查看。</text>
+      </view>
+      <text class="demo-tip">{{item.tip}}</text>
+      <text class="demo-rate">{{item.rateHint}}</text>
+    </view>
+  </view>
+  <view class="empty-panel" wx:else>
+    <text>暂无老师 Demo</text>
+  </view>
+</view>
+
+<view class="detail-page" wx:if="{{!loading && candidate && isTasksMode}}">
+  <view class="detail-hero">
+    <text class="detail-kicker">TASKS & REVIEW</text>
+    <text class="detail-title">任务与评价</text>
+    <text class="detail-copy">查看每日训练安排、老师评语以及摄影师上传的个人精修图。</text>
+  </view>
+
+  <view class="detail-action-bar">
+    <button class="record-btn" bindtap="goToTrainingRecords">记录训练</button>
+  </view>
+
+  <view class="section-block">
+    <view class="section-heading">
+      <text class="section-title">今日任务看板</text>
+      <text class="section-subtitle">训练安排、老师反馈与物料状态</text>
+    </view>
+    <view class="task-list">
+      <view class="task-card" wx:for="{{dailyTasks}}" wx:key="key">
+        <text class="task-title">{{item.title}}</text>
+        <text class="task-value">{{item.value}}</text>
+        <text class="task-detail">{{item.detail}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-block">
+    <view class="section-heading">
+      <text class="section-title">个人精修图</text>
+      <text class="section-subtitle">摄影师上传后，会展示在这里</text>
+    </view>
+    <view class="task-card">
+      <view class="photo-strip" wx:if="{{refinedPhotos.length > 0}}">
+        <view
+          class="photo-card"
+          wx:for="{{refinedPhotos}}"
+          wx:key="*this"
+          bindtap="previewRefinedPhoto"
+          data-url="{{item}}"
+        >
+          <image class="refined-photo" src="{{item}}" mode="aspectFill"></image>
+        </view>
+      </view>
+      <view class="empty-panel photo-empty" wx:else>
+        <text>暂无个人精修图</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>
+
+<view class="fallback-page" wx:if="{{!loading && !candidate}}">
+  <view class="fallback-card">
+    <text class="fallback-kicker">ANCHOR WORKSPACE</text>
+    <text class="fallback-title">暂时无法进入主播中台</text>
+    <text class="fallback-copy">{{loadError || '当前数据还未准备完成，可先返回报名状态页查看流程进度。'}}</text>
+    <view class="fallback-actions">
+      <button class="fallback-primary-btn" bindtap="onRetryLoad">重新加载</button>
+      <button class="fallback-secondary-btn" bindtap="onBackToStatusPage">返回报名状态页</button>
+    </view>
   </view>
 </view>

@@ -1,7 +1,7 @@
 {
-  "navigationBarTitleText": "摄像师工作台",
-  "navigationBarBackgroundColor": "#667eea",
+  "navigationBarTitleText": "摄影/剪辑工作台",
+  "navigationBarBackgroundColor": "#111A22",
   "navigationBarTextStyle": "white",
   "enablePullDownRefresh": true,
-  "backgroundColor": "#667eea"
+  "backgroundColor": "#111A22"
 }

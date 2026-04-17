@@ -1,108 +1,285 @@
-/* pages/role-select/role-select.wxss */
-/* 角色选择页 - 街头运动风格 */
-
 .container {
   min-height: 100vh;
-  background: #F0F0F0;
-  padding: 80rpx 32rpx 120rpx;
-  display: flex;
-  flex-direction: column;
+  padding: 48rpx 26rpx 120rpx;
+  background:
+    linear-gradient(120deg, rgba(255, 106, 61, 0.16) 0%, transparent 28%),
+    radial-gradient(circle at top right, rgba(17, 214, 197, 0.12), transparent 24%),
+    linear-gradient(180deg, #09090d 0%, #111116 36%, #f4efe6 36%, #efe7dc 100%);
 }
 
-/* ==================== 标题区 ==================== */
-.header {
-  text-align: center;
-  margin-bottom: 80rpx;
+.hero {
+  position: relative;
+  padding: 32rpx 8rpx 54rpx;
 }
 
-.title {
-  font-size: 64rpx;
-  font-weight: 900;
-  color: #000000;
+.hero-kicker {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 8rpx;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.hero-title {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 68rpx;
+  font-weight: 800;
+  line-height: 1.02;
+  color: #f8f2e8;
   letter-spacing: 4rpx;
-  display: block;
-  margin-bottom: 16rpx;
-  font-family: 'Arial Black', sans-serif;
+  text-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.24);
 }
 
-.subtitle {
-  font-size: 24rpx;
-  color: #666666;
-  letter-spacing: 2rpx;
+.hero-subtitle {
   display: block;
+  margin-top: 22rpx;
+  font-size: 25rpx;
+  line-height: 1.85;
+  color: rgba(244, 239, 230, 0.76);
 }
 
-/* ==================== 角色卡片 ==================== */
-.roles-list {
-  flex: 1;
+.panel {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 240, 0.96) 0%, rgba(244, 239, 230, 0.98) 100%);
+  border-radius: 42rpx;
+  padding: 38rpx 30rpx 48rpx;
+  border: 2rpx solid rgba(199, 185, 165, 0.34);
+  box-shadow: 0 28rpx 64rpx rgba(19, 14, 11, 0.18);
+  overflow: hidden;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 22rpx;
+  left: 30rpx;
+  width: 148rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, #ff6a3d 0%, #11d6c5 100%);
+}
+
+.role-selector {
   display: flex;
   flex-direction: column;
   gap: 24rpx;
+  margin-bottom: 34rpx;
 }
 
-.role-card {
-  background: #FFFFFF;
-  border: 4rpx solid #000000;
-  border-radius: 0;
-  padding: 32rpx;
-  position: relative;
-  display: flex;
-  align-items: center;
-  transition: transform 0.2s ease;
-}
-
-.role-card:active {
-  transform: scale(0.98);
-}
-
-.card-accent {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 8rpx;
-}
-
-.card-content {
-  flex: 1;
-  padding-left: 24rpx;
+.selector-head {
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 10rpx;
 }
 
-.role-icon {
-  font-size: 56rpx;
-  margin-bottom: 8rpx;
+.selector-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #171214;
 }
 
-.role-name {
-  font-size: 36rpx;
-  font-weight: 900;
-  color: #000000;
-  letter-spacing: 1rpx;
+.selector-desc {
+  font-size: 23rpx;
+  line-height: 1.75;
+  color: #6b6259;
 }
 
-.role-desc {
+.role-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.role-chip {
+  min-width: 140rpx;
+  padding: 18rpx 22rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 251, 245, 0.88);
+  border: 2rpx solid #d8cbbb;
+  color: #322824;
+  font-size: 25rpx;
+  font-weight: 700;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.role-chip.is-active {
+  background: linear-gradient(135deg, #161217 0%, #2f2925 72%, #ff6a3d 160%);
+  border-color: #161217;
+  color: #ffffff;
+  box-shadow: 0 16rpx 30rpx rgba(22, 18, 23, 0.2);
+}
+
+.selected-role-banner {
+  padding: 22rpx 24rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, rgba(255, 106, 61, 0.1) 0%, rgba(17, 214, 197, 0.08) 100%);
+  border: 2rpx solid rgba(255, 106, 61, 0.26);
+  color: #7b341e;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 36rpx;
+}
+
+.intro-card {
+  padding: 30rpx 28rpx 28rpx;
+  border-radius: 30rpx;
+  background: linear-gradient(180deg, rgba(255, 251, 246, 0.96) 0%, rgba(251, 243, 233, 0.94) 100%);
+  border: 2rpx solid rgba(199, 185, 165, 0.42);
+}
+
+.register-intro {
+  background: linear-gradient(180deg, rgba(255, 244, 235, 0.96) 0%, rgba(252, 239, 226, 0.94) 100%);
+  border-color: rgba(255, 106, 61, 0.24);
+}
+
+.session-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  padding: 40rpx 30rpx 32rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #fff7ef 0%, #f8efe2 56%, #efe7dc 100%);
+  border: 2rpx solid rgba(199, 185, 165, 0.42);
+}
+
+.intro-title,
+.session-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #171214;
+}
+
+.intro-desc,
+.session-desc {
+  display: block;
+  font-size: 25rpx;
+  line-height: 1.82;
+  color: #615850;
+}
+
+.switch-account-link {
+  align-self: center;
+  margin-top: 6rpx;
   font-size: 24rpx;
-  color: #666666;
+  color: #d4572b;
+  font-weight: 600;
 }
 
-.card-arrow {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #000000;
-  padding-left: 16rpx;
+.field-row {
+  display: flex;
+  gap: 24rpx;
 }
 
-/* ==================== 底部 ==================== */
-.footer {
-  margin-top: 60rpx;
+.field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.field-half {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 25rpx;
+  color: #534741;
+  font-weight: 700;
+  padding-left: 6rpx;
+}
+
+.field-input,
+.picker-input {
+  width: 100%;
+  min-height: 92rpx;
+  padding: 0 28rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 252, 248, 0.92);
+  border: 2rpx solid #d8cbbb;
+  color: #151214;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.picker-static {
+  color: #151214;
+  font-weight: 700;
+}
+
+.primary-btn {
+  margin-top: 12rpx;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #151216 0%, #2a2420 56%, #ff6a3d 132%);
+  color: #f9f3ea;
+  font-size: 30rpx;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 2rpx;
+  box-shadow: 0 18rpx 34rpx rgba(23, 18, 18, 0.24);
+}
+
+.primary-btn[disabled] {
+  opacity: 0.7;
+}
+
+.primary-btn::after {
+  border: none;
+}
+
+.register-entry {
+  margin-top: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  font-size: 26rpx;
+}
+
+.register-text {
+  color: #7b6e66;
+}
+
+.register-link {
+  color: #d4572b;
+  font-weight: 700;
+  font-size: 28rpx;
+  line-height: 1.6;
+  padding: 8rpx 10rpx;
+}
+
+.form-tip {
+  font-size: 23rpx;
+  line-height: 1.85;
+  color: #7b6e66;
+  text-align: center;
+  padding: 12rpx 18rpx 0;
+}
+
+.empty-form-state {
+  padding: 40rpx 24rpx;
+  border-radius: 28rpx;
+  background: rgba(255, 250, 244, 0.82);
+  border: 2rpx dashed rgba(199, 185, 165, 0.72);
   text-align: center;
 }
 
-.footer-text {
-  font-size: 22rpx;
-  color: #999999;
-  letter-spacing: 1rpx;
+.empty-form-text {
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #7b6e66;
 }

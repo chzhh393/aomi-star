@@ -1,0 +1,272 @@
+.page {
+  min-height: 100vh;
+  background: #f3eee2;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.hero {
+  background: linear-gradient(135deg, #13211d 0%, #23453d 100%);
+  border-radius: 28rpx;
+  padding: 30rpx;
+  color: #fff;
+  box-shadow: 0 20rpx 40rpx rgba(19, 33, 29, 0.14);
+}
+
+.hero-badge {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 2rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hero-title {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 42rpx;
+  font-weight: 900;
+}
+
+.hero-desc {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx 20rpx;
+  box-shadow: 0 12rpx 30rpx rgba(15, 23, 42, 0.06);
+}
+
+.tone-accent {
+  background: linear-gradient(135deg, #f3d37a 0%, #e0a84d 100%);
+}
+
+.stat-value {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 900;
+  color: #13211d;
+  word-break: break-all;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #5d6763;
+}
+
+.filter-row {
+  white-space: nowrap;
+  margin-top: 24rpx;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  padding: 16rpx 28rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #415047;
+  border: 2rpx solid #e6ddcc;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.filter-chip.is-active {
+  background: #13211d;
+  color: #fff;
+  border-color: #13211d;
+}
+
+.empty-state {
+  margin-top: 28rpx;
+  background: #fff;
+  border-radius: 28rpx;
+  padding: 56rpx 32rpx;
+  text-align: center;
+}
+
+.empty-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #13211d;
+}
+
+.empty-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #76807b;
+}
+
+.list {
+  margin-top: 24rpx;
+}
+
+.ledger-card {
+  background: #fff;
+  border-radius: 28rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 16rpx 30rpx rgba(15, 23, 42, 0.05);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.candidate-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #13211d;
+}
+
+.candidate-meta {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #6b756f;
+}
+
+.head-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+}
+
+.status-badge {
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.status-calculated {
+  background: rgba(224, 168, 77, 0.18);
+  color: #9a6900;
+}
+
+.status-paid {
+  background: rgba(37, 153, 105, 0.14);
+  color: #1c8b68;
+}
+
+.status-pending {
+  background: rgba(224, 168, 77, 0.18);
+  color: #9a6900;
+}
+
+.total-amount {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #1d4ed8;
+}
+
+.distribution-list {
+  margin-top: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.distribution-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f5ee;
+  border-radius: 20rpx;
+  padding: 18rpx 20rpx;
+  gap: 18rpx;
+}
+
+.distribution-main,
+.distribution-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.distribution-side {
+  align-items: flex-end;
+}
+
+.distribution-name {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #203228;
+}
+
+.distribution-type,
+.distribution-percent {
+  font-size: 20rpx;
+  color: #7b847e;
+}
+
+.distribution-amount {
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #13211d;
+}
+
+.time-row {
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.time-text {
+  font-size: 22rpx;
+  color: #707b75;
+}
+
+.freeze-panel {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 20rpx;
+  background: #fff4f0;
+  border: 2rpx solid #f3c3b1;
+}
+
+.freeze-title {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #a63f1f;
+}
+
+.freeze-text {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #7b4b3b;
+}
+
+.pay-btn {
+  margin-top: 24rpx;
+  border-radius: 999rpx;
+  background: #13211d;
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 700;
+}

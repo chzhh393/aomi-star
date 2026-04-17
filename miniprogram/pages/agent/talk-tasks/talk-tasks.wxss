@@ -1,0 +1,150 @@
+page {
+  background: #f7f3eb;
+}
+
+.page {
+  padding: 24rpx;
+}
+
+.summary-card,
+.task-card {
+  background: #fffdf8;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 10rpx 24rpx rgba(27, 28, 34, 0.06);
+}
+
+.summary-card {
+  margin-bottom: 24rpx;
+}
+
+.summary-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1b1c22;
+  margin-bottom: 20rpx;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+
+.summary-item {
+  border-radius: 20rpx;
+  padding: 24rpx 12rpx;
+  text-align: center;
+}
+
+.green {
+  background: #e8f6e5;
+}
+
+.yellow {
+  background: #fff3cf;
+}
+
+.red {
+  background: #ffe0dc;
+}
+
+.summary-value {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1b1c22;
+}
+
+.summary-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #695f56;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.task-top,
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.task-identity {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  min-width: 0;
+  flex: 1;
+}
+
+.task-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.task-avatar {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #efe5d6;
+}
+
+.task-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5e3c;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.task-name {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b1c22;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-meta,
+.task-reason,
+.task-action,
+.task-footer {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  line-height: 1.6;
+  color: #5d5751;
+}
+
+.task-signal {
+  height: fit-content;
+  border-radius: 999rpx;
+  padding: 8rpx 18rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.signal-red {
+  background: #ffcdc6;
+  color: #b73724;
+}
+
+.signal-yellow {
+  background: #ffe9a8;
+  color: #9d6a00;
+}
+
+.signal-green {
+  background: #dff3dd;
+  color: #2f7a2e;
+}

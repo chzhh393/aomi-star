@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { getUserInfo, hasPermission } from '../utils/permission'
 
 const routes = [
@@ -32,7 +32,7 @@ const routes = [
         path: 'candidates',
         name: 'Candidates',
         component: () => import('../views/candidates/list.vue'),
-        meta: { title: '候选人管理' }
+        meta: { title: '艺人管理' }
       },
       {
         path: 'users',
@@ -93,7 +93,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes
 })
 

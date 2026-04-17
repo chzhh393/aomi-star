@@ -1,0 +1,55 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">主播分润系统</text>
+    <text class="hero-desc">自动算账、扣款补丁、工资条发放全部围绕 {{periodLabel}} 结算周期展开。</text>
+  </view>
+
+  <view class="stats-grid">
+    <block wx:for="{{stats}}" wx:key="id">
+      <view class="stat-card">
+        <text class="stat-value">{{item.value}}</text>
+        <text class="stat-label">{{item.label}}</text>
+        <text class="stat-note">{{item.note}}</text>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">
+    <view class="section-title">主播结算清单</view>
+    <block wx:for="{{anchors}}" wx:key="id">
+      <view class="card" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="openDetail">
+        <view class="row-between">
+          <view>
+            <text class="card-title">{{item.name}}</text>
+            <text class="card-sub">{{item.agentName}}</text>
+          </view>
+          <text class="status">{{item.status}}</text>
+        </view>
+        <view class="grid">
+          <view class="grid-item"><text class="key">流水</text><text class="value">{{item.revenue}}</text></view>
+          <view class="grid-item"><text class="key">比例</text><text class="value">{{item.ratio}}</text></view>
+          <view class="grid-item"><text class="key">奖励</text><text class="value">{{item.bonus}}</text></view>
+          <view class="grid-item"><text class="key">扣款</text><text class="value">{{item.deduction}}</text></view>
+        </view>
+        <view class="final-row">
+          <text class="final-label">应发提成</text>
+          <text class="final-value">{{item.finalAmount}}</text>
+        </view>
+        <view class="detail-link">查看分润明细</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">
+    <view class="section-title">扣款补丁明细</view>
+    <block wx:for="{{deductions}}" wx:key="id">
+      <view class="list-item">
+        <view>
+          <text class="item-title">{{item.type}} · {{item.owner}}</text>
+          <text class="item-sub">{{item.source}} · {{item.status}}</text>
+        </view>
+        <text class="item-amount">{{item.amount}}</text>
+      </view>
+    </block>
+  </view>
+</view>

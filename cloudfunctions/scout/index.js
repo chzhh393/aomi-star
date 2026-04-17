@@ -8,12 +8,113 @@ cloud.init({
 const db = cloud.database();
 const _ = db.command;
 
+function sanitizeNonNegativeAmount(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) return 0;
+  return Math.floor(numeric);
+}
+
+function generateAceInviteCode() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let suffix = '';
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `ACE-${y}${m}${d}-${suffix}`;
+}
+
 // 等级配置
 const SCOUT_GRADES = {
   rookie: { zh: '新锐星探', upgradeAt: 0 },
   special: { zh: '特约星探', upgradeAt: 2 },
   partner: { zh: '合伙人星探', upgradeAt: 5 }
 };
+
+function maskIdCard(value) {
+  const normalized = String(value || '').trim().toUpperCase();
+  if (!normalized) {
+    return '';
+  }
+
+  if (normalized.length <= 8) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 4)}********${normalized.slice(-4)}`;
+}
+
+function sanitizeScoutProfile(scout = {}) {
+  const idCardMasked = maskIdCard(scout.profile?.idCard);
+  return {
+    _id: scout._id || '',
+    status: scout.status || '',
+    grade: scout.grade || 'rookie',
+    shareCode: scout.shareCode || '',
+    name: scout.profile?.name || '',
+    phone: scout.profile?.phone || '',
+    createdAt: scout.createdAt || null,
+    profile: {
+      name: scout.profile?.name || '',
+      phone: scout.profile?.phone || '',
+      wechat: scout.profile?.wechat || '',
+      idCard: idCardMasked,
+      idCardMasked
+    },
+    stats: scout.stats || {}
+  };
+}
+
+function maskScoutSensitiveProfile(scout = {}) {
+  const profile = scout && typeof scout.profile === 'object' && scout.profile
+    ? scout.profile
+    : {};
+  const idCardMasked = maskIdCard(profile.idCard);
+
+  return {
+    ...scout,
+    profile: {
+      ...profile,
+      idCard: idCardMasked,
+      idCardMasked
+    }
+  };
+}
+
+async function getDirectSubScouts(scoutId) {
+  if (!scoutId) return [];
+
+  const res = await db.collection('scouts').where({
+    'parentScout.scoutId': scoutId,
+    status: _.neq('deleted')
+  }).orderBy('createdAt', 'desc').get();
+
+  return Array.isArray(res.data) ? res.data : [];
+}
+
+function buildTeamStats(subScouts = []) {
+  return subScouts.reduce((result, item) => {
+    result.totalSubScouts += 1;
+    if (item.status === 'active') result.activeSubScouts += 1;
+    if (item.status === 'pending') result.pendingSubScouts += 1;
+    if (item.status === 'rejected') result.rejectedSubScouts += 1;
+    result.totalReferrals += Number(item.stats?.referredCount || 0);
+    result.totalSigned += Number(item.stats?.signedCount || 0);
+    result.totalCommission += Number(item.stats?.totalCommission || 0);
+    return result;
+  }, {
+    totalSubScouts: 0,
+    activeSubScouts: 0,
+    pendingSubScouts: 0,
+    rejectedSubScouts: 0,
+    totalReferrals: 0,
+    totalSigned: 0,
+    totalCommission: 0
+  });
+}
 
 // 云函数入口函数
 exports.main = async (event) => {
@@ -25,10 +126,16 @@ exports.main = async (event) => {
 
   try {
     switch (action) {
+      case 'generateAceInvite':
+        return await generateAceInvite(openId, data);
+      case 'getAceInvite':
+        return await getAceInvite(data);
       case 'apply':
         return await applyScout(openId, data);
       case 'getMyInfo':
         return await getScoutInfo(openId);
+      case 'getMyTeam':
+        return await getMyTeam(openId);
       case 'getMyReferrals':
         return await getMyReferrals(openId, data);
       case 'getStats':
@@ -96,7 +203,18 @@ async function applyScout(openId, data) {
   }
 
   // 2. 表单验证
-  const { name, phone, idCard, wechat, reason } = data || {};
+  const {
+    name,
+    phone,
+    idCard,
+    wechat,
+    reason,
+    parentScoutId = '',
+    parentScoutName = '',
+    parentShareCode = '',
+    invitePlan = null,
+    inviteCode = ''
+  } = data || {};
 
   if (!name || !name.trim()) {
     return { success: false, error: '请输入姓名' };
@@ -113,6 +231,80 @@ async function applyScout(openId, data) {
   }
   if (!reason || !reason.trim()) {
     return { success: false, error: '请填写申请理由' };
+  }
+
+  let parentScout = null;
+  let normalizedInvitePlan = null;
+  let aceInviteRecord = null;
+
+  if (inviteCode) {
+    const inviteRes = await db.collection('scout_invites').where({
+      inviteCode: inviteCode.trim(),
+      status: 'active',
+      type: 'ace'
+    }).limit(1).get();
+
+    aceInviteRecord = inviteRes.data[0] || null;
+    if (!aceInviteRecord) {
+      return { success: false, error: '专属邀请码不存在或已失效' };
+    }
+
+    const targetScoutRes = await db.collection('scouts').doc(aceInviteRecord.targetScoutId).get().catch(() => null);
+    if (!targetScoutRes?.data || targetScoutRes.data.status !== 'active') {
+      return { success: false, error: '邀请码对应的星探合伙人不可用' };
+    }
+    if (targetScoutRes.data.openId === openId) {
+      return { success: false, error: '不能使用自己的专属邀请码申请' };
+    }
+
+    parentScout = {
+      scoutId: targetScoutRes.data._id,
+      scoutName: targetScoutRes.data.profile?.name || '',
+      shareCode: targetScoutRes.data.shareCode || '',
+      boundAt: db.serverDate()
+    };
+    normalizedInvitePlan = {
+      role: 'ace',
+      title: aceInviteRecord.plan?.title || '王牌星探招募方案',
+      signingAward: sanitizeNonNegativeAmount(aceInviteRecord.plan?.signingAward),
+      levelAwards: {
+        S: sanitizeNonNegativeAmount(aceInviteRecord.plan?.levelAwards?.S),
+        A: sanitizeNonNegativeAmount(aceInviteRecord.plan?.levelAwards?.A),
+        B: sanitizeNonNegativeAmount(aceInviteRecord.plan?.levelAwards?.B)
+      },
+      inviteCode: aceInviteRecord.inviteCode,
+      sourceScoutId: aceInviteRecord.targetScoutId,
+      createdAt: aceInviteRecord.createdAt || db.serverDate()
+    };
+  } else if (parentScoutId) {
+    const parentRes = await db.collection('scouts').doc(parentScoutId).get().catch(() => null);
+    if (!parentRes?.data || parentRes.data.status !== 'active') {
+      return { success: false, error: '上级星探不存在或状态不可用' };
+    }
+    if (parentRes.data.openId === openId) {
+      return { success: false, error: '不能绑定自己为上级星探' };
+    }
+
+    parentScout = {
+      scoutId: parentRes.data._id,
+      scoutName: parentRes.data.profile?.name || parentScoutName || '',
+      shareCode: parentRes.data.shareCode || parentShareCode || '',
+      boundAt: db.serverDate()
+    };
+
+    if (invitePlan?.role === 'ace') {
+      normalizedInvitePlan = {
+        role: 'ace',
+        title: '王牌星探招募方案',
+        signingAward: sanitizeNonNegativeAmount(invitePlan.signingAward),
+        levelAwards: {
+          S: sanitizeNonNegativeAmount(invitePlan.levelAwards?.S),
+          A: sanitizeNonNegativeAmount(invitePlan.levelAwards?.A),
+          B: sanitizeNonNegativeAmount(invitePlan.levelAwards?.B)
+        },
+        createdAt: db.serverDate()
+      };
+    }
   }
 
   // 3. 生成唯一推荐码
@@ -147,8 +339,10 @@ async function applyScout(openId, data) {
     status: 'pending',
     application: {
       reason: reason.trim(),
-      appliedAt: db.serverDate()
+      appliedAt: db.serverDate(),
+      invitePlan: normalizedInvitePlan
     },
+    parentScout,
     shareCode: shareCode,
     stats: {
       referredCount: 0,
@@ -165,11 +359,129 @@ async function applyScout(openId, data) {
     data: scoutData
   });
 
+  if (aceInviteRecord?._id) {
+    await db.collection('scout_invites').doc(aceInviteRecord._id).update({
+      data: {
+        usedCount: _.inc(1),
+        lastUsedAt: db.serverDate(),
+        updatedAt: db.serverDate()
+      }
+    });
+  }
+
   return {
     success: true,
     scoutId: createRes._id,
     shareCode: shareCode,
     message: '申请已提交，等待审核'
+  };
+}
+
+async function generateAceInvite(openId, data) {
+  const scoutRes = await db.collection('scouts').where({
+    openId,
+    status: 'active'
+  }).limit(1).get();
+
+  if (!scoutRes.data.length) {
+    return { success: false, error: '当前账号不是可用星探' };
+  }
+
+  const scout = scoutRes.data[0];
+  if (scout.grade !== 'partner') {
+    return { success: false, error: '仅合伙人星探可生成王牌专属邀请码' };
+  }
+
+  const plan = {
+    role: 'ace',
+    title: '王牌星探招募方案',
+    signingAward: sanitizeNonNegativeAmount(data?.signingAward),
+    levelAwards: {
+      S: sanitizeNonNegativeAmount(data?.levelAwards?.S),
+      A: sanitizeNonNegativeAmount(data?.levelAwards?.A),
+      B: sanitizeNonNegativeAmount(data?.levelAwards?.B)
+    }
+  };
+
+  let inviteCode = '';
+  let retryCount = 0;
+  while (retryCount < 10) {
+    inviteCode = generateAceInviteCode();
+    const existsRes = await db.collection('scout_invites').where({
+      inviteCode
+    }).limit(1).get();
+    if (!existsRes.data.length) break;
+    retryCount++;
+  }
+
+  if (!inviteCode || retryCount >= 10) {
+    return { success: false, error: '生成专属邀请码失败，请重试' };
+  }
+
+  const inviteRecord = {
+    type: 'ace',
+    status: 'active',
+    inviteCode,
+    inviterOpenId: openId,
+    targetScoutId: scout._id,
+    targetScoutName: scout.profile?.name || '',
+    targetScoutGrade: scout.grade || 'rookie',
+    targetScoutShareCode: scout.shareCode || '',
+    plan,
+    usedCount: 0,
+    createdAt: db.serverDate(),
+    updatedAt: db.serverDate()
+  };
+
+  const createRes = await db.collection('scout_invites').add({
+    data: inviteRecord
+  });
+
+  return {
+    success: true,
+    inviteId: createRes._id,
+    inviteCode,
+    targetScout: {
+      scoutId: scout._id,
+      name: scout.profile?.name || '',
+      grade: scout.grade || 'rookie'
+    },
+    plan
+  };
+}
+
+async function getAceInvite(data) {
+  const inviteCode = String(data?.inviteCode || '').trim();
+  if (!inviteCode) {
+    return { success: false, error: '缺少邀请码' };
+  }
+
+  const inviteRes = await db.collection('scout_invites').where({
+    inviteCode,
+    status: 'active',
+    type: 'ace'
+  }).limit(1).get();
+
+  if (!inviteRes.data.length) {
+    return { success: false, error: '邀请码不存在或已失效' };
+  }
+
+  const invite = inviteRes.data[0];
+  const scoutRes = await db.collection('scouts').doc(invite.targetScoutId).get().catch(() => null);
+  if (!scoutRes?.data || scoutRes.data.status !== 'active') {
+    return { success: false, error: '邀请码对应的星探合伙人不可用' };
+  }
+
+  return {
+    success: true,
+    invite: {
+      inviteCode: invite.inviteCode,
+      targetScoutId: invite.targetScoutId,
+      targetScoutName: invite.targetScoutName || scoutRes.data.profile?.name || '',
+      targetScoutGrade: invite.targetScoutGrade || scoutRes.data.grade || 'rookie',
+      targetScoutShareCode: invite.targetScoutShareCode || scoutRes.data.shareCode || '',
+      plan: invite.plan || null
+    }
   };
 }
 
@@ -264,10 +576,58 @@ async function getScoutInfo(openId) {
     };
   }
 
+  const scout = res.data[0];
+  const subScouts = await getDirectSubScouts(scout._id);
+  const teamStats = buildTeamStats(subScouts);
+
   return {
     success: true,
     isRegistered: true,
-    scout: res.data[0]
+    scout: {
+      ...scout,
+      teamStats
+    },
+    subScouts: subScouts.map(sanitizeScoutProfile)
+  };
+}
+
+async function getMyTeam(openId) {
+  const res = await db.collection('scouts').where({
+    openId,
+    status: _.neq('deleted')
+  }).get();
+
+  if (res.data.length === 0) {
+    return {
+      success: false,
+      error: '未找到星探信息'
+    };
+  }
+
+  const scout = res.data[0];
+  const subScouts = await getDirectSubScouts(scout._id);
+  const teamStats = buildTeamStats(subScouts);
+
+  return {
+    success: true,
+    myInfo: {
+      _id: scout._id,
+      name: scout.profile?.name || '',
+      shareCode: scout.shareCode || '',
+      grade: scout.grade || 'rookie',
+      status: scout.status || ''
+    },
+    team: {
+      directScouts: subScouts.map((item) => sanitizeScoutProfile(item)),
+      summary: {
+        totalScouts: teamStats.totalSubScouts || 0,
+        activeScouts: teamStats.activeSubScouts || 0,
+        pendingScouts: teamStats.pendingSubScouts || 0,
+        totalReferred: teamStats.totalReferrals || 0,
+        totalSigned: teamStats.totalSigned || 0,
+        totalCommission: teamStats.totalCommission || 0
+      }
+    }
   };
 }
 
@@ -365,10 +725,19 @@ async function getAllScouts(data) {
     .limit(pageSize)
     .get();
 
+  const list = await Promise.all((res.data || []).map(async (item) => {
+    const subScouts = await getDirectSubScouts(item._id);
+    return {
+      ...item,
+      parentScoutName: item.parentScout?.scoutName || '',
+      teamStats: buildTeamStats(subScouts)
+    };
+  }));
+
   return {
     success: true,
     data: {
-      list: res.data,
+      list: list.map(maskScoutSensitiveProfile),
       total,
       page,
       pageSize
@@ -384,14 +753,31 @@ async function getScoutDetail(scoutId) {
     return { success: false, error: '星探不存在' };
   }
 
+  const scout = scoutRes.data;
   const candidatesRes = await db.collection('candidates').where({
     'referral.scoutId': scoutId
   }).get();
+  const subScouts = await getDirectSubScouts(scoutId);
+  const teamStats = buildTeamStats(subScouts);
+  let teamReferrals = [];
+
+  if (subScouts.length > 0) {
+    const subScoutIds = subScouts.map((item) => item._id).filter(Boolean);
+    const teamReferralsRes = await db.collection('candidates').where({
+      'referral.scoutId': _.in(subScoutIds)
+    }).get().catch(() => ({ data: [] }));
+    teamReferrals = Array.isArray(teamReferralsRes.data) ? teamReferralsRes.data : [];
+  }
 
   return {
     success: true,
-    scout: scoutRes.data,
-    referrals: candidatesRes.data
+    scout: {
+      ...maskScoutSensitiveProfile(scout),
+      teamStats
+    },
+    referrals: candidatesRes.data,
+    subScouts: subScouts.map(sanitizeScoutProfile),
+    teamReferrals
   };
 }
 

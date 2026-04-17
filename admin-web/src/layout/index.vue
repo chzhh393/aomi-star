@@ -15,7 +15,7 @@
       >
         <el-menu-item index="/candidates">
           <el-icon><User /></el-icon>
-          <span>候选人管理</span>
+          <span>艺人管理</span>
         </el-menu-item>
         <el-menu-item index="/scouts" v-if="hasPermission('viewReferralInfo')">
           <el-icon><UserFilled /></el-icon>
@@ -69,7 +69,7 @@
       >
         <el-menu-item index="/candidates">
           <el-icon><User /></el-icon>
-          <span>候选人管理</span>
+          <span>艺人管理</span>
         </el-menu-item>
         <el-menu-item index="/scouts" v-if="hasPermission('viewReferralInfo')">
           <el-icon><UserFilled /></el-icon>
@@ -106,7 +106,7 @@
         </el-icon>
         <div class="header-right">
           <el-tag :type="userInfo?.role === 'admin' ? 'success' : 'info'" size="small">
-            {{ userInfo?.role === 'admin' ? '管理员' : '经纪人' }}
+            {{ roleLabel }}
           </el-tag>
           <span class="admin-name">{{ userInfo?.name || '未知用户' }}</span>
           <el-button link @click="handleLogout">退出</el-button>
@@ -134,6 +134,17 @@ const windowWidth = ref(window.innerWidth)
 const isMobile = computed(() => windowWidth.value < 768)
 
 const activeMenu = computed(() => route.path)
+const roleLabel = computed(() => {
+  const role = userInfo.value?.role || ''
+  const labels = {
+    admin: '管理员',
+    hr: 'HR',
+    agent: '经纪人',
+    operations: '运营',
+    finance: '财务'
+  }
+  return labels[role] || role || '未知角色'
+})
 
 function onResize() {
   windowWidth.value = window.innerWidth
@@ -167,7 +178,9 @@ function handleLogout() {
 
 <style scoped>
 .layout-container {
-  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 .layout-aside {
@@ -208,6 +221,7 @@ function handleLogout() {
   align-items: center;
   justify-content: flex-end;
   padding: 0 24px;
+  min-width: 0;
 }
 
 .menu-toggle {
@@ -221,6 +235,7 @@ function handleLogout() {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .admin-name {
@@ -232,6 +247,8 @@ function handleLogout() {
 .layout-main {
   background: #000000;
   padding: 24px;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 /* Menu Overrides for Street Style */
@@ -255,10 +272,22 @@ function handleLogout() {
 @media (max-width: 767px) {
   .layout-header {
     padding: 0 12px;
+    min-height: 56px;
   }
 
   .layout-main {
     padding: 12px;
+  }
+
+  .header-right {
+    gap: 8px;
+    flex-shrink: 1;
+  }
+
+  :deep(.header-right .el-tag) {
+    max-width: 88px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .admin-name {

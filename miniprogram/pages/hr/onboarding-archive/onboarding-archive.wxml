@@ -1,0 +1,56 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">入职与档案</text>
+    <text class="hero-desc">覆盖电子签约、底薪分成录入，以及工牌、宿舍钥匙、训练服等物资领用管理。</text>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.total}}</text>
+      <text class="stat-label">档案总数</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.contractPendingCount}}</text>
+      <text class="stat-label">待签约</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.signedCount}}</text>
+      <text class="stat-label">已签约</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.assetPendingCount}}</text>
+      <text class="stat-label">待发物资</text>
+    </view>
+  </view>
+
+  <view wx:if="{{candidates.length === 0}}" class="empty-card">
+    <text class="empty-text">当前没有待管理的入职档案。</text>
+  </view>
+
+  <view wx:else class="card-list">
+    <view wx:for="{{candidates}}" wx:key="recordId" class="card">
+      <view class="card-top">
+        <view class="candidate-main">
+          <image wx:if="{{item.avatar}}" class="candidate-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+          <view wx:else class="candidate-avatar avatar-placeholder">{{item.displayInitial}}</view>
+          <view class="candidate-copy">
+            <text class="card-title">{{item.displayName}}</text>
+            <text class="card-meta">评级 {{item.gradeTag}} · 当前状态 {{item.status}} · 流程 {{item.workflowStatusText}}</text>
+          </view>
+        </view>
+        <text class="card-status">{{item.assetSummaryText}}</text>
+      </view>
+      <text class="card-meta">签约信息：{{item.contract.signedDate || item.streamerInfo.signedDate || '待签约'}}</text>
+      <text class="card-meta">电子签状态：{{item.eSignStatus}}</text>
+      <view class="action-row">
+        <button class="action-btn" bindtap="onOpenContract" data-id="{{item.recordId}}">建档草稿</button>
+        <button class="action-btn secondary" bindtap="onSubmitApproval" data-id="{{item.recordId}}">提交审批</button>
+        <button class="action-btn ghost" bindtap="onIssueAssets" data-id="{{item.recordId}}">物资领用</button>
+        <button class="action-btn ghost" bindtap="onStartESign" data-id="{{item.recordId}}">发起电子签</button>
+        <button class="action-btn ghost" bindtap="onRefreshESign" data-id="{{item.recordId}}">刷新签约</button>
+        <button class="action-btn ghost" bindtap="onCompleteMockSign" data-id="{{item.recordId}}">模拟签署</button>
+        <button class="action-btn ghost" bindtap="onViewSettlement" data-id="{{item.recordId}}">退还清单</button>
+      </view>
+    </view>
+  </view>
+</view>

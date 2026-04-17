@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="hero-card">
+    <view class="hero-title">核心粉丝不是备注，是持续经营的资产。</view>
+    <view class="hero-desc">结合主播人设、摄影物料和私域节奏，统一维护重点粉丝档案。</view>
+  </view>
+
+  <view class="asset-list">
+    <view
+      wx:for="{{fanAssets}}"
+      wx:key="id"
+      class="asset-card"
+      bindtap="handleAssetTap"
+      data-fan="{{item.fanName}}"
+      data-preference="{{item.preference}}"
+      data-followup="{{item.followUp}}"
+    >
+      <view class="asset-top">
+        <view>
+          <view class="fan-name">{{item.fanName}}</view>
+          <view class="anchor-name">绑定主播：{{item.anchorName}}</view>
+        </view>
+        <view class="fan-tier">{{item.tier}}</view>
+      </view>
+      <view class="asset-line">偏好：{{item.preference}}</view>
+      <view class="asset-line">物料：{{item.materialTag}}</view>
+      <view class="asset-line asset-followup">跟进：{{item.followUp}}</view>
+    </view>
+  </view>
+</view>

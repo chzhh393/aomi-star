@@ -1,89 +1,151 @@
-<!--pages/scout/team/team.wxml-->
 <view class="container">
-  <!-- 加载中 -->
   <view wx:if="{{loading}}" class="loading-container">
     <view class="loading-text">加载中...</view>
   </view>
 
-  <!-- 内容 -->
   <view wx:else class="content">
-    <!-- 我的信息 -->
     <view class="my-info-card">
       <view class="my-header">
         <view class="my-name">{{myInfo.name}}</view>
-        <view class="my-level">星探合伙人 (SP)</view>
+        <view class="my-level">{{myGradeLabel}}</view>
       </view>
       <view class="my-codes">
-        <view class="code-item">
+        <view class="code-item single">
           <text class="code-label">推荐码</text>
           <text class="code-value">{{myInfo.shareCode}}</text>
         </view>
-        <view class="code-item">
-          <text class="code-label">邀请码</text>
-          <text class="code-value">{{myInfo.inviteCode}}</text>
-        </view>
       </view>
     </view>
 
-    <!-- 团队统计 -->
     <view class="team-summary-card">
-      <view class="summary-title">📊 团队总览</view>
+      <view class="summary-title">团队总览</view>
       <view class="summary-grid">
-        <view class="summary-item">
+        <view class="summary-item {{activeSummaryFilter === 'all' ? 'is-active' : ''}}" bindtap="onSummaryFilter" data-filter="all">
           <view class="summary-value">{{team.summary.totalScouts}}</view>
-          <view class="summary-label">团队人数</view>
+          <view class="summary-label">二级星探</view>
         </view>
-        <view class="summary-item">
+        <view class="summary-item {{activeSummaryFilter === 'active' ? 'is-active' : ''}}" bindtap="onSummaryFilter" data-filter="active">
+          <view class="summary-value">{{team.summary.activeScouts}}</view>
+          <view class="summary-label">活跃二级</view>
+        </view>
+        <view class="summary-item {{activeSummaryFilter === 'pending' ? 'is-active' : ''}}" bindtap="onSummaryFilter" data-filter="pending">
+          <view class="summary-value">{{team.summary.pendingScouts}}</view>
+          <view class="summary-label">待审核</view>
+        </view>
+        <view class="summary-item {{activeSummaryFilter === 'referred' ? 'is-active' : ''}}" bindtap="onSummaryFilter" data-filter="referred">
           <view class="summary-value">{{team.summary.totalReferred}}</view>
           <view class="summary-label">团队推荐</view>
         </view>
-        <view class="summary-item">
+        <view class="summary-item {{activeSummaryFilter === 'signed' ? 'is-active' : ''}}" bindtap="onSummaryFilter" data-filter="signed">
           <view class="summary-value">{{team.summary.totalSigned}}</view>
           <view class="summary-label">团队签约</view>
+        </view>
+        <view class="summary-item {{activeSummaryFilter === 'commission' ? 'is-active' : ''}}" bindtap="onSummaryFilter" data-filter="commission">
+          <view class="summary-value">{{team.summary.totalCommission}}</view>
+          <view class="summary-label">团队佣金</view>
         </view>
       </view>
     </view>
 
-    <!-- 特约星探团队列表 -->
-    <view class="scouts-section">
-      <view class="section-title">👥 我的特约星探团队</view>
+    <view wx:if="{{focusScout}}" class="scouts-section">
+      <view class="section-title">王牌星探详情</view>
+      <view class="scout-card">
+        <view class="scout-header">
+          <view class="scout-name">{{focusScout.name}}</view>
+          <view class="scout-badge scout-badge-{{focusScout.status}}">
+            {{focusScout.status === 'active' ? '正常' : (focusScout.status === 'pending' ? '待审核' : '未通过')}}
+          </view>
+        </view>
 
-      <view wx:if="{{team.directScouts.length === 0}}" class="empty-state">
-        <text class="empty-icon">👤</text>
-        <text class="empty-text">暂无特约星探</text>
-        <text class="empty-hint">分享您的邀请码给想要加入的人员</text>
+        <view class="scout-info">
+          <view class="info-row" wx:if="{{focusScout.phone}}">
+            <text class="info-label">手机号</text>
+            <text class="info-value">{{focusScout.phone}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">等级</text>
+            <text class="info-value">{{focusScout.gradeLabel}}</text>
+          </view>
+          <view class="info-row" wx:if="{{focusScout.createdAtText}}">
+            <text class="info-label">加入时间</text>
+            <text class="info-value">{{focusScout.createdAtText}}</text>
+          </view>
+          <view class="info-row" wx:if="{{focusScout.shareCode}}">
+            <text class="info-label">推荐码</text>
+            <text class="info-value">{{focusScout.shareCode || '-'}}</text>
+          </view>
+        </view>
+
+        <view class="scout-stats">
+          <view class="scout-stat-item">
+            <text class="stat-label">推荐人数</text>
+            <text class="stat-value">{{focusScout.stats.referredCount || 0}}</text>
+          </view>
+          <view class="scout-stat-item">
+            <text class="stat-label">签约人数</text>
+            <text class="stat-value">{{focusScout.stats.signedCount || 0}}</text>
+          </view>
+          <view class="scout-stat-item">
+            <text class="stat-label">累计佣金</text>
+            <text class="stat-value">{{focusScout.stats.totalCommission || 0}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="scouts-section">
+      <view class="section-head">
+        <view class="section-title">{{focusScout ? '全部王牌星探' : '我的二级星探'}}</view>
+        <view class="section-filter-label">{{activeSummaryFilterLabel}}</view>
+      </view>
+      <view wx:if="{{activeSummaryFilter !== 'all'}}" class="filter-tip">已按统计项筛选，再次点击当前数字可取消筛选</view>
+
+      <view wx:if="{{filteredDirectScouts.length === 0}}" class="empty-state">
+        <text class="empty-icon">·</text>
+        <text class="empty-text">{{activeSummaryFilter === 'all' ? '暂无二级星探' : '当前筛选下暂无结果'}}</text>
+        <text class="empty-hint">从首页分享二级星探招募入口后，会在这里展示。</text>
       </view>
 
       <view wx:else class="scouts-list">
-        <view
-          class="scout-card"
-          wx:for="{{team.directScouts}}"
-          wx:key="scoutId"
-        >
+        <view class="scout-card" wx:for="{{filteredDirectScouts}}" wx:key="_id">
           <view class="scout-header">
             <view class="scout-name">{{item.name}}</view>
-            <view class="scout-badge">SS</view>
+            <view class="scout-badge scout-badge-{{item.status}}">
+              {{item.status === 'active' ? '正常' : (item.status === 'pending' ? '待审核' : '未通过')}}
+            </view>
           </view>
 
           <view class="scout-info">
-            <view class="info-row">
+            <view class="info-row" wx:if="{{item.phone}}">
               <text class="info-label">手机号</text>
               <text class="info-value">{{item.phone}}</text>
             </view>
             <view class="info-row">
+              <text class="info-label">等级</text>
+              <text class="info-value">{{item.gradeLabel}}</text>
+            </view>
+            <view class="info-row" wx:if="{{item.createdAtText}}">
               <text class="info-label">加入时间</text>
               <text class="info-value">{{item.createdAtText}}</text>
+            </view>
+            <view class="info-row" wx:if="{{item.shareCode}}">
+              <text class="info-label">推荐码</text>
+              <text class="info-value">{{item.shareCode || '-'}}</text>
             </view>
           </view>
 
           <view class="scout-stats">
             <view class="scout-stat-item">
               <text class="stat-label">推荐人数</text>
-              <text class="stat-value">{{item.stats.totalReferred}}</text>
+              <text class="stat-value">{{item.stats.referredCount || 0}}</text>
             </view>
             <view class="scout-stat-item">
               <text class="stat-label">签约人数</text>
-              <text class="stat-value">{{item.stats.signedCount}}</text>
+              <text class="stat-value">{{item.stats.signedCount || 0}}</text>
+            </view>
+            <view class="scout-stat-item">
+              <text class="stat-label">累计佣金</text>
+              <text class="stat-value">{{item.stats.totalCommission || 0}}</text>
             </view>
           </view>
         </view>

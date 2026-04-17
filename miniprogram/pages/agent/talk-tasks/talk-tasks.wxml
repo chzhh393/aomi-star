@@ -1,0 +1,49 @@
+<view class="page">
+  <view class="summary-card">
+    <view class="summary-title">心理红绿灯总览</view>
+    <view class="summary-grid">
+      <view class="summary-item green">
+        <text class="summary-value">{{summary.greenCount}}</text>
+        <text class="summary-label">绿灯稳定</text>
+      </view>
+      <view class="summary-item yellow">
+        <text class="summary-value">{{summary.yellowCount}}</text>
+        <text class="summary-label">黄灯关注</text>
+      </view>
+      <view class="summary-item red">
+        <text class="summary-value">{{summary.redCount}}</text>
+        <text class="summary-label">红灯介入</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="task-list">
+    <view
+      wx:for="{{tasks}}"
+      wx:key="id"
+      class="task-card"
+      bindtap="handleTaskTap"
+      data-name="{{item.anchorName}}"
+      data-action="{{item.actionAdvice}}"
+      data-deadline="{{item.deadline}}"
+    >
+      <view class="task-top">
+        <view class="task-identity">
+          <image wx:if="{{item.avatar}}" class="task-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+          <view wx:else class="task-avatar task-avatar-placeholder">{{item.nameInitial}}</view>
+          <view class="task-main">
+            <view class="task-name">{{item.anchorName}} / {{item.artName}}</view>
+            <view class="task-meta">{{item.source}} · 情绪分 {{item.moodScore}}</view>
+          </view>
+        </view>
+        <view class="task-signal {{item.signalClass}}">{{item.signalLabel}}</view>
+      </view>
+      <view class="task-reason">{{item.reason}}</view>
+      <view class="task-action">建议动作：{{item.actionAdvice}}</view>
+      <view class="task-footer">
+        <text>{{item.level}} 级主播</text>
+        <text>{{item.deadline}}</text>
+      </view>
+    </view>
+  </view>
+</view>

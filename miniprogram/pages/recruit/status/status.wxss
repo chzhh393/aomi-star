@@ -77,6 +77,199 @@
   line-height: 1.6;
 }
 
+.notice-card {
+  background: #FFFFFF;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.notice-title {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 20rpx;
+}
+
+.notice-content {
+  font-size: 24rpx;
+  line-height: 1.9;
+  color: #333333;
+  white-space: pre-wrap;
+}
+
+.todo-card {
+  background: #ffffff;
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  border: 4rpx solid #000000;
+}
+
+.todo-label-text {
+  color: #000000;
+}
+
+.todo-title {
+  font-size: 32rpx;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 24rpx;
+}
+
+.todo-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 16rpx 0;
+  border-bottom: 2rpx solid #ededed;
+}
+
+.todo-row:last-of-type {
+  border-bottom: none;
+}
+
+.todo-key {
+  font-size: 26rpx;
+  color: #666666;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.todo-value {
+  flex: 1;
+  text-align: right;
+  font-size: 26rpx;
+  color: #111111;
+  font-weight: 700;
+}
+
+.todo-multiline {
+  white-space: pre-wrap;
+}
+
+.todo-panel {
+  margin-top: 24rpx;
+  padding: 28rpx 26rpx;
+  background: linear-gradient(180deg, #fffdf7 0%, #fff7eb 100%);
+  border: 2rpx solid #f2d3a2;
+  border-left: 8rpx solid #f59e0b;
+}
+
+.todo-panel-muted {
+  background: #faf7f2;
+  border-color: #eadfcd;
+  border-left-color: #a3a3a3;
+}
+
+.todo-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 18rpx;
+}
+
+.todo-panel-title {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #111111;
+}
+
+.todo-panel-tag {
+  font-size: 20rpx;
+  line-height: 1;
+  padding: 10rpx 14rpx;
+  background: #111111;
+  color: #f8d36f;
+  letter-spacing: 2rpx;
+  font-weight: 900;
+}
+
+.todo-panel-content {
+  display: block;
+  font-size: 26rpx;
+  line-height: 1.95;
+  color: #33240f;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.todo-panel-content-muted {
+  color: #4b5563;
+}
+
+.todo-btn {
+  margin-top: 28rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  background: #000000;
+  color: #13E8DD;
+  font-size: 30rpx;
+  font-weight: 900;
+  text-align: center;
+}
+
+.todo-btn-row {
+  margin-top: 28rpx;
+  display: flex;
+  gap: 20rpx;
+}
+
+.todo-btn-half {
+  margin-top: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.workspace-entry {
+  margin-top: 28rpx;
+  padding: 24rpx;
+  background: #f6f6f6;
+  border: 2rpx solid #d4d4d4;
+}
+
+.workspace-entry-head {
+  margin-bottom: 20rpx;
+}
+
+.workspace-entry-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.workspace-entry-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #000000;
+}
+
+.workspace-entry-copy {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: #666666;
+}
+
+.workspace-main-btn {
+  margin-top: 0;
+  flex: 1;
+  background: #13E8DD;
+  color: #000000;
+}
+
+.workspace-sub-btn {
+  margin-top: 0;
+  flex: 1;
+  background: #000000;
+  color: #13E8DD;
+}
+
 /* ==================== 进度块 ==================== */
 .progress-block {
   background: #000000;
@@ -106,7 +299,7 @@
 
 .progress-steps {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -115,6 +308,8 @@
   flex-direction: column;
   align-items: center;
   gap: 12rpx;
+  width: 92rpx;
+  flex-shrink: 0;
 }
 
 .step-icon-box {
@@ -141,6 +336,11 @@
   font-size: 22rpx;
   color: #666666;
   font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  min-height: 64rpx;
+  width: 100%;
+  word-break: break-all;
 }
 
 .step-item.active .step-label {
@@ -153,7 +353,7 @@
   height: 4rpx;
   background: #333333;
   position: relative;
-  margin: 0 16rpx;
+  margin: 34rpx 12rpx 0;
 }
 
 .step-line-fill {

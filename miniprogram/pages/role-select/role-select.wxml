@@ -1,30 +1,183 @@
-<!--pages/role-select/role-select.wxml-->
 <view class="container">
-
-  <!-- 标题 -->
-  <view class="header">
-    <text class="title">OMI STAR</text>
-    <text class="subtitle">主播全生命周期管理系统</text>
+  <view class="hero">
+    <text class="hero-kicker">STAFF ACCESS</text>
+    <text class="hero-title">员工入口</text>
+    <text class="hero-subtitle">统一登录入口，审核通过后自动进入对应工作台</text>
   </view>
 
-  <!-- 角色卡片列表 -->
-  <view class="roles-list">
-    <view
-      class="role-card"
-      wx:for="{{roles}}"
-      wx:key="id"
-      data-role="{{item.id}}"
-      bindtap="selectRole"
-    >
-      <view class="card-accent" style="background: {{item.color}}"></view>
-      <view class="card-content">
-        <text class="role-icon">{{item.icon}}</text>
-        <text class="role-name">{{item.name}}</text>
-        <text class="role-desc">{{item.desc}}</text>
+  <view class="panel">
+    <view class="role-selector">
+      <view class="selector-head">
+        <text class="selector-title">先选择岗位</text>
+        <text class="selector-desc">岗位会用于申请归类与登录校验，请选择与账号一致的员工岗位。</text>
       </view>
-      <view class="card-arrow">→</view>
+
+      <view class="role-grid">
+        <view
+          wx:for="{{roleOptions}}"
+          wx:key="value"
+          class="role-chip {{selectedRole === item.value ? 'is-active' : ''}}"
+          bindtap="onSelectRole"
+          data-role="{{item.value}}"
+        >
+          {{item.label}}
+        </view>
+      </view>
+
+      <view wx:if="{{selectedRoleLabel}}" class="selected-role-banner">
+        当前选择：{{selectedRoleLabel}}
+      </view>
+    </view>
+
+    <view wx:if="{{isLoggedIn}}" class="form-section">
+      <view class="session-card">
+        <text class="session-title">{{currentUserName || '当前账号'}} 已登录</text>
+        <text class="session-desc">{{currentRoleLabel}} · {{sessionExpiryText}}</text>
+        <button class="primary-btn" bindtap="enterWorkspace">进入工作台</button>
+        <text class="switch-account-link" bindtap="switchAccount">{{loggedUserType === 'anchor' ? '切换账号 / 返回员工登录' : '切换账号'}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{!isLoggedIn && mode === 'login'}}" class="form-section">
+      <view wx:if="{{selectedRole}}">
+        <view class="intro-card">
+          <text class="intro-title">账号登录</text>
+          <text class="intro-desc">当前岗位：{{selectedRoleLabel}}。请输入已审核通过的对应岗位账号，系统将进入该角色工作台。</text>
+        </view>
+
+        <view class="field-item">
+          <text class="field-label">用户名（登录账号）</text>
+          <input
+            class="field-input"
+            type="text"
+            placeholder="请输入登录用户名"
+            value="{{loginForm.username}}"
+            data-field="username"
+            bindinput="onLoginInput"
+          />
+        </view>
+
+        <view class="field-item">
+          <text class="field-label">密码</text>
+          <input
+            class="field-input"
+            type="password"
+            placeholder="请输入密码"
+            value="{{loginForm.password}}"
+            data-field="password"
+            bindinput="onLoginInput"
+          />
+        </view>
+
+        <button class="primary-btn" bindtap="submitLogin" loading="{{loading}}" disabled="{{loading}}">
+          {{loading ? '登录中...' : '登录'}}
+        </button>
+
+        <view class="register-entry">
+          <text class="register-text">还没有账号？</text>
+          <text class="register-link" bindtap="goToRegister">点击申请</text>
+        </view>
+
+        <text class="form-tip">当前支持 HR、经纪人、运营、培训师及各面试官岗位登录，账号角色需与当前所选岗位一致。</text>
+      </view>
+
+      <view wx:if="{{!selectedRole}}" class="empty-form-state">
+        <text class="empty-form-text">请选择岗位后继续登录或申请账号</text>
+      </view>
+    </view>
+
+    <view wx:if="{{!isLoggedIn && mode !== 'login'}}" class="form-section">
+      <view class="intro-card register-intro">
+        <text class="intro-title">申请账号</text>
+        <text class="intro-desc">当前岗位：{{selectedRoleLabel || '未选择'}}。提交申请后进入后台审核，通过后即可使用员工入口登录。</text>
+      </view>
+
+      <view wx:if="{{selectedRole}}">
+        <view class="field-item">
+          <text class="field-label">用户名（用于登录）</text>
+          <input
+            class="field-input"
+            type="text"
+            placeholder="3-20位字母、数字、下划线"
+            value="{{registerForm.username}}"
+            data-field="username"
+            bindinput="onRegisterInput"
+          />
+        </view>
+
+        <view class="field-item">
+          <text class="field-label">姓名</text>
+          <input
+            class="field-input"
+            type="text"
+            placeholder="请输入真实姓名"
+            value="{{registerForm.name}}"
+            data-field="name"
+            bindinput="onRegisterInput"
+          />
+        </view>
+
+        <view class="field-row">
+          <view class="field-item field-half">
+            <text class="field-label">手机号</text>
+            <input
+              class="field-input"
+              type="number"
+              placeholder="11位手机号"
+              value="{{registerForm.phone}}"
+              data-field="phone"
+              bindinput="onRegisterInput"
+              maxlength="11"
+            />
+          </view>
+
+          <view class="field-item field-half">
+            <text class="field-label">申请岗位</text>
+            <view class="picker-input picker-static">{{selectedRoleLabel}}</view>
+          </view>
+        </view>
+
+        <view class="field-row">
+          <view class="field-item field-half">
+            <text class="field-label">密码</text>
+            <input
+              class="field-input"
+              type="password"
+              placeholder="至少6位"
+              value="{{registerForm.password}}"
+              data-field="password"
+              bindinput="onRegisterInput"
+            />
+          </view>
+
+          <view class="field-item field-half">
+            <text class="field-label">确认密码</text>
+            <input
+              class="field-input"
+              type="password"
+              placeholder="再次输入密码"
+              value="{{registerForm.confirmPassword}}"
+              data-field="confirmPassword"
+              bindinput="onRegisterInput"
+            />
+          </view>
+        </view>
+
+        <button class="primary-btn" bindtap="submitRegister" loading="{{loading}}" disabled="{{loading}}">
+          {{loading ? '提交中...' : '提交注册申请'}}
+        </button>
+
+        <view class="register-entry">
+          <text class="register-text">已有账号？</text>
+          <text class="register-link" bindtap="goToLogin">返回登录</text>
+        </view>
+
+        <text class="form-tip">注册能力与管控台打通，提交后进入后台待审核列表。</text>
+      </view>
+
+      <view wx:if="{{!selectedRole}}" class="empty-form-state">
+        <text class="empty-form-text">请选择岗位后继续申请账号</text>
+      </view>
     </view>
   </view>
-
-
 </view>

@@ -33,7 +33,14 @@ Page({
     }
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    const initialFilter = options.filter || 'all';
+    if (this.data.filterOptions.some((item) => item.value === initialFilter)) {
+      this.setData({
+        activeFilter: initialFilter
+      });
+    }
+
     this.loadCandidates();
   },
 

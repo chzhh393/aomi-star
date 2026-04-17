@@ -1,0 +1,74 @@
+<view class="page" wx:if="{{!loading && candidate}}">
+  <view class="hero">
+    <text class="hero-title">训练记录</text>
+    <text class="hero-subtitle">记录进入舞蹈室前后的训练安排与复盘心得，舞蹈老师会进行复核。</text>
+  </view>
+
+  <view class="card">
+    <view class="section-title">新增训练记录</view>
+    <view class="empty-tip">用于记录训练营学习情况与阶段复盘，不作为考勤或工时结算依据。</view>
+    <view class="location-card {{canSubmitByLocation ? 'ok' : 'warning'}}">
+      <view class="location-head">
+        <text class="location-title">定位校验</text>
+        <text class="location-action" bindtap="refreshCurrentLocation">{{locating ? '定位中...' : '刷新定位'}}</text>
+      </view>
+      <text class="location-status">{{locationStatusText}}</text>
+      <text class="location-distance" wx:if="{{currentDistanceText}}">{{currentDistanceText}}</text>
+    </view>
+    <picker mode="selector" range="{{recordTypeOptions}}" range-key="label" value="{{recordTypeIndex}}" bindchange="bindTypeChange">
+      <view class="form-picker">{{recordTypeOptions[recordTypeIndex].label}}</view>
+    </picker>
+    <picker mode="date" bindchange="bindDateChange">
+      <view class="form-picker">{{form.recordDate || '请选择日期'}}</view>
+    </picker>
+    <textarea
+      class="form-textarea"
+      placeholder="{{form.recordType === 'exit_note' ? '例如：今天离场前复盘了排练进展、动作稳定性和需要继续打磨的细节' : '例如：今天进入舞蹈室前计划完成开场舞走位、节奏练习和表情管理训练'}}"
+      value="{{form.summary}}"
+      bindinput="bindSummaryInput"
+    />
+    <view class="upload-header">
+      <text class="upload-title">训练配图</text>
+      <text class="upload-count">{{form.photos.length}}/6</text>
+    </view>
+    <view class="photo-grid">
+      <view class="photo-item add-item" bindtap="choosePhotos" wx:if="{{form.photos.length < 6}}">
+        <text class="add-text">+ 上传</text>
+      </view>
+      <view class="photo-item" wx:for="{{form.photos}}" wx:key="*this">
+        <image class="photo-image" src="{{item}}" mode="aspectFill" data-url="{{item}}" catchtap="previewPhoto" />
+        <view class="photo-delete" data-index="{{index}}" bindtap="deletePhoto">×</view>
+      </view>
+    </view>
+    <button class="submit-btn" loading="{{submitting}}" bindtap="submitRecord">提交训练记录</button>
+  </view>
+
+  <view class="card">
+    <view class="section-title">训练记录列表</view>
+    <view class="empty-tip" wx:if="{{!(candidate.trainingCamp && candidate.trainingCamp.dailyRecords && candidate.trainingCamp.dailyRecords.length)}}">暂无训练记录</view>
+    <view class="record-card" wx:for="{{candidate.trainingCamp.dailyRecords || []}}" wx:key="recordId">
+      <view class="record-head">
+        <text class="record-date">{{item.recordDate}}</text>
+        <text class="record-status status-{{item.status}}">{{item.status === 'approved' ? '已通过' : item.status === 'rejected' ? '已驳回' : '待复核'}}</text>
+      </view>
+      <text class="record-title">{{item.title || '训练记录'}}</text>
+      <text class="record-summary">{{item.summary}}</text>
+      <view class="review-comment" wx:if="{{item.supportComment}}">
+        <text class="review-label">互助建议：</text>
+        <text class="review-text">{{item.supportComment}}</text>
+      </view>
+      <view class="review-comment" wx:if="{{item.coachingComment}}">
+        <text class="review-label">点评反馈：</text>
+        <text class="review-text">{{item.coachingComment}}</text>
+      </view>
+      <view class="review-comment" wx:if="{{item.reviewComment}}">
+        <text class="review-label">复核备注：</text>
+        <text class="review-text">{{item.reviewComment}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>

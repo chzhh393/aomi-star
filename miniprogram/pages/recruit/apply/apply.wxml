@@ -17,6 +17,11 @@
 
   <!-- 表单内容 -->
   <view class="form-content">
+    <view wx:if="{{scoutReferral && (scoutReferral.scoutName || scoutShareCode)}}" class="referral-banner">
+      <text class="referral-banner-kicker">SCOUT REFERRAL</text>
+      <text class="referral-banner-title">{{(scoutReferral && scoutReferral.scoutName) || scoutShareCode}} 邀请你报名</text>
+      <text class="referral-banner-desc">报名提交后会自动回写到该星探名下，管理员也可以在后台手动调整归属。</text>
+    </view>
 
     <!-- 步骤1: 基础信息 -->
     <view class="form-step" wx:if="{{currentStep === 0}}">
@@ -62,12 +67,12 @@
           <picker
             mode="selector"
             range="{{genderOptions}}"
-            value="{{genderOptions.indexOf(formData.basicInfo.gender)}}"
+            value="{{genderIndex}}"
             data-field="basicInfo.gender"
             data-options="genderOptions"
             bindchange="onPickerChange"
           >
-            <view class="picker-display">{{formData.basicInfo.gender}}</view>
+            <view class="picker-display">{{formData.basicInfo.gender || '请选择性别'}}</view>
           </picker>
         </view>
       </view>
@@ -126,7 +131,7 @@
         <picker
           mode="selector"
           range="{{mbtiOptions}}"
-          value="{{mbtiOptions.indexOf(formData.basicInfo.mbti)}}"
+          value="{{mbtiIndex < 0 ? 0 : mbtiIndex}}"
           data-field="basicInfo.mbti"
           data-options="mbtiOptions"
           bindchange="onPickerChange"
@@ -450,7 +455,7 @@
   </view>
 
   <!-- 底部按钮 -->
-  <view class="form-footer">
+  <view class="form-footer {{keyboardVisible ? 'keyboard-open' : ''}}">
     <button
       class="btn-secondary"
       wx:if="{{currentStep > 0}}"

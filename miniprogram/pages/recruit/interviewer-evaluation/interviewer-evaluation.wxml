@@ -1,0 +1,158 @@
+<view class="evaluation-page" wx:if="{{candidate && formConfig}}">
+  <view class="candidate-card">
+    <image class="candidate-avatar" src="{{candidate.avatar}}" mode="aspectFill" />
+    <view class="candidate-meta">
+      <text class="candidate-name">{{candidate.basicInfo.name}}</text>
+      <text class="candidate-role">{{formConfig.roleName}}评价表</text>
+      <text wx:if="{{lastSavedAt}}" class="candidate-history">已保存历史评价 {{lastSavedAt}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{uploadingMedia}}" class="status-card">
+    <text class="status-text">{{uploadProgressText || '媒体上传中...'}}</text>
+  </view>
+
+  <view class="form-card">
+    <view class="section-summary">
+      <text class="section-summary-title">面试评价包含 3 个固定环节</text>
+      <text class="section-summary-desc">1. 3段20s的才艺展示  2. 现场教学  3. 自我介绍&基础问答</text>
+    </view>
+
+    <view
+      wx:for="{{formConfig.fields}}"
+      wx:for-item="field"
+      wx:key="key"
+      class="field-block"
+    >
+      <view wx:if="{{field.stageTitle}}" class="stage-chip">{{field.stageTitle}}</view>
+      <view class="field-header">
+        <text class="field-label">{{field.label}}</text>
+        <text wx:if="{{field.required}}" class="field-required">*</text>
+      </view>
+
+      <view wx:if="{{field.type === 'score'}}" class="score-field">
+        <view class="score-value">{{formData[field.key]}} 分</view>
+        <slider
+          min="{{field.min}}"
+          max="{{field.max}}"
+          step="{{field.step}}"
+          value="{{formData[field.key]}}"
+          show-value
+          activeColor="#4A67FF"
+          backgroundColor="#DCE3FF"
+          bindchange="onScoreChange"
+          data-key="{{field.key}}"
+        />
+      </view>
+
+      <textarea
+        wx:if="{{field.type === 'textarea'}}"
+        class="text-area"
+        auto-height
+        maxlength="{{field.maxLength || 300}}"
+        placeholder="{{field.placeholder}}"
+        value="{{formData[field.key]}}"
+        bindinput="onTextInput"
+        data-key="{{field.key}}"
+      />
+
+      <view wx:if="{{field.type === 'images'}}" class="images-field">
+        <view class="image-grid">
+          <view
+            wx:for="{{formData[field.key]}}"
+            wx:for-item="image"
+            wx:key="index"
+            class="image-item"
+          >
+            <image
+              class="image-preview"
+              src="{{image}}"
+              mode="aspectFill"
+              bindtap="previewImage"
+              data-key="{{field.key}}"
+              data-index="{{index}}"
+            />
+            <view
+              class="image-remove"
+              catchtap="removeImage"
+              data-key="{{field.key}}"
+              data-index="{{index}}"
+            >
+              <text class="image-remove-text">×</text>
+            </view>
+          </view>
+
+          <view
+            wx:if="{{formData[field.key].length < field.max}}"
+            class="image-add"
+            bindtap="chooseImages"
+            data-key="{{field.key}}"
+            data-max="{{field.max}}"
+          >
+            <text class="image-add-icon">+</text>
+            <text class="image-add-text">上传图片</text>
+          </view>
+        </view>
+        <text class="field-tip">支持拍照或相册选择，最多 {{field.max}} 张</text>
+      </view>
+
+      <view wx:if="{{field.type === 'videos'}}" class="videos-field">
+        <view class="video-grid">
+          <view
+            wx:for="{{formData[field.key]}}"
+            wx:for-item="video"
+            wx:key="index"
+            class="video-item"
+          >
+            <view
+              class="video-preview-wrap"
+              bindtap="previewVideo"
+              data-key="{{field.key}}"
+              data-index="{{index}}"
+            >
+              <video
+                class="video-preview"
+                src="{{video}}"
+                objectFit="cover"
+                show-center-play-btn="{{true}}"
+                controls="{{false}}"
+                enable-progress-gesture="{{false}}"
+              />
+            </view>
+            <view
+              class="image-remove"
+              catchtap="removeVideo"
+              data-key="{{field.key}}"
+              data-index="{{index}}"
+            >
+              <text class="image-remove-text">×</text>
+            </view>
+          </view>
+
+          <view
+            wx:if="{{formData[field.key].length < field.max}}"
+            class="image-add"
+            bindtap="chooseVideos"
+            data-key="{{field.key}}"
+            data-max="{{field.max}}"
+          >
+            <text class="image-add-icon">+</text>
+            <text class="image-add-text">上传视频</text>
+          </view>
+        </view>
+        <text class="field-tip">支持拍摄或相册选择，最多 {{field.max}} 个，单个建议 60 秒内</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="submit-bar">
+    <button
+      class="submit-btn"
+      bindtap="onSubmit"
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+    >
+      {{submitting ? '提交中...' : formConfig.submitText}}
+    </button>
+  </view>
+</view>

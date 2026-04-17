@@ -1,0 +1,54 @@
+<view class="detail-page">
+  <view class="hero-card">
+    <text class="hero-kicker">LEARNING CENTER</text>
+    <text class="hero-title">资料学习中心</text>
+    <text class="hero-copy">在线观看老师上传的标准 Demo，支持切到 0.5x 慢速跟练。</text>
+  </view>
+
+  <view class="rate-switcher">
+    <view
+      wx:for="{{playbackRateOptions}}"
+      wx:key="label"
+      class="rate-chip {{selectedPlaybackRate === item.value ? 'active' : ''}}"
+      bindtap="switchPlaybackRate"
+      data-value="{{item.value}}"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <view class="loading-card" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="demo-list" wx:if="{{!loading && demoVideos.length}}">
+    <view class="demo-card" wx:for="{{demoVideos}}" wx:key="id">
+      <view class="demo-head">
+        <view>
+          <text class="demo-title">{{item.title}}</text>
+          <text class="demo-scene">{{item.scene}}</text>
+        </view>
+        <text class="demo-duration">{{item.duration}}</text>
+      </view>
+      <video
+        wx:if="{{item.canPlay}}"
+        class="demo-video"
+        src="{{item.url}}"
+        controls
+        show-center-play-btn
+        playbackRate="{{selectedPlaybackRate}}"
+        object-fit="cover"
+      />
+      <view class="demo-empty" wx:else>
+        <text class="demo-empty-title">Demo 已登记</text>
+        <text class="demo-empty-copy">当前环境未同步可播放视频源，老师标准说明仍可先查看。</text>
+      </view>
+      <text class="demo-tip">{{item.tip}}</text>
+      <text class="demo-rate">{{item.rateHint}}</text>
+    </view>
+  </view>
+
+  <view class="loading-card" wx:if="{{!loading && !demoVideos.length}}">
+    <text>暂无老师 Demo</text>
+  </view>
+</view>

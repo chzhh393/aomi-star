@@ -20,13 +20,16 @@ export const ROLE = {
   ANCHOR: 'anchor',                     // 正式主播
 
   // 内部员工角色
+  ADMIN: 'admin',                       // 管理员
   HR: 'hr',                             // HR
   AGENT: 'agent',                       // 经纪人
   OPERATIONS: 'operations',             // 运营
+  FINANCE: 'finance',                   // 财务
 
   // 面试官角色（新增）
   PHOTOGRAPHER: 'photographer',         // 摄像师
   DANCE_TEACHER: 'dance_teacher',       // 舞蹈导师
+  HOST_MC: 'host_mc',                   // 主持/MC
   MAKEUP_ARTIST: 'makeup_artist',       // 化妆师
   STYLIST: 'stylist',                   // 造型师
 
@@ -103,6 +106,34 @@ let users = [
     status: USER_STATUS.ACTIVE,
     isFirstLogin: false,
     createdAt: '2025-10-15',
+    lastLoginAt: '2025-11-02'
+  },
+
+  // ===== 测试用户（HR） =====
+  {
+    id: 'ADM001',
+    openId: 'mock_admin_001',
+    userType: USER_TYPE.INTERNAL_EMPLOYEE,
+    role: ROLE.ADMIN,
+
+    profile: {
+      name: '系统管理员',
+      nickname: '管理员',
+      avatar: '',
+      phone: '138****0000',
+      email: 'admin@omi.com',
+      department: '管理部',
+      jobTitle: '系统管理员'
+    },
+
+    registrationSource: {
+      type: 'invite_code',
+      inviteCode: 'EMP2025000'
+    },
+
+    status: USER_STATUS.ACTIVE,
+    isFirstLogin: false,
+    createdAt: '2025-01-01',
     lastLoginAt: '2025-11-02'
   },
 
@@ -194,6 +225,34 @@ let users = [
     lastLoginAt: '2025-11-02'
   },
 
+  // ===== 测试用户（财务） =====
+  {
+    id: 'FIN001',
+    openId: 'mock_finance_001',
+    userType: USER_TYPE.INTERNAL_EMPLOYEE,
+    role: ROLE.FINANCE,
+
+    profile: {
+      name: '陈财务',
+      nickname: '陈会计',
+      avatar: '',
+      phone: '138****0008',
+      email: 'finance@omi.com',
+      department: '财务部',
+      jobTitle: '财务专员'
+    },
+
+    registrationSource: {
+      type: 'invite_code',
+      inviteCode: 'EMP2025008'
+    },
+
+    status: USER_STATUS.ACTIVE,
+    isFirstLogin: false,
+    createdAt: '2025-01-10',
+    lastLoginAt: '2025-11-02'
+  },
+
   // ===== 测试用户（外部星探） =====
   {
     id: 'SCT001',
@@ -278,6 +337,34 @@ let users = [
     isFirstLogin: false,
     createdAt: '2025-01-15',
     lastLoginAt: '2025-11-02'
+  },
+
+  // ===== 测试用户（主持/MC） =====
+  {
+    id: 'MC001',
+    openId: 'mock_host_mc_001',
+    userType: USER_TYPE.INTERNAL_EMPLOYEE,
+    role: ROLE.HOST_MC,
+
+    profile: {
+      name: '周主持',
+      nickname: '周MC',
+      avatar: '',
+      phone: '138****1005',
+      email: 'mc@omi.com',
+      department: '主持部',
+      jobTitle: '主持/MC'
+    },
+
+    registrationSource: {
+      type: 'invite_code',
+      inviteCode: 'MC2025TEST'
+    },
+
+    status: USER_STATUS.ACTIVE,
+    isFirstLogin: false,
+    createdAt: '2026-03-17',
+    lastLoginAt: '2026-03-17'
   },
 
   // ===== 测试用户（化妆师） =====
@@ -460,11 +547,14 @@ export function getRoleDisplayName(role) {
   const roleNames = {
     [ROLE.CANDIDATE]: '主播候选人',
     [ROLE.ANCHOR]: '主播',
+    [ROLE.ADMIN]: '管理员',
     [ROLE.HR]: 'HR',
     [ROLE.AGENT]: '经纪人',
     [ROLE.OPERATIONS]: '运营',
+    [ROLE.FINANCE]: '财务',
     [ROLE.PHOTOGRAPHER]: '摄像师',
     [ROLE.DANCE_TEACHER]: '舞蹈导师',
+    [ROLE.HOST_MC]: '主持/MC',
     [ROLE.MAKEUP_ARTIST]: '化妆师',
     [ROLE.STYLIST]: '造型师',
     [ROLE.EXTERNAL_SCOUT]: '外部星探'
@@ -479,11 +569,14 @@ export function getRoleHomePage(role) {
   const homePages = {
     [ROLE.CANDIDATE]: '/pages/candidate/home/home',
     [ROLE.ANCHOR]: '/pages/anchor/home/home',
+    [ROLE.ADMIN]: '/pages/admin/home/home',
     [ROLE.HR]: '/pages/hr/home/home',
     [ROLE.AGENT]: '/pages/agent/home/home',
     [ROLE.OPERATIONS]: '/pages/operations/home/home',
+    [ROLE.FINANCE]: '/pages/finance/home/home',
     [ROLE.PHOTOGRAPHER]: '/pages/photographer/home/home',
     [ROLE.DANCE_TEACHER]: '/pages/dance-teacher/home/home',
+    [ROLE.HOST_MC]: '/pages/host-mc/home/home',
     [ROLE.MAKEUP_ARTIST]: '/pages/makeup-artist/home/home',
     [ROLE.STYLIST]: '/pages/stylist/home/home',
     [ROLE.EXTERNAL_SCOUT]: '/pages/external-scout/home/home'

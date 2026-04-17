@@ -1,0 +1,37 @@
+<view class="detail-page">
+  <view class="hero-card">
+    <text class="hero-kicker">TASKS & REVIEW</text>
+    <text class="hero-title">任务与评价</text>
+    <text class="hero-copy">查看每日训练安排、老师评语以及摄影师上传的个人精修图。</text>
+  </view>
+
+  <button class="anchor-mini-btn" bindtap="goToTrainingRecords">记录训练</button>
+
+  <view class="loading-card" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="task-list" wx:if="{{!loading}}">
+    <view class="task-card" wx:for="{{dailyTasks}}" wx:key="key">
+      <text class="task-title">{{item.title}}</text>
+      <text class="task-value">{{item.value}}</text>
+      <text class="task-detail">{{item.detail}}</text>
+    </view>
+  </view>
+
+  <view class="photo-strip" wx:if="{{!loading && refinedPhotos.length > 0}}">
+    <view
+      class="photo-card"
+      wx:for="{{refinedPhotos}}"
+      wx:key="*this"
+      bindtap="previewRefinedPhoto"
+      data-url="{{item}}"
+    >
+      <image class="refined-photo" src="{{item}}" mode="aspectFill"></image>
+    </view>
+  </view>
+
+  <view class="loading-card" wx:if="{{!loading && !refinedPhotos.length}}">
+    <text>暂无个人精修图</text>
+  </view>
+</view>

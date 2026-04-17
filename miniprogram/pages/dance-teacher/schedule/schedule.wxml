@@ -1,0 +1,98 @@
+<view class="schedule-page">
+  <view class="hero-card">
+    <text class="hero-kicker">Dance Schedule</text>
+    <text class="hero-title">维护你的上课课程表</text>
+    <text class="hero-copy">经纪人会基于这里的时段为主播预约舞蹈训练，主播开始训练后你可以在工作台继续复核。</text>
+  </view>
+
+  <view class="form-card">
+    <view class="card-head">
+      <text class="card-title">{{form.slotId ? '编辑课程时段' : '新增课程时段'}}</text>
+      <text class="card-tag">{{form.slotId ? 'EDIT' : 'NEW'}}</text>
+    </view>
+
+    <picker mode="date" bindchange="bindDateChange">
+      <view class="picker-field">{{form.courseDate || '请选择上课日期'}}</view>
+    </picker>
+
+    <view class="time-row">
+      <picker mode="time" bindchange="bindStartTimeChange">
+        <view class="picker-field half">{{form.startTime || '开始时间'}}</view>
+      </picker>
+      <picker mode="time" bindchange="bindEndTimeChange">
+        <view class="picker-field half">{{form.endTime || '结束时间'}}</view>
+      </picker>
+    </view>
+
+    <picker mode="selector" range="{{courseModeOptions}}" bindchange="bindCourseModeChange">
+      <view class="picker-field">{{form.courseMode === '1vn' ? '多人训练课' : '1V1 课程'}}</view>
+    </picker>
+
+    <input
+      wx:if="{{form.courseMode === '1vn'}}"
+      class="text-input"
+      type="number"
+      maxlength="2"
+      placeholder="多人训练课可预约人数"
+      value="{{form.capacity}}"
+      bindinput="bindCapacityInput"
+    />
+    <view wx:else class="picker-field hint-field">1V1 课程固定 1 人，满员后可进入候补</view>
+    <input
+      class="text-input"
+      maxlength="80"
+      placeholder="上课地点，例如 A 区舞蹈教室"
+      value="{{form.location}}"
+      bindinput="bindLocationInput"
+    />
+    <textarea
+      class="text-area"
+      maxlength="300"
+      placeholder="填写课程说明、需要准备的服装或注意事项"
+      value="{{form.note}}"
+      bindinput="bindNoteInput"
+    />
+
+    <view class="form-actions">
+      <button class="ghost-btn" wx:if="{{form.slotId}}" bindtap="resetForm">取消编辑</button>
+      <button class="primary-btn" loading="{{submitting}}" bindtap="submitSlot">
+        {{form.slotId ? '保存课程' : '创建课程'}}
+      </button>
+    </view>
+  </view>
+
+  <view class="list-card">
+    <view class="card-head">
+      <text class="card-title">已创建时段</text>
+      <text class="card-tag">{{slots.length}} 条</text>
+    </view>
+
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-text">正在同步课程表...</text>
+    </view>
+
+    <view class="empty-state" wx:if="{{!loading && !slots.length}}">
+      <text class="empty-title">暂无课程时段</text>
+      <text class="empty-copy">先创建可预约的上课时间，经纪人才可以帮主播预约。</text>
+    </view>
+
+    <view class="slot-card" wx:for="{{slots}}" wx:key="_id" wx:for-item="slot">
+      <view class="slot-head">
+        <text class="slot-time">{{slot.summaryText}}</text>
+        <text class="slot-status {{slot.status === 'cancelled' ? 'is-cancelled' : 'is-open'}}">
+          {{slot.status === 'cancelled' ? '已取消' : '可预约'}}
+        </text>
+      </view>
+      <text class="slot-meta">课程模式：{{slot.modeLabel}}</text>
+      <text class="slot-meta">预约人数：{{slot.capacityText}}</text>
+      <text class="slot-meta" wx:if="{{slot.waitlistText}}">{{slot.waitlistText}}</text>
+      <text class="slot-meta">地点：{{slot.location || '待补充上课地点'}}</text>
+      <text class="slot-meta" wx:if="{{slot.bookingNames}}">已预约主播：{{slot.bookingNames}}</text>
+      <text class="slot-meta" wx:if="{{slot.note}}">课程说明：{{slot.note}}</text>
+      <view class="slot-actions" wx:if="{{slot.status !== 'cancelled'}}">
+        <button class="ghost-btn small" bindtap="editSlot" data-slot-id="{{slot._id}}">编辑</button>
+        <button class="danger-btn small" bindtap="cancelSlot" data-slot-id="{{slot._id}}">取消课程</button>
+      </view>
+    </view>
+  </view>
+</view>

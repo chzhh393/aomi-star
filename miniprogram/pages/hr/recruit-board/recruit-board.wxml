@@ -1,0 +1,57 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">招募看板</text>
+    <text class="hero-desc">统一处理 BOSS、小红书、小程序和转介绍线索，按招募阶段快速推进。</text>
+  </view>
+
+  <view class="source-strip">
+    <view wx:for="{{sourceCards}}" wx:key="label" class="source-pill">
+      <text class="source-name">{{item.label}}</text>
+      <text class="source-count">{{item.count}}</text>
+    </view>
+  </view>
+
+  <view class="bucket-tabs">
+    <view
+      wx:for="{{bucketCards}}"
+      wx:key="key"
+      class="bucket-tab {{activeBucket === item.key ? 'active' : ''}}"
+      data-bucket="{{item.key}}"
+      bindtap="switchBucket"
+    >
+      <text class="bucket-label">{{item.label}}</text>
+      <text class="bucket-count">{{item.count}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{candidates.length === 0}}" class="empty-card">
+    <text class="empty-title">当前阶段暂无候选人</text>
+    <text class="empty-desc">可以切换到其他招募阶段，或等待新的平台投递进入。</text>
+  </view>
+
+  <view wx:else class="candidate-list">
+    <view wx:for="{{candidates}}" wx:key="recordId" class="candidate-card" bindtap="openCandidate" data-id="{{item.recordId}}">
+      <view class="card-top">
+        <view class="candidate-main">
+          <image wx:if="{{item.avatar}}" class="candidate-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+          <view wx:else class="candidate-avatar avatar-placeholder">{{item.displayInitial}}</view>
+          <view class="candidate-copy">
+            <text class="candidate-name">{{item.displayName}}</text>
+            <text class="candidate-meta">{{item.source || '未知来源'}} · {{item.primaryTalent}}</text>
+          </view>
+        </view>
+        <text class="candidate-score">AI {{item.aiScore.overallScore}}</text>
+      </view>
+      <text class="candidate-detail">{{item.basicInfo.age}} 岁 · {{item.basicInfo.city}} · {{item.basicInfo.phone}}</text>
+      <text class="candidate-detail">创建时间：{{item.createdAt}}</text>
+        <button
+          class="primary-btn"
+          catchtap="handlePrimaryAction"
+          data-id="{{item.recordId}}"
+          data-action="{{item.primaryAction}}"
+        >
+        {{item.primaryActionLabel}}
+      </button>
+    </view>
+  </view>
+</view>

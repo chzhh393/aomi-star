@@ -29,14 +29,33 @@
           </el-col>
         </el-row>
 
-        <el-form-item label="角色" prop="desiredRole">
-          <el-radio-group v-model="form.desiredRole" class="role-group">
-            <el-radio-button value="hr">HR</el-radio-button>
-            <el-radio-button value="agent">经纪人</el-radio-button>
-            <el-radio-button value="operations">运营</el-radio-button>
-            <el-radio-button value="trainer">培训师</el-radio-button>
-          </el-radio-group>
-        </el-form-item>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="手机号" prop="phone">
+              <el-input
+                v-model="form.phone"
+                placeholder="请输入 11 位手机号"
+                maxlength="11"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="角色" prop="desiredRole">
+              <el-select
+                v-model="form.desiredRole"
+                placeholder="请选择角色"
+                class="role-select"
+                clearable>
+                <el-option
+                  v-for="role in roleOptions"
+                  :key="role.value"
+                  :label="role.label"
+                  :value="role.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
         <el-row :gutter="16">
           <el-col :span="12">
@@ -86,12 +105,25 @@ import { adminAPI } from '../../api/admin'
 const router = useRouter()
 const formRef = ref(null)
 const submitting = ref(false)
+const roleOptions = [
+  { label: '管理员', value: 'admin' },
+  { label: 'HR', value: 'hr' },
+  { label: '经纪人', value: 'agent' },
+  { label: '运营', value: 'operations' },
+  { label: '培训师', value: 'trainer' },
+  { label: '舞蹈老师', value: 'dance_teacher' },
+  { label: '摄影师', value: 'photographer' },
+  { label: '主持/MC', value: 'host_mc' },
+  { label: '化妆师', value: 'makeup_artist' },
+  { label: '造型师', value: 'stylist' }
+]
 
 const form = reactive({
   username: '',
   password: '',
   confirmPassword: '',
   name: '',
+  phone: '',
   desiredRole: ''
 })
 
@@ -114,6 +146,10 @@ const rules = {
     { min: 1, max: 20, message: '姓名长度应在1-20个字符之间', trigger: 'blur' },
     { pattern: /^[\u4e00-\u9fa5a-zA-Z\s]+$/, message: '姓名只能包含中文、英文和空格', trigger: 'blur' }
   ],
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的 11 位手机号', trigger: 'blur' }
+  ],
   desiredRole: [
     { required: true, message: '请选择角色', trigger: 'change' }
   ],
@@ -133,11 +169,17 @@ async function submitForm() {
   submitting.value = true
   try {
     const res = await adminAPI.applyUser({
-      username: form.username,
+      username: form.username.trim(),
       password: form.password,
-      name: form.name,
+      name: form.name.trim(),
+      phone: form.phone.trim(),
       desiredRole: form.desiredRole
     })
+
+    if (!res?.success) {
+      ElMessage.error(res?.error || '申请提交失败')
+      return
+    }
 
     ElMessage.success(res.message || '注册成功，请等待管理员审核')
     setTimeout(() => {
@@ -204,16 +246,7 @@ function goBack() {
   padding-bottom: 4px;
 }
 
-.role-group {
-  width: 100%;
-  display: flex;
-}
-
-.role-group :deep(.el-radio-button) {
-  flex: 1;
-}
-
-.role-group :deep(.el-radio-button__inner) {
+.role-select {
   width: 100%;
 }
 

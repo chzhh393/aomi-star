@@ -1,0 +1,64 @@
+<view class="page">
+  <view class="hero">
+    <view class="hero-title">今晚的直播目标是可执行，不是抽象。</view>
+    <view class="hero-metrics">
+      <view class="hero-item">
+        <text class="hero-value">{{overview.managedCount}}</text>
+        <text class="hero-label">负责主播</text>
+      </view>
+      <view class="hero-item">
+        <text class="hero-value">{{overview.todayLiveCount}}</text>
+        <text class="hero-label">今日场次</text>
+      </view>
+      <view class="hero-item">
+        <text class="hero-value">{{overview.monthRevenueText}}w</text>
+        <text class="hero-label">月流水池</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">主播作战卡</view>
+    <view class="board-list">
+      <view
+        wx:for="{{battleBoard}}"
+        wx:key="id"
+        class="board-card"
+        bindtap="handleBoardTap"
+        data-anchor="{{item.anchorName}}"
+        data-goal="{{item.liveGoal}}"
+        data-script="{{item.scriptHint}}"
+      >
+        <view class="board-top">
+          <view>
+            <view class="board-name">{{item.anchorName}} · {{item.archetype}}</view>
+            <view class="board-time">{{item.nextLiveTime}}</view>
+          </view>
+          <view class="board-level">{{item.level}}</view>
+        </view>
+        <view class="board-goal">{{item.liveGoal}}</view>
+        <view class="board-script">{{item.scriptHint}}</view>
+        <view class="skill-list">
+          <view wx:for="{{item.skills}}" wx:for-item="skill" wx:key="name" class="skill-row">
+            <text class="skill-name">{{skill.name}}</text>
+            <view class="skill-track">
+              <view class="skill-bar" style="width: {{skill.progress}}%;"></view>
+            </view>
+            <text class="skill-value">{{skill.progress}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">今日排班</view>
+    <view class="schedule-list">
+      <view wx:for="{{schedulePreview}}" wx:key="id" class="schedule-item">
+        <text class="schedule-name">{{item.anchorName}}</text>
+        <text class="schedule-slot">{{item.slotName}}</text>
+        <text class="schedule-time">{{item.startTime}} - {{item.endTime}}</text>
+      </view>
+    </view>
+  </view>
+</view>

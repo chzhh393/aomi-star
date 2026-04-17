@@ -1,0 +1,71 @@
+<view class="payslip-page">
+  <view class="hero">
+    <text class="hero-kicker">E-PAYSLIP</text>
+    <text class="hero-title">电子工资条</text>
+    <text class="hero-desc">财务确认支付后，会把最新一期工资条同步到这里。</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-card">
+    <text class="empty-title">加载中...</text>
+    <text class="empty-desc">正在同步最新工资条</text>
+  </view>
+
+  <view wx:elif="{{!payslip.exists}}" class="empty-card">
+    <text class="empty-title">暂无工资条</text>
+    <text class="empty-desc">{{payslip.deliveryNote}}</text>
+  </view>
+
+  <view wx:else class="content">
+    <view class="summary-card">
+      <view class="summary-head">
+        <view>
+          <text class="summary-title">{{payslip.periodLabel}}</text>
+          <text class="summary-sub">{{payslip.candidateName}}</text>
+        </view>
+        <text class="summary-amount">{{payslip.totalAmountText}}</text>
+      </view>
+
+      <view class="meta-grid">
+        <view class="meta-item">
+          <text class="meta-label">工资条编号</text>
+          <text class="meta-value">{{payslip.slipNo || '-'}}</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-label">发送时间</text>
+          <text class="meta-value">{{payslip.sentAtText}}</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-label">支付时间</text>
+          <text class="meta-value">{{payslip.paidAtText}}</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-label">查看状态</text>
+          <text class="meta-value">{{payslip.receiptStatusLabel}}</text>
+        </view>
+        <view class="meta-item meta-item-full">
+          <text class="meta-label">查看回执</text>
+          <text class="meta-value">{{payslip.receiptViewedAtText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-card">
+      <text class="section-title">收益分配明细</text>
+      <view wx:for="{{payslip.distribution}}" wx:key="scoutId" class="distribution-item">
+        <view>
+          <text class="distribution-name">{{item.scoutName}}</text>
+          <text class="distribution-type">{{item.typeLabel}}</text>
+        </view>
+        <view class="distribution-side">
+          <text class="distribution-percent">{{item.percentage}}%</text>
+          <text class="distribution-amount">{{item.amountText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-card note-card">
+      <text class="section-title">发放说明</text>
+      <text class="note-copy">{{payslip.deliveryNote}}</text>
+    </view>
+  </view>
+</view>

@@ -1,144 +1,98 @@
-<!--
-  HR工作台
-  功能:
-  1. 查看待审核候选人(status=pending)
-  2. 查看各阶段候选人统计
-  3. 查看最近通过审核的候选人
--->
 <view class="hr-home">
-  <!-- 顶部用户信息 -->
-  <view class="header">
-    <view class="user-info">
-      <text class="role-badge">👔 HR管理员</text>
-      <text class="username">{{userInfo.profile.name}}</text>
+  <view class="hero-panel">
+    <view class="hero-copy">
+      <text class="hero-kicker">HR OPS CENTER</text>
+      <text class="hero-title">HR 工作台</text>
+      <text class="hero-desc">围绕招募看板、面试数字化、入职与档案、人才回访库统一推进候选人转化。</text>
+    </view>
+    <view class="hero-user">
+      <text class="user-role">HR</text>
+      <text class="user-name">{{userInfo.profile.name || userInfo.username}}</text>
     </view>
   </view>
 
-  <!-- 数据统计卡片 -->
-  <view class="stats-section">
-    <view class="stats-card">
-      <view class="stat-item primary">
-        <text class="stat-value">{{stats.total}}</text>
-        <text class="stat-label">候选人总数</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.pending}}</text>
-        <text class="stat-label">待审核</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.interviewing}}</text>
-        <text class="stat-label">面试中</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.signed}}</text>
-        <text class="stat-label">已签约</text>
-      </view>
+  <view class="hero-stats">
+    <view class="stat-card accent">
+      <text class="stat-value">{{heroStats.total}}</text>
+      <text class="stat-label">简历总量</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{heroStats.pendingScreen}}</text>
+      <text class="stat-label">待初筛</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{heroStats.interviewing}}</text>
+      <text class="stat-label">已约面试</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{heroStats.pendingOnboard}}</text>
+      <text class="stat-label">待入职</text>
     </view>
   </view>
 
-  <!-- 待审核候选人列表 -->
-  <view class="tasks-section">
+  <view class="section">
     <view class="section-header">
-      <text class="section-title">待审核候选人</text>
-      <text class="section-count">{{pendingCandidates.length}}</text>
+      <text class="section-title">四大模块</text>
+      <text class="section-link" bindtap="onRefresh">刷新</text>
     </view>
-
-    <view wx:if="{{pendingCandidates.length === 0}}" class="empty-state">
-      <text class="empty-icon">✨</text>
-      <text class="empty-text">暂无待审核候选人</text>
-    </view>
-
-    <view wx:else class="candidate-list">
+    <view class="module-grid">
       <view
-        wx:for="{{pendingCandidates}}"
-        wx:key="id"
-        class="candidate-card urgent"
-        bindtap="onViewCandidate"
-        data-id="{{item.id}}"
+        wx:for="{{modules}}"
+        wx:key="key"
+        class="module-card"
+        bindtap="onOpenModule"
+        data-url="{{item.url}}"
       >
-        <view class="candidate-header">
-          <view class="candidate-info">
-            <text class="candidate-name">{{item.basicInfo.name}}</text>
-            <text class="candidate-id">ID: {{item.id}}</text>
-          </view>
-          <view class="urgent-badge">
-            <text class="badge-text">待审核</text>
-          </view>
-        </view>
-
-        <view class="candidate-details">
-          <view class="detail-item">
-            <text class="detail-label">性别：</text>
-            <text class="detail-value">{{item.basicInfo.gender === 'female' ? '女' : '男'}}</text>
-          </view>
-          <view class="detail-item">
-            <text class="detail-label">年龄/身高：</text>
-            <text class="detail-value">{{item.basicInfo.age}}岁 / {{item.basicInfo.height}}cm</text>
-          </view>
-          <view class="detail-item">
-            <text class="detail-label">联系电话：</text>
-            <text class="detail-value">{{item.basicInfo.phone}}</text>
-          </view>
-          <view class="detail-item">
-            <text class="detail-label">申请时间：</text>
-            <text class="detail-value">{{item.createdAt}}</text>
-          </view>
-        </view>
-
-        <view class="action-btn" catchtap="onReviewCandidate" data-id="{{item.id}}">
-          <text class="btn-text">去审核 →</text>
-        </view>
+        <text class="module-title">{{item.title}}</text>
+        <text class="module-desc">{{item.desc}}</text>
+        <text class="module-metric">{{item.metric}}</text>
+        <text class="module-highlight">{{item.highlight}}</text>
+        <view class="module-cta">进入模块</view>
       </view>
     </view>
   </view>
 
-  <!-- 最近通过审核的候选人 -->
-  <view class="completed-section">
+  <view class="section">
     <view class="section-header">
-      <text class="section-title">最近通过审核</text>
+      <text class="section-title">当前优先处理</text>
+      <text class="section-subtitle">先推进待初筛和待入职候选人</text>
     </view>
-
-    <view wx:if="{{recentApproved.length === 0}}" class="empty-state">
-      <text class="empty-text">暂无记录</text>
+    <view wx:if="{{priorities.length === 0}}" class="empty-card">
+      <text class="empty-title">当前没有紧急任务</text>
+      <text class="empty-desc">招募看板和入职档案都比较平稳，可以转入回访池维护。</text>
     </view>
-
-    <view wx:else class="completed-list">
-      <view
-        wx:for="{{recentApproved}}"
-        wx:key="id"
-        class="completed-card"
-        bindtap="onViewCandidate"
-        data-id="{{item.id}}"
-      >
-        <view class="completed-info">
-          <text class="completed-name">{{item.basicInfo.name}}</text>
-          <text class="completed-status">
-            {{item.status === 'interview_scheduled' ? '面试已排期' :
-              item.status === 'online_test_completed' ? '线上测试完成' :
-              item.status === 'rated' ? '已评级' :
-              item.status === 'signed' ? '已签约' : '进行中'}}
-          </text>
+    <view wx:else class="priority-list">
+      <view wx:for="{{priorities}}" wx:key="id" class="priority-card">
+        <view class="priority-copy">
+          <text class="priority-tag">{{item.tag}}</text>
+          <text class="priority-name">{{item.name}}</text>
+          <text class="priority-subtitle">{{item.subtitle}}</text>
         </view>
-        <view class="completed-arrow">
-          <text class="arrow-icon">→</text>
-        </view>
+        <button class="priority-btn" bindtap="onHandlePriority" data-id="{{item.id}}" data-action="{{item.action}}">
+          {{item.actionText}}
+        </button>
       </view>
     </view>
   </view>
 
-  <!-- 快捷功能 -->
-  <view class="quick-actions">
-    <view class="action-item" bindtap="onViewAllCandidates">
-      <text class="action-icon">📋</text>
-      <text class="action-text">全部候选人</text>
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">人才回访预览</text>
+      <text class="section-link" bindtap="onOpenFollowUpModule">查看全部</text>
     </view>
-    <view class="action-item" bindtap="onViewStatistics">
-      <text class="action-icon">📊</text>
-      <text class="action-text">数据统计</text>
+    <view wx:if="{{followUpPreview.length === 0}}" class="empty-card">
+      <text class="empty-title">回访库当前为空</text>
+      <text class="empty-desc">暂无 B/C 级待跟进候选人，30 天自动提醒会在这里聚合展示。</text>
     </view>
-    <view class="action-item" bindtap="onRefresh">
-      <text class="action-icon">🔄</text>
-      <text class="action-text">刷新列表</text>
+    <view wx:else class="followup-list">
+      <view wx:for="{{followUpPreview}}" wx:key="id" class="followup-card">
+        <view class="followup-top">
+          <text class="followup-name">{{item.basicInfo.name}}</text>
+          <text class="followup-grade">评级 {{item.followUpGrade}}</text>
+        </view>
+        <text class="followup-meta">提醒日期：{{item.reminderDate || '待生成'}} · {{item.source || '未知来源'}}</text>
+        <text class="followup-state">{{item.reminderDue ? '该候选人近期可能有变动，建议回访' : '已进入回访节奏，等待提醒节点'}}</text>
+      </view>
     </view>
   </view>
 </view>

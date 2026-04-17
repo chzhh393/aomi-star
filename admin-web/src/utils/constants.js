@@ -4,6 +4,13 @@ export const STATUS_MAP = {
   approved: { label: '已审核，待面试安排', type: 'success' },
   rejected: { label: '未通过', type: 'danger' },
   interview_scheduled: { label: '已安排面试', type: 'primary' },
+  online_test_completed: { label: '线上测试完成', type: 'primary' },
+  pending_rating: { label: '待面试反馈', type: 'warning' },
+  rated: { label: '已完成面试', type: 'success' },
+  training: { label: '培训阶段', type: 'warning' },
+  probation: { label: '考核期', type: 'warning' },
+  active: { label: '已入职', type: 'success' },
+  live: { label: '已开播', type: 'success' },
   signed: { label: '已签约', type: 'success' }
 }
 

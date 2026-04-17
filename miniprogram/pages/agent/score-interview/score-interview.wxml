@@ -32,6 +32,11 @@
           <text class="option-label">{{item.label}}</text>
         </view>
       </view>
+      <view class="result-notes">
+        <text wx:for="{{resultOptions}}" wx:key="value" wx:if="{{item.desc}}" class="result-note">
+          {{item.label}}：{{item.desc}}
+        </text>
+      </view>
     </view>
 
     <!-- 评价标签 -->
@@ -41,87 +46,19 @@
         <text class="title-tip">（可多选）</text>
       </view>
 
-      <!-- 外形 -->
-      <view class="tag-category">
-        <text class="category-name">外形</text>
+      <view class="tag-category" wx:for="{{tagSections}}" wx:key="key" wx:for-item="section">
+        <text class="category-name">{{section.label}}</text>
         <view class="tag-list">
           <view
-            wx:for="{{tagOptions.appearance}}"
-            wx:key="*this"
-            class="tag-item {{isTagSelected('appearance', item) ? 'selected' : ''}}"
+            wx:for="{{section.tags}}"
+            wx:key="value"
+            wx:for-item="tagItem"
+            class="tag-item {{tagItem.selected ? 'selected' : ''}}"
             bindtap="toggleTag"
-            data-category="appearance"
-            data-tag="{{item}}"
+            data-category="{{section.key}}"
+            data-tag="{{tagItem.value}}"
           >
-            <text class="tag-text">{{item}}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 才艺 -->
-      <view class="tag-category">
-        <text class="category-name">才艺</text>
-        <view class="tag-list">
-          <view
-            wx:for="{{tagOptions.talent}}"
-            wx:key="*this"
-            class="tag-item {{isTagSelected('talent', item) ? 'selected' : ''}}"
-            bindtap="toggleTag"
-            data-category="talent"
-            data-tag="{{item}}"
-          >
-            <text class="tag-text">{{item}}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 性格 -->
-      <view class="tag-category">
-        <text class="category-name">性格</text>
-        <view class="tag-list">
-          <view
-            wx:for="{{tagOptions.personality}}"
-            wx:key="*this"
-            class="tag-item {{isTagSelected('personality', item) ? 'selected' : ''}}"
-            bindtap="toggleTag"
-            data-category="personality"
-            data-tag="{{item}}"
-          >
-            <text class="tag-text">{{item}}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 表达 -->
-      <view class="tag-category">
-        <text class="category-name">表达</text>
-        <view class="tag-list">
-          <view
-            wx:for="{{tagOptions.communication}}"
-            wx:key="*this"
-            class="tag-item {{isTagSelected('communication', item) ? 'selected' : ''}}"
-            bindtap="toggleTag"
-            data-category="communication"
-            data-tag="{{item}}"
-          >
-            <text class="tag-text">{{item}}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 潜力 -->
-      <view class="tag-category">
-        <text class="category-name">潜力</text>
-        <view class="tag-list">
-          <view
-            wx:for="{{tagOptions.potential}}"
-            wx:key="*this"
-            class="tag-item {{isTagSelected('potential', item) ? 'selected' : ''}}"
-            bindtap="toggleTag"
-            data-category="potential"
-            data-tag="{{item}}"
-          >
-            <text class="tag-text">{{item}}</text>
+            <text class="tag-text">{{tagItem.value}}</text>
           </view>
         </view>
       </view>

@@ -96,4 +96,10 @@
   font-size: 32rpx;
   font-weight: bold;
   border-radius: 45rpx;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }

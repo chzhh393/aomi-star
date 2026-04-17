@@ -1,0 +1,269 @@
+<view class="evaluation-page {{pageClass}}">
+  <view class="hero-card" style="{{heroStyle}}">
+    <view class="hero-top">
+      <view class="hero-copy">
+        <text class="hero-title">{{roleTitle}}</text>
+        <text class="hero-subtitle">{{roleSubtitle}}</text>
+      </view>
+      <view class="status-chip status-{{evaluationStatus}}">
+        {{evaluationStatusLabel}}
+      </view>
+    </view>
+
+    <view class="candidate-row">
+      <view class="candidate-meta">
+        <text class="candidate-name">{{candidateName || '候选人'}}</text>
+        <text class="candidate-id">候选人编号：{{candidateDisplayId || candidateId}}</text>
+        <text class="candidate-extra">直播名：{{candidate.liveName || '-'}}</text>
+        <text wx:if="{{candidate.assignedAgent}}" class="candidate-extra">经纪人：{{(candidate.assignedAgent && candidate.assignedAgent.name) || '-'}}</text>
+        <text wx:if="{{candidate.assignedAgent}}" class="candidate-extra">经纪人电话：{{(candidate.assignedAgent && candidate.assignedAgent.phone) || '-'}}</text>
+      </view>
+      <view class="save-box">
+        <text class="save-label">草稿状态</text>
+        <text class="save-value save-{{saveState}}">{{saveStateText}}</text>
+      </view>
+    </view>
+
+    <view class="time-row" wx:if="{{lastSavedAt || submittedAt}}">
+      <text wx:if="{{lastSavedAt}}">最近保存：{{lastSavedAt}}</text>
+      <text wx:if="{{submittedAt}}">提交时间：{{submittedAt}}</text>
+    </view>
+  </view>
+
+  <view class="blind-tip-card">
+    <text class="blind-tip-title">盲评说明</text>
+    <text class="blind-tip-text">{{blindReviewTip}}</text>
+  </view>
+
+  <view class="evaluation-card">
+    <view class="section-header">
+      <text class="section-title">五维等级评分</text>
+      <text class="section-desc">五个维度均需选择 S / A / B / C，初始不默认勾选。</text>
+    </view>
+
+    <block wx:for="{{dimensionStates}}" wx:key="key" wx:for-item="dimension" wx:for-index="dimensionIndex">
+      <view class="dimension-card">
+        <view class="dimension-head">
+          <text class="dimension-title">{{dimension.label}}</text>
+          <text class="dimension-state">{{dimension.selectedGrade || '未选择'}}</text>
+        </view>
+
+        <view class="grade-grid">
+          <block wx:for="{{gradeOptions}}" wx:key="*this" wx:for-item="grade">
+            <button
+              class="grade-btn grade-btn-{{grade}} {{grade === dimension.selectedGrade ? 'grade-btn-active' : ''}}"
+              data-dimension="{{dimension.key}}"
+              data-grade="{{grade}}"
+              bindtap="onGradeTap"
+              disabled="{{readonly}}"
+            >
+              {{grade}}
+            </button>
+          </block>
+        </view>
+
+        <view wx:if="{{dimension.needsRemark}}" class="remark-block">
+          <view class="remark-head">
+            <text class="remark-title">{{dimension.selectedGrade}} 档备注</text>
+            <text class="remark-required">必填</text>
+          </view>
+          <textarea
+            class="remark-textarea"
+            data-dimension="{{dimension.key}}"
+            value="{{dimension.remark}}"
+            bindinput="onRemarkInput"
+            maxlength="200"
+            placeholder="请补充该维度的关键观察"
+            disabled="{{readonly}}"
+          />
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="evaluation-card">
+    <view class="section-header">
+      <text class="section-title">风格标签</text>
+      <text class="section-desc">必须选择 1-2 个标签，用于后续风格归类。</text>
+    </view>
+
+    <view class="tag-grid">
+      <block wx:for="{{styleTagStates}}" wx:key="label" wx:for-item="tag">
+        <button
+          class="tag-btn {{tag.selected ? 'tag-btn-active' : ''}} {{tag.disabled ? 'tag-btn-disabled' : ''}}"
+          data-label="{{tag.label}}"
+          bindtap="onToggleStyleTag"
+          disabled="{{readonly || tag.disabled}}"
+        >
+          {{tag.label}}
+        </button>
+      </block>
+    </view>
+
+    <text class="tag-count">已选 {{formData.styleTags.length}} / 2</text>
+  </view>
+
+  <view class="evaluation-card">
+    <view class="section-header">
+      <text class="section-title">候选人共享附件</text>
+      <text class="section-desc">任一面试官上传后，所有面试官和管控台都可查看。</text>
+    </view>
+
+    <view wx:if="{{sharedMaterials.uploadedBy || sharedMaterials.uploadedAt}}" class="shared-meta-card">
+      <text wx:if="{{sharedMaterials.uploadedBy}}" class="shared-meta-text">最近上传人：{{sharedMaterials.uploadedBy}}</text>
+      <text wx:if="{{sharedMaterials.uploadedAt}}" class="shared-meta-text">最近更新时间：{{sharedMaterials.uploadedAt}}</text>
+    </view>
+
+    <view wx:if="{{sharedMaterials.images.length || sharedMaterials.videos.length}}">
+      <view class="attachment-section" wx:if="{{sharedMaterials.images.length}}">
+        <view class="attachment-head">
+          <text class="attachment-title">共享图片</text>
+          <text class="attachment-count">{{sharedMaterials.images.length}} 张</text>
+        </view>
+        <view class="image-grid">
+          <block wx:for="{{sharedMaterials.images}}" wx:key="url" wx:for-item="imageFile">
+            <view class="image-item">
+              <image
+                class="image-thumb"
+                src="{{imageFile.thumbUrl || imageFile.url}}"
+                mode="aspectFill"
+                data-url="{{imageFile.url}}"
+                bindtap="previewSharedImage"
+              />
+              <view wx:if="{{imageFile.uploadedByName || imageFile.uploadedByRole}}" class="media-owner-badge">
+                <text wx:if="{{imageFile.uploadedByRole}}">{{imageFile.uploadedByRole}}</text>
+                <text wx:else>面试官</text>
+                <text wx:if="{{imageFile.uploadedByName}}"> · {{imageFile.uploadedByName}}</text>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <view class="attachment-section" wx:if="{{sharedMaterials.videos.length}}">
+        <view class="attachment-head">
+          <text class="attachment-title">共享视频</text>
+          <text class="attachment-count">{{sharedMaterials.videos.length}} 个</text>
+        </view>
+        <view class="video-list">
+          <block wx:for="{{sharedMaterials.videos}}" wx:key="url" wx:for-item="videoFile">
+            <view class="video-item shared-video-item">
+              <video
+                class="video-thumb"
+                src="{{videoFile.url}}"
+                poster="{{videoFile.thumbUrl}}"
+                controls="{{true}}"
+                show-center-play-btn="{{true}}"
+                objectFit="cover"
+              />
+              <text wx:if="{{videoFile.uploadedByName || videoFile.uploadedByRole}}" class="shared-video-meta">
+                <text wx:if="{{videoFile.uploadedByRole}}">{{videoFile.uploadedByRole}}</text>
+                <text wx:else>面试官</text>
+                <text wx:if="{{videoFile.uploadedByName}}"> · {{videoFile.uploadedByName}}</text>
+              </text>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="shared-empty-card">
+      <text class="shared-empty-text">当前还没有候选人共享照片或视频，任一面试官上传后会在这里同步展示。</text>
+    </view>
+  </view>
+
+  <view class="evaluation-card">
+    <view class="section-header">
+      <text class="section-title">我的补充附件</text>
+      <text class="section-desc">图片和视频均选填，会随草稿一起自动保存，并同步到候选人共享附件。</text>
+    </view>
+
+    <view class="attachment-section">
+      <view class="attachment-head">
+        <text class="attachment-title">图片</text>
+        <text class="attachment-count">{{formData.images.length}} / {{imageLimit}}</text>
+      </view>
+      <view class="image-grid">
+        <block wx:for="{{formData.images}}" wx:key="url" wx:for-item="imageFile">
+          <view class="image-item">
+            <image
+              class="image-thumb"
+              src="{{imageFile.thumbUrl || imageFile.url}}"
+              mode="aspectFill"
+              data-url="{{imageFile.url}}"
+              bindtap="previewImage"
+            />
+            <button
+              wx:if="{{!readonly}}"
+              class="remove-icon-btn"
+              data-index="{{index}}"
+              bindtap="removeImage"
+            >
+              ×
+            </button>
+          </view>
+        </block>
+
+        <button
+          wx:if="{{!readonly && formData.images.length < imageLimit}}"
+          class="add-card"
+          bindtap="chooseImages"
+        >
+          + 添加图片
+        </button>
+      </view>
+    </view>
+
+    <view class="attachment-section">
+      <view class="attachment-head">
+        <text class="attachment-title">视频</text>
+        <text class="attachment-count">{{formData.videos.length}} / {{videoLimit}}</text>
+      </view>
+      <view class="video-list">
+        <block wx:for="{{formData.videos}}" wx:key="url" wx:for-item="videoFile">
+          <view class="video-item">
+            <video
+              class="video-thumb"
+              src="{{videoFile.url}}"
+              poster="{{videoFile.thumbUrl}}"
+              controls="{{false}}"
+              show-center-play-btn="{{true}}"
+              objectFit="cover"
+            />
+            <button
+              wx:if="{{!readonly}}"
+              class="remove-icon-btn"
+              data-index="{{index}}"
+              bindtap="removeVideo"
+            >
+              ×
+            </button>
+          </view>
+        </block>
+
+        <button
+          wx:if="{{!readonly && formData.videos.length < videoLimit}}"
+          class="add-card add-card-video"
+          bindtap="chooseVideos"
+        >
+          + 添加视频
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <view class="submit-bar">
+    <view class="submit-copy">
+      <text class="submit-status">{{evaluationStatusLabel}}</text>
+      <text class="submit-tip" wx:if="{{readonly}}">已提交，当前为只读模式</text>
+      <text class="submit-tip" wx:else>提交前会先自动补保存一次草稿</text>
+    </view>
+    <button
+      class="submit-btn {{readonly ? 'submit-btn-disabled' : ''}}"
+      bindtap="onSubmit"
+      disabled="{{readonly}}"
+    >
+      {{readonly ? '已提交' : '正式提交'}}
+    </button>
+  </view>
+</view>

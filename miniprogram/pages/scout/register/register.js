@@ -1,5 +1,6 @@
 // pages/scout/register/register.js
 import { requireLogin, getCurrentOpenId } from '../../../utils/auth.js';
+const app = getApp();
 
 Page({
   data: {
@@ -11,13 +12,83 @@ Page({
       reason: ''
     },
     submitting: false,
+    inviterScout: null,
+    invitePlan: null,
+    inviteCode: '',
     // 申请状态（用于显示审核结果）
     applicationStatus: null, // null | 'pending' | 'rejected'
     existingScout: null
   },
 
-  onLoad() {
+  onLoad(options) {
+    this.initInviterScout(options);
     this.ensureLoginAndCheckStatus();
+  },
+
+  async initInviterScout(options = {}) {
+    const referral = app?.getScoutReferral?.() || null;
+    const inviteCode = String(options.inviteCode || '').trim();
+    let inviterScout = options.parentScoutId
+      ? {
+          scoutId: options.parentScoutId,
+          scoutName: options.parentScoutName || '',
+          shareCode: options.parentShareCode || ''
+        }
+      : (referral?.scoutId ? {
+          scoutId: referral.scoutId,
+          scoutName: referral.scoutName || '',
+          shareCode: referral.scoutShareCode || ''
+        } : null);
+
+    let invitePlan = null;
+
+    if (inviteCode) {
+      try {
+        const inviteRes = await wx.cloud.callFunction({
+          name: 'scout',
+          data: {
+            action: 'getAceInvite',
+            data: { inviteCode }
+          }
+        });
+
+        if (inviteRes.result?.success && inviteRes.result?.invite) {
+          const invite = inviteRes.result.invite;
+          inviterScout = {
+            scoutId: invite.targetScoutId,
+            scoutName: invite.targetScoutName || '',
+            shareCode: invite.targetScoutShareCode || ''
+          };
+          invitePlan = {
+            role: 'ace',
+            title: '王牌星探招募入口',
+            signingAward: Number(invite.plan?.signingAward || 0),
+            levelAwards: {
+              S: Number(invite.plan?.levelAwards?.S || 0),
+              A: Number(invite.plan?.levelAwards?.A || 0),
+              B: Number(invite.plan?.levelAwards?.B || 0)
+            }
+          };
+        } else {
+          wx.showToast({
+            title: inviteRes.result?.error || '邀请码无效',
+            icon: 'none'
+          });
+        }
+      } catch (error) {
+        console.error('[星探申请] 查询邀请码失败:', error);
+        wx.showToast({
+          title: '邀请码加载失败',
+          icon: 'none'
+        });
+      }
+    }
+
+    this.setData({
+      inviterScout,
+      invitePlan,
+      inviteCode
+    });
   },
 
   async ensureLoginAndCheckStatus() {
@@ -135,7 +206,14 @@ Page({
         name: 'scout',
         data: {
           action: 'apply',
-          data: this.data.formData
+          data: {
+            ...this.data.formData,
+            parentScoutId: this.data.inviterScout?.scoutId || '',
+            parentScoutName: this.data.inviterScout?.scoutName || '',
+            parentShareCode: this.data.inviterScout?.shareCode || '',
+            invitePlan: this.data.invitePlan,
+            inviteCode: this.data.inviteCode
+          }
         }
       });
 

@@ -1,0 +1,105 @@
+<view class="manage-page">
+  <view class="hero-card">
+    <text class="hero-kicker">Teaching Management</text>
+    <text class="hero-title">教学管理</text>
+    <text class="hero-copy">统一处理教学排期、每日计划、签到确认、技能矩阵和训练记录复核。</text>
+  </view>
+
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-title">加载中</text>
+    <text class="loading-copy">正在同步教学管理信息</text>
+  </view>
+
+  <view wx:if="{{!loading}}">
+    <view class="panel-card" wx:if="{{danceDailyBoard}}">
+      <view class="card-head">
+        <view class="card-head-copy">
+          <text class="card-title">教学计划与签到确认</text>
+          <text class="card-subtitle">按今日进度、关注对象和次日协作需求拆分展示，避免信息挤在一起。</text>
+        </view>
+        <button class="pill-btn" bindtap="goToSchedule">管理排期</button>
+      </view>
+      <view class="info-block emphasis">
+        <text class="info-label">今日进度</text>
+        <text class="info-value">{{danceDailyBoard.todayProgress}}</text>
+      </view>
+      <view class="info-grid">
+        <view class="info-block compact">
+          <text class="info-label">今日之星</text>
+          <text class="info-value">{{danceDailyBoard.todayStar}}</text>
+        </view>
+        <view class="info-block compact">
+          <text class="info-label">待关注成员</text>
+          <text class="info-value">{{danceDailyBoard.focusMember}}</text>
+        </view>
+      </view>
+      <view class="info-block compact">
+        <text class="info-label">次日协作需求</text>
+        <text class="info-value">{{danceDailyBoard.nextNeed}}</text>
+      </view>
+      <view class="attendance-strip">
+        <text class="attendance-title">培训签到确认</text>
+        <text class="attendance-copy">{{danceDailyBoard.attendanceText}}</text>
+      </view>
+    </view>
+
+    <view class="panel-card">
+      <view class="card-head">
+        <view class="card-head-copy">
+          <text class="card-title">技能熟练度矩阵</text>
+          <text class="card-subtitle">老师可按主播和舞种查看熟练状态，批量通关入口保留在这里。</text>
+        </view>
+        <button class="pill-btn" bindtap="showBatchHint">批量 PK 通关</button>
+      </view>
+      <view class="empty-state panel-empty" wx:if="{{!danceSkillMatrix.length}}">
+        <text class="empty-title">暂无训练矩阵</text>
+        <text class="empty-copy">经纪人完成课程预约后，这里会出现主播熟练度预览。当前先去教学排期或等待预约进入。</text>
+      </view>
+      <view class="matrix-list" wx:if="{{danceSkillMatrix.length}}">
+        <view class="matrix-row" wx:for="{{danceSkillMatrix}}" wx:key="candidateId">
+          <view class="matrix-head">
+            <view>
+              <text class="matrix-name">{{item.candidateName}}</text>
+              <text class="matrix-subtitle">{{item.liveName || item.signInText}}</text>
+            </view>
+            <text class="matrix-sign">{{item.signInText}}</text>
+          </view>
+          <view class="chip-row">
+            <text class="matrix-chip {{skill.statusClass}}" wx:for="{{item.skills}}" wx:key="danceName" wx:for-item="skill">{{skill.danceName}} · {{skill.statusText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="panel-card">
+      <view class="card-head">
+        <view class="card-head-copy">
+          <text class="card-title">我的预约主播</text>
+          <text class="card-subtitle">这里只展示已预约到你名下的主播，便于继续复核训练记录。</text>
+        </view>
+        <text class="card-tag">{{bookedCourseCount}} 人</text>
+      </view>
+      <view class="empty-state panel-empty" wx:if="{{!bookedCourseList.length}}">
+        <text class="empty-title">暂无预约主播</text>
+        <text class="empty-copy">经纪人完成预约后，这里会显示主播姓名、上课时间和训练记录状态。</text>
+      </view>
+      <view class="candidate-list" wx:if="{{bookedCourseList.length}}">
+        <view
+          class="candidate-card"
+          wx:for="{{bookedCourseList}}"
+          wx:key="candidateId"
+          bindtap="goToDetail"
+          data-path="{{item.detailPath}}"
+        >
+          <view class="candidate-head">
+            <text class="candidate-name">{{item.candidateName}}</text>
+            <text class="candidate-arrow">→</text>
+          </view>
+          <text class="candidate-meta">预约时间：{{item.bookingSummary}}</text>
+          <text class="candidate-meta">上课地点：{{item.bookingLocation}}</text>
+          <text class="candidate-meta">训练记录：{{item.reviewStatusText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

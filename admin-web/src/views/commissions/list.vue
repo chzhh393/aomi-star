@@ -1,47 +1,15 @@
 <template>
   <div class="commissions-page">
     <!-- 统计卡片 -->
-    <el-row :gutter="16" class="stats-row">
-      <el-col :xs="12" :sm="6">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.totalPending }}</div>
-            <div class="stat-label">待支付订单</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="12" :sm="6">
-        <el-card shadow="hover" class="stat-card pending">
-          <div class="stat-content">
-            <div class="stat-value">¥{{ stats.pendingAmount }}</div>
-            <div class="stat-label">待支付金额</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="12" :sm="6">
-        <el-card shadow="hover" class="stat-card paid">
-          <div class="stat-content">
-            <div class="stat-value">¥{{ stats.paidAmount }}</div>
-            <div class="stat-label">已支付金额</div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="12" :sm="6">
-        <el-card shadow="hover" class="stat-card total">
-          <div class="stat-content">
-            <div class="stat-value">¥{{ stats.totalAmount }}</div>
-            <div class="stat-label">累计分账总额</div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <MetricCardGrid :cards="metricCards" :active-key="activeFilter" @select="setFilter" />
 
     <!-- 筛选栏 -->
     <el-card class="filter-card" shadow="never">
-      <el-radio-group v-model="activeFilter" @change="loadCommissions">
-        <el-radio-button value="calculated">待支付</el-radio-button>
-        <el-radio-button value="paid">已支付</el-radio-button>
-        <el-radio-button value="all">全部</el-radio-button>
+      <el-radio-group v-model="activeFilter" @change="handleFilterChange">
+        <el-radio-button label="calculated">待支付</el-radio-button>
+        <el-radio-button label="frozen">已冻结</el-radio-button>
+        <el-radio-button label="paid">已支付</el-radio-button>
+        <el-radio-button label="all">全部</el-radio-button>
       </el-radio-group>
     </el-card>
 
@@ -55,32 +23,32 @@
           <div class="candidate-info">
             <span class="candidate-name">{{ item.candidateName }}</span>
             <el-tag
-              :type="item.commission.status === 'paid' ? 'success' : 'warning'"
+              :type="item.freezeStatus === 'frozen' ? 'danger' : (item.status === 'paid' ? 'success' : 'warning')"
               size="small"
               effect="plain"
             >
-              {{ item.commission.status === 'paid' ? '已支付' : '待支付' }}
+              {{ item.statusLabel }}
             </el-tag>
           </div>
           <div class="total-amount">
-            总金额：<span class="amount-value">¥{{ item.commission.totalAmount }}</span>
+            总金额：<span class="amount-value">{{ item.totalAmountText }}</span>
           </div>
         </div>
 
         <!-- 分账明细 -->
         <div class="distribution-list">
           <div
-            v-for="(dist, index) in item.commission.distribution"
+            v-for="(dist, index) in item.distribution"
             :key="index"
             class="distribution-item"
           >
             <div class="scout-info">
               <el-tag
-                :type="dist.level === 1 ? 'warning' : 'success'"
+                :type="dist.type === 'team' ? 'success' : 'warning'"
                 size="small"
                 effect="plain"
               >
-                {{ dist.level === 1 ? '⭐ 一级' : '⭐⭐ 二级' }}
+                {{ dist.type === 'team' ? '团队分账' : '直接推荐' }}
               </el-tag>
               <span class="scout-name">{{ dist.scoutName }}</span>
               <el-tag v-if="dist.type === 'team'" type="info" size="small" effect="plain">
@@ -98,22 +66,30 @@
         <div class="card-footer">
           <div class="time-info">
             <span class="time-label">计算时间：</span>
-            <span class="time-value">{{ formatDate(item.commission.calculatedAt) }}</span>
+            <span class="time-value">{{ item.calculatedAtText }}</span>
           </div>
-          <div v-if="item.commission.paidAt" class="time-info">
+          <div v-if="item.status === 'paid'" class="time-info">
             <span class="time-label">支付时间：</span>
-            <span class="time-value">{{ formatDate(item.commission.paidAt) }}</span>
+            <span class="time-value">{{ item.paidAtText }}</span>
           </div>
         </div>
 
+        <div v-if="item.freezeStatus === 'frozen'" class="freeze-panel">
+          <div class="freeze-title">老板已冻结该笔提成</div>
+          <div class="freeze-text">原因：{{ item.freezeReason || '未填写' }}</div>
+          <div v-if="item.freezeNote" class="freeze-text">备注：{{ item.freezeNote }}</div>
+          <div class="freeze-text">操作人：{{ item.freezeUpdatedByName || '老板' }} · {{ item.freezeUpdatedAtText || '-' }}</div>
+        </div>
+
         <!-- 操作按钮 -->
-        <div v-if="item.commission.status === 'calculated'" class="card-actions">
+        <div v-if="item.status === 'calculated'" class="card-actions">
           <el-button
             type="primary"
             size="small"
             @click="confirmPayment(item.candidateId)"
+            :disabled="!item.canPay"
           >
-            确认支付
+            {{ item.canPay ? '确认支付' : '已冻结不可支付' }}
           </el-button>
           <el-button
             size="small"
@@ -128,12 +104,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import wxcloud from '../../api/wxcloud'
+import MetricCardGrid from '../../components/common/metric-card-grid.vue'
 
 // 筛选器
 const activeFilter = ref('calculated')
+const route = useRoute()
+const router = useRouter()
 
 // 列表数据
 const loading = ref(false)
@@ -146,48 +126,36 @@ const stats = reactive({
   paidAmount: 0,
   totalAmount: 0
 })
-
-// 格式化日期
-const formatDate = (timestamp) => {
-  if (!timestamp) return '-'
-  const date = new Date(timestamp)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hour = String(date.getHours()).padStart(2, '0')
-  const minute = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day} ${hour}:${minute}`
-}
+const metricCards = computed(() => [
+  { key: 'calculated', value: stats.totalPending, label: '待支付订单', tone: 'default' },
+  { key: 'pendingAmount', selectKey: 'calculated', active: activeFilter.value === 'calculated', value: `¥${stats.pendingAmount}`, label: '待支付金额', tone: 'pending' },
+  { key: 'paid', value: `¥${stats.paidAmount}`, label: '已支付金额', tone: 'paid' },
+  { key: 'all', value: `¥${stats.totalAmount}`, label: '累计分账总额', tone: 'total' }
+])
 
 // 加载分账列表
 const loadCommissions = async () => {
   loading.value = true
   try {
-    // 获取所有签约的候选人
     const result = await wxcloud.callFunction('admin', {
-      action: 'getCandidateList',
-      data: {
-        status: 'signed'
-      }
+      action: 'getFinanceCommissionLedger',
+      data: {}
     })
 
     if (result.success) {
-      const candidates = result.data?.list || []
-      let allCommissions = candidates.filter(c => c.commission)
+      const allCommissions = result.data?.list || []
+      const ledgerStats = result.data?.stats || {}
 
-      // 根据筛选条件过滤
-      if (activeFilter.value !== 'all') {
-        allCommissions = allCommissions.filter(c => c.commission.status === activeFilter.value)
-      }
+      list.value = activeFilter.value === 'all'
+        ? allCommissions
+        : allCommissions.filter((item) => {
+            if (activeFilter.value === 'frozen') {
+              return item.freezeStatus === 'frozen'
+            }
+            return item.status === activeFilter.value
+          })
 
-      list.value = allCommissions.map(c => ({
-        candidateId: c._id,
-        candidateName: c.basicInfo?.name || '-',
-        commission: c.commission
-      }))
-
-      // 计算统计数据
-      calculateStats(candidates.filter(c => c.commission))
+      calculateStats(ledgerStats)
     } else {
       ElMessage.error(result.error || '获取分账列表失败')
     }
@@ -199,16 +167,29 @@ const loadCommissions = async () => {
   }
 }
 
+const handleFilterChange = () => {
+  router.replace({
+    query: activeFilter.value === 'calculated'
+      ? { ...route.query, status: undefined }
+      : { ...route.query, status: activeFilter.value }
+  })
+  loadCommissions()
+}
+
+const setFilter = (filter) => {
+  if (activeFilter.value === filter) {
+    return
+  }
+  activeFilter.value = filter
+  handleFilterChange()
+}
+
 // 计算统计数据
-const calculateStats = (allCommissions) => {
-  stats.totalPending = allCommissions.filter(c => c.commission.status === 'calculated').length
-  stats.pendingAmount = allCommissions
-    .filter(c => c.commission.status === 'calculated')
-    .reduce((sum, c) => sum + c.commission.totalAmount, 0)
-  stats.paidAmount = allCommissions
-    .filter(c => c.commission.status === 'paid')
-    .reduce((sum, c) => sum + c.commission.totalAmount, 0)
-  stats.totalAmount = stats.pendingAmount + stats.paidAmount
+const calculateStats = (ledgerStats = {}) => {
+  stats.totalPending = ledgerStats.totalPending || 0
+  stats.pendingAmount = ledgerStats.pendingAmount || 0
+  stats.paidAmount = ledgerStats.paidAmount || 0
+  stats.totalAmount = ledgerStats.totalAmount || 0
 }
 
 // 确认支付
@@ -224,8 +205,8 @@ const confirmPayment = async (candidateId) => {
       }
     )
 
-    const result = await wxcloud.callFunction('commission', {
-      action: 'confirmPayment',
+    const result = await wxcloud.callFunction('admin', {
+      action: 'confirmFinanceCommissionPayment',
       data: { candidateId }
     })
 
@@ -248,10 +229,11 @@ const viewDetail = (item) => {
   ElMessageBox.alert(
     `<div style="line-height: 1.8">
       <p><strong>候选人：</strong>${item.candidateName}</p>
-      <p><strong>总金额：</strong>¥${item.commission.totalAmount}</p>
+      <p><strong>总金额：</strong>${item.totalAmountText}</p>
+      <p><strong>状态：</strong>${item.statusLabel}</p>
       <p><strong>分账明细：</strong></p>
-      ${item.commission.distribution.map(d => 
-        `<p style="padding-left: 20px;">• ${d.scoutName}（${d.level === 1 ? '一级' : '二级'}星探）：¥${d.amount}（${d.percentage}%）</p>`
+      ${item.distribution.map(d =>
+        `<p style="padding-left: 20px;">• ${d.scoutName}（${d.typeLabel || '分账'}）：${d.amountText || `¥${d.amount || 0}`}（${d.percentage || 0}%）</p>`
       ).join('')}
     </div>`,
     '分账详情',
@@ -263,6 +245,10 @@ const viewDetail = (item) => {
 }
 
 onMounted(() => {
+  const routeStatus = route.query.status
+  if (routeStatus === 'paid' || routeStatus === 'all' || routeStatus === 'calculated' || routeStatus === 'frozen') {
+    activeFilter.value = routeStatus
+  }
   loadCommissions()
 })
 </script>
@@ -275,44 +261,6 @@ onMounted(() => {
 }
 
 /* 统计卡片 */
-.stats-row {
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: #252525;
-  border: none;
-  cursor: default;
-}
-
-.stat-card.pending {
-  border-left: 3px solid #e6a23c;
-}
-
-.stat-card.paid {
-  border-left: 3px solid #67c23a;
-}
-
-.stat-card.total {
-  border-left: 3px solid #409eff;
-}
-
-.stat-content {
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 8px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #999;
-}
-
 /* 筛选卡片 */
 .filter-card {
   margin-bottom: 20px;

@@ -22,8 +22,11 @@ Page({
     },
 
     // 面试官列表
+    admins: [],
+    agents: [],
     photographers: [],
     danceTeachers: [],
+    hostMcs: [],
     makeupArtists: [],
     stylists: []
   },
@@ -100,21 +103,30 @@ Page({
    * 加载面试官列表
    */
   loadInterviewers() {
+    const admins = getUsersByRole(ROLE.ADMIN);
+    const agents = getUsersByRole(ROLE.AGENT);
     const photographers = getUsersByRole(ROLE.PHOTOGRAPHER);
     const danceTeachers = getUsersByRole(ROLE.DANCE_TEACHER);
+    const hostMcs = getUsersByRole(ROLE.HOST_MC);
     const makeupArtists = getUsersByRole(ROLE.MAKEUP_ARTIST);
     const stylists = getUsersByRole(ROLE.STYLIST);
 
     this.setData({
+      admins,
+      agents,
       photographers,
       danceTeachers,
+      hostMcs,
       makeupArtists,
       stylists
     });
 
     console.log('[面试官分配] 面试官列表加载完成:', {
+      admins: admins.length,
+      agents: agents.length,
       photographers: photographers.length,
       danceTeachers: danceTeachers.length,
+      hostMcs: hostMcs.length,
       makeupArtists: makeupArtists.length,
       stylists: stylists.length
     });

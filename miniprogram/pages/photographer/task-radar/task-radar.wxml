@@ -1,0 +1,70 @@
+<view class="detail-page">
+  <view class="hero-card">
+    <text class="hero-kicker">TASK RADAR</text>
+    <text class="hero-title">拍摄任务雷达</text>
+    <text class="hero-desc">按老师高光直拍、经纪人定制需求和时间优先级处理拍摄任务。</text>
+    <view class="hero-metrics">
+      <view class="hero-metric">
+        <text class="hero-metric-value">{{taskOverview.total}}</text>
+        <text class="hero-metric-label">任务总量</text>
+      </view>
+      <view class="hero-metric">
+        <text class="hero-metric-value">{{taskOverview.todayCount}}</text>
+        <text class="hero-metric-label">今日执行</text>
+      </view>
+      <view class="hero-metric">
+        <text class="hero-metric-value">{{taskOverview.urgentCount}}</text>
+        <text class="hero-metric-label">待拍/超时</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-title">同步拍摄任务中</text>
+    <text class="loading-copy">正在拉取你的任务优先级和拍摄排期</text>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && !radarTaskGroups.length}}">
+    <text class="empty-title">暂无拍摄任务</text>
+    <text class="empty-desc">HR 分配面试官或上传素材后，这里会自动出现任务。</text>
+  </view>
+
+  <view class="group-stack" wx:if="{{radarTaskGroups.length}}">
+    <view class="group-card" wx:for="{{radarTaskGroups}}" wx:key="key">
+      <view class="group-head">
+        <text class="group-title">{{item.title}}</text>
+        <text class="group-desc">{{item.desc}}</text>
+      </view>
+
+      <view class="radar-list">
+        <view class="radar-card" wx:for="{{item.list}}" wx:key="candidateId" wx:for-item="taskItem" bindtap="goToDetail" data-path="{{taskItem.detailPath}}">
+          <view class="radar-head">
+            <view>
+              <text class="radar-name">{{taskItem.name}}</text>
+              <text class="radar-subtitle">{{taskItem.anchorId}} · {{taskItem.liveName || '待补直播名'}}</text>
+            </view>
+            <view class="radar-status-box">
+              <text class="radar-urgency">{{taskItem.urgencyLabel}}</text>
+              <text class="radar-status {{taskItem.statusClass}}">{{taskItem.statusText}}</text>
+            </view>
+          </view>
+          <view class="radar-meta-row">
+            <text class="meta-pill">{{taskItem.sourceLabel}}</text>
+            <text class="meta-pill">{{taskItem.scheduleText}}</text>
+          </view>
+          <view class="radar-info-grid">
+            <view class="info-row">
+              <text class="info-label">场地</text>
+              <text class="info-value">{{taskItem.locationText}}</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">资产</text>
+              <text class="info-value">{{taskItem.assetSummary}}</text>
+            </view>
+          </view>
+          <text class="radar-focus">{{taskItem.focusText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

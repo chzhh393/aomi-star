@@ -1,118 +1,112 @@
-<!--
-  摄像师工作台
-  功能：查看待拍摄候选人、上传面试素材
--->
-<view class="photographer-home">
-  <!-- 顶部用户信息 -->
-  <view class="header">
-    <view class="user-info">
-      <text class="role-badge">📸 摄像师</text>
-      <text class="username">{{userInfo.profile.name}}</text>
+<view class="workspace-page">
+  <view class="page-glow page-glow-a"></view>
+  <view class="page-glow page-glow-b"></view>
+
+  <view class="workspace-header">
+    <view class="header-topline">
+      <view class="header-tag" style="background: {{roleConfig.accent}}">{{roleConfig.icon}} {{roleConfig.name}}</view>
+      <text class="header-kicker">Visual Asset Center</text>
     </view>
+    <text class="header-title">摄影/剪辑工作台</text>
+    <text class="header-subtitle">根据系统任务流精准拍摄，自动接收老师高光直拍和经纪人定制需求，按主播 ID 统一归档原片、精修和可分发链接。</text>
   </view>
 
-  <!-- 数据统计卡片 -->
-  <view class="stats-section">
-    <view class="stats-card">
-      <view class="stat-item primary">
-        <text class="stat-value">{{stats.totalAssigned}}</text>
-        <text class="stat-label">分配总数</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.pendingUpload}}</text>
-        <text class="stat-label">待上传素材</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.completed}}</text>
-        <text class="stat-label">已完成</text>
-      </view>
+  <view class="hero-card">
+    <view class="hero-copy">
+      <text class="hero-kicker">任务流驱动拍摄</text>
+      <text class="hero-title">拍摄任务、资产沉淀、运镜标准在一个工作台里闭环</text>
     </view>
-  </view>
-
-  <!-- 待处理任务列表 -->
-  <view class="tasks-section">
-    <view class="section-header">
-      <text class="section-title">待上传素材</text>
-      <text class="section-count">{{pendingCandidates.length}}</text>
-    </view>
-
-    <view wx:if="{{pendingCandidates.length === 0}}" class="empty-state">
-      <text class="empty-icon">✨</text>
-      <text class="empty-text">暂无待处理任务</text>
-    </view>
-
-    <view wx:else class="candidate-list">
-      <view
-        wx:for="{{pendingCandidates}}"
-        wx:key="id"
-        class="candidate-card"
-        bindtap="onViewCandidate"
-        data-id="{{item.id}}"
-      >
-        <view class="candidate-header">
-          <view class="candidate-info">
-            <text class="candidate-name">{{item.basicInfo.name}}</text>
-            <text class="candidate-id">ID: {{item.id}}</text>
-          </view>
-          <view class="interview-badge">
-            <text class="badge-text">{{item.interviewSchedule.date}}</text>
-          </view>
-        </view>
-
-        <view class="candidate-details">
-          <view class="detail-item">
-            <text class="detail-label">面试时间：</text>
-            <text class="detail-value">{{item.interviewSchedule.date}} {{item.interviewSchedule.time}}</text>
-          </view>
-          <view class="detail-item">
-            <text class="detail-label">面试地点：</text>
-            <text class="detail-value">{{item.interviewSchedule.location}}</text>
-          </view>
-        </view>
-
-        <view class="action-btn">
-          <text class="btn-text">上传素材 →</text>
-        </view>
+    <view class="hero-metrics">
+      <view class="hero-metric">
+        <text class="hero-metric-value">{{taskOverview.total}}</text>
+        <text class="hero-metric-label">雷达任务</text>
+      </view>
+      <view class="hero-metric">
+        <text class="hero-metric-value">{{taskOverview.todayCount}}</text>
+        <text class="hero-metric-label">今日执行</text>
+      </view>
+      <view class="hero-metric">
+        <text class="hero-metric-value">{{taskOverview.urgentCount}}</text>
+        <text class="hero-metric-label">待拍/超时</text>
+      </view>
+      <view class="hero-metric">
+        <text class="hero-metric-value">{{taskOverview.deliveryCount}}</text>
+        <text class="hero-metric-label">待分发</text>
       </view>
     </view>
   </view>
 
-  <!-- 已完成列表（最近5个） -->
-  <view class="completed-section">
-    <view class="section-header">
-      <text class="section-title">最近完成</text>
-    </view>
-
-    <view wx:if="{{completedCandidates.length === 0}}" class="empty-state">
-      <text class="empty-text">暂无记录</text>
-    </view>
-
-    <view wx:else class="completed-list">
-      <view
-        wx:for="{{completedCandidates}}"
-        wx:key="id"
-        class="completed-card"
-      >
-        <view class="completed-info">
-          <text class="completed-name">{{item.basicInfo.name}}</text>
-          <text class="completed-time">{{item.interviewMaterials.photographer.uploadedAt}}</text>
-        </view>
-        <view class="completed-status">
-          <text class="status-icon">✓</text>
-        </view>
-      </view>
+  <view class="photo-card-grid">
+    <view
+      wx:for="{{photographerCards}}"
+      wx:key="key"
+      class="photo-summary-card"
+      bindtap="handleShortcut"
+      data-path="{{item.path}}"
+    >
+      <text class="photo-card-title">{{item.title}}</text>
+      <text class="photo-card-summary">{{item.summary}}</text>
+      <text class="photo-card-detail">{{item.detail}}</text>
+      <text class="photo-card-link">点击查看</text>
     </view>
   </view>
 
-  <!-- 快捷功能 -->
-  <view class="quick-actions">
-    <view class="action-item" bindtap="onRefresh">
-      <text class="action-icon">🔄</text>
-      <text class="action-text">刷新列表</text>
+  <view class="tabs-card">
+    <view class="tab-item {{currentTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">
+      <text class="tab-text">待评价</text>
+      <text class="tab-count">{{pendingCount}} 人</text>
     </view>
-    <view class="action-item" bindtap="onViewHistory">
-      <text class="action-icon">📋</text>
-      <text class="action-text">历史记录</text>
+    <view class="tab-item {{currentTab === 'reviewed' ? 'active' : ''}}" bindtap="switchTab" data-tab="reviewed">
+      <text class="tab-text">已评价</text>
+      <text class="tab-count">{{reviewedCount}} 人</text>
+    </view>
+  </view>
+
+  <view class="candidate-list">
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-title">同步摄影师任务中</text>
+      <text class="loading-copy">正在拉取你的待拍摄和已处理名单</text>
+    </view>
+
+    <view class="empty-state" wx:if="{{!loading && candidateList.length === 0}}">
+      <text class="empty-mark">PH</text>
+      <text class="empty-title">暂无候选人</text>
+      <text class="empty-desc">当前角色名下还没有候选人或素材任务。</text>
+    </view>
+
+    <view
+      wx:for="{{candidateList}}"
+      wx:key="_id"
+      class="candidate-card"
+      bindtap="goToDetail"
+      data-path="{{item.detailPath}}"
+    >
+      <image wx:if="{{item.avatar}}" class="candidate-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+      <view wx:else class="candidate-avatar avatar-placeholder">{{item.nameInitial}}</view>
+      <view class="candidate-content">
+        <view class="candidate-head">
+          <text class="candidate-name">{{item.name}}</text>
+          <text class="candidate-status {{item.statusClass}}">{{item.statusText}}</text>
+        </view>
+        <view class="candidate-info-grid">
+          <view class="info-row">
+            <text class="info-label">直播名</text>
+            <text class="info-value">{{item.liveName || '-'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">经纪人</text>
+            <text class="info-value">{{item.assignedAgentName}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">联系电话</text>
+            <text class="info-value">{{item.assignedAgentPhone}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">素材进度</text>
+            <text class="info-value">{{item.assetSummary}}</text>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </view>

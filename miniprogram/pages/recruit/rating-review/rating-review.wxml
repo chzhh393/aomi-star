@@ -1,53 +1,303 @@
-<!--
-  HR评级审核页面
--->
-<view class="rating-review-page">
-  <view class="candidate-card">
-    <text class="card-title">候选人信息</text>
-    <view class="info-row">
-      <text class="label">姓名：</text>
-      <text class="value">{{candidate.basicInfo.name}}</text>
-    </view>
-  </view>
-
-  <view class="evaluation-summary">
-    <text class="summary-title">评价汇总</text>
-
-    <view class="eval-item">
-      <text class="eval-label">舞蹈导师评分：</text>
-      <text class="eval-score">{{candidate.evaluations.danceTeacher.score}}/10</text>
-    </view>
-
-    <view class="eval-item">
-      <text class="eval-label">经纪人评分：</text>
-      <text class="eval-score">{{candidate.evaluations.agent.score}}/10</text>
-    </view>
-  </view>
-
-  <view class="rating-result" wx:if="{{rating}}">
-    <text class="result-title">系统评级</text>
-
-    <view class="grade-display">
-      <text class="grade-label">{{rating.label}}</text>
-      <text class="grade-score">{{rating.score}}分</text>
-    </view>
-
-    <view class="rating-details">
-      <view class="detail-row">
-        <text class="detail-label">建议薪资：</text>
-        <text class="detail-value">{{rating.suggestedSalary}}</text>
+<view class="rating-review-page" wx:if="{{summary}}">
+  <view class="hero-card">
+    <view class="hero-top">
+      <view class="hero-profile">
+        <image wx:if="{{summary.candidate.avatar}}" class="hero-avatar" src="{{summary.candidate.avatar}}" mode="aspectFill" binderror="handleAvatarError" />
+        <view wx:else class="hero-avatar hero-avatar-placeholder">{{summary.candidate.displayInitial}}</view>
+        <view>
+          <text class="hero-eyebrow">FOUNDER DECISION BOARD</text>
+          <text class="hero-title">{{summary.candidate.name || '未命名候选人'}}</text>
+          <text class="hero-subtitle">当前流程：{{summary.workflowStatus || 'Interviewing'}}</text>
+        </view>
       </view>
-      <view class="detail-row">
-        <text class="detail-label">培训周期：</text>
-        <text class="detail-value">{{rating.trainingDuration}}周</text>
-      </view>
+      <view class="system-pill">{{summary.progress.text}}</view>
     </view>
 
-    <view class="action-section">
-      <button class="approve-btn" bindtap="onApprove">确认评级</button>
-      <button class="reject-btn" bindtap="onReject">不通过</button>
+    <view class="hero-tags">
+      <text class="hero-tag">{{summary.candidate.age || '-'}}岁</text>
+      <text class="hero-tag">{{summary.candidate.gender || '性别待补充'}}</text>
+      <text class="hero-tag">{{summary.candidate.phone || '联系方式待补充'}}</text>
+      <text class="hero-tag">直播名：{{summary.candidate.liveName || '-'}}</text>
+      <text wx:if="{{summary.candidate.assignedAgent}}" class="hero-tag">经纪人：{{(summary.candidate.assignedAgent && summary.candidate.assignedAgent.name) || '-'}}</text>
+      <text wx:if="{{summary.candidate.assignedAgent}}" class="hero-tag">经纪人电话：{{(summary.candidate.assignedAgent && summary.candidate.assignedAgent.phone) || '-'}}</text>
+      <text class="hero-tag">候选人ID：{{summary.candidate.candidateId}}</text>
     </view>
   </view>
 
-  <button wx:else class="generate-btn" bindtap="onGenerateRating">生成评级</button>
+  <view class="card" wx:if="{{pageRole === 'admin'}}">
+    <view class="section-head">
+      <text class="section-title">管理员操作模式</text>
+      <text class="section-tip">{{summary.decisionLocked ? '候选人已终裁未通过，面试终裁和评分入口已关闭' : '可直接终裁，也可按面试官流程提交完整评价'}}</text>
+    </view>
+
+    <view class="admin-mode-grid">
+      <view class="admin-mode-card">
+        <text class="admin-mode-title">直接终裁</text>
+        <text class="admin-mode-desc">{{summary.decisionLocked ? '已关闭。请查看下方未通过原因。' : '查看全部评分汇总后，直接做出最终录取、待定或淘汰决定。'}}</text>
+      </view>
+      <view class="admin-mode-card accent">
+        <text class="admin-mode-title">作为面试官评分</text>
+        <text class="admin-mode-desc">{{summary.decisionLocked ? '已关闭。候选人已被判定未通过。' : '提交和其他面试官一致的五维评价，并查看共享的照片和视频资料。'}}</text>
+        <text class="admin-mode-status">{{summary.adminEvaluation ? summary.adminEvaluation.statusLabel : '未开始评价'}}</text>
+        <button class="mode-action-btn" bindtap="goToAdminEvaluation" disabled="{{summary.decisionLocked}}">{{summary.decisionLocked ? '入口已关闭' : '开始评分'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">评分进度</text>
+      <text class="section-value">{{summary.progress.text}}</text>
+    </view>
+
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{summary.progress.percent}}%;"></view>
+    </view>
+
+    <view class="reviewer-list">
+      <view
+        wx:for="{{summary.progress.reviewers}}"
+        wx:key="key"
+        class="reviewer-item {{item.completed ? 'is-complete' : 'is-pending'}}"
+      >
+        <text class="reviewer-name">{{item.name}}</text>
+        <text class="reviewer-status">{{item.completed ? '已提交' : '未提交'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">面试官五维评分矩阵</text>
+      <text class="section-tip">仅显示 S / A / B / C 等级</text>
+    </view>
+
+    <view class="matrix-table">
+      <view class="matrix-row matrix-header">
+        <text class="matrix-cell matrix-reviewer">面试官</text>
+        <text wx:for="{{summary.dimensions}}" wx:key="key" class="matrix-cell">{{item.name}}</text>
+        <text class="matrix-cell">综合</text>
+      </view>
+
+      <view wx:if="{{summary.interviewerMatrix.length === 0}}" class="matrix-empty">
+        暂无已提交评分
+      </view>
+
+      <view wx:for="{{summary.interviewerMatrix}}" wx:key="role" class="matrix-row">
+        <view class="matrix-cell matrix-reviewer reviewer-meta">
+          <text class="reviewer-role">{{item.interviewerName}}</text>
+          <text class="reviewer-time">{{item.evaluatedAt}}</text>
+        </view>
+        <view wx:for="{{item.dimensions}}" wx:key="key" class="matrix-cell">
+          <text class="grade-chip grade-{{item.grade}}">{{item.grade}}</text>
+        </view>
+        <view class="matrix-cell">
+          <text class="grade-chip grade-{{item.overallGrade}}">{{item.overallGrade}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">等级分布矩阵</text>
+      <text class="section-tip">同维度出现 S 和 C 会高亮</text>
+    </view>
+
+    <view
+      wx:for="{{summary.dimensionDistribution}}"
+      wx:key="key"
+      class="distribution-row {{item.severeDivergence ? 'is-divergent' : ''}}"
+    >
+      <view class="distribution-main">
+        <view>
+          <text class="distribution-name">{{item.name}}</text>
+          <text wx:if="{{item.severeDivergence}}" class="divergence-badge">存在严重分歧</text>
+        </view>
+        <view class="distribution-counts">
+          <text class="count-chip chip-s">S {{item.distribution.S}}</text>
+          <text class="count-chip chip-a">A {{item.distribution.A}}</text>
+          <text class="count-chip chip-b">B {{item.distribution.B}}</text>
+          <text class="count-chip chip-c">C {{item.distribution.C}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">风格标签汇总</text>
+      <text class="section-tip">提交时选择的 1-2 个风格标签</text>
+    </view>
+
+    <view class="tag-list">
+      <view wx:for="{{summary.styleTags}}" wx:key="tag" class="style-tag">
+        <text>{{item.tag}}</text>
+        <text class="style-tag-count">×{{item.count}}</text>
+      </view>
+      <text wx:if="{{summary.styleTags.length === 0}}" class="empty-text">暂无风格标签</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">其他面试官共享资料</text>
+      <text class="section-tip">共享图片和视频会同步给所有面试官与管理员</text>
+    </view>
+
+    <view class="shared-meta" wx:if="{{summary.sharedMaterials.uploadedBy || summary.sharedMaterials.uploadedAt}}">
+      <text wx:if="{{summary.sharedMaterials.uploadedBy}}">最近上传人：{{summary.sharedMaterials.uploadedBy}}</text>
+      <text wx:if="{{summary.sharedMaterials.uploadedAt}}">更新时间：{{summary.sharedMaterials.uploadedAt}}</text>
+    </view>
+
+    <view class="attachment-block">
+      <text class="attachment-title">共享图片</text>
+      <view class="photo-grid">
+        <view
+          wx:for="{{summary.sharedMaterials.images}}"
+          wx:key="url"
+          class="photo-item"
+          bindtap="previewPhoto"
+          data-url="{{item.url}}"
+          data-source="shared"
+        >
+          <image class="photo-image" src="{{item.thumbUrl || item.url}}" mode="aspectFill"></image>
+          <text class="photo-name">{{item.uploadedByName || item.uploadedByRole || '面试官上传'}}</text>
+        </view>
+        <text wx:if="{{summary.sharedMaterials.images.length === 0}}" class="empty-text">暂无共享图片</text>
+      </view>
+    </view>
+
+    <view class="attachment-block">
+      <text class="attachment-title">共享视频</text>
+      <view class="video-list">
+        <view
+          wx:for="{{summary.sharedMaterials.videos}}"
+          wx:key="url"
+          class="video-item"
+          bindtap="previewVideo"
+          data-url="{{item.url}}"
+        >
+          <text class="video-play">▶</text>
+          <view class="video-meta">
+            <text class="video-name">{{item.uploadedByName || item.uploadedByRole || '面试官上传视频'}}</text>
+            <text class="video-type">共享视频</text>
+          </view>
+        </view>
+        <text wx:if="{{summary.sharedMaterials.videos.length === 0}}" class="empty-text">暂无共享视频</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">面试官附件归档</text>
+      <text class="section-tip">各面试官提交时附带的图片和视频归档</text>
+    </view>
+
+    <view class="attachment-block">
+      <text class="attachment-title">图片资料</text>
+      <view class="photo-grid">
+        <view
+          wx:for="{{summary.attachments.photos}}"
+          wx:key="url"
+          class="photo-item"
+          bindtap="previewPhoto"
+          data-url="{{item.url}}"
+          data-source="attachment"
+        >
+          <image class="photo-image" src="{{item.url}}" mode="aspectFill"></image>
+          <text class="photo-name">{{item.name}}</text>
+        </view>
+        <text wx:if="{{summary.attachments.photos.length === 0}}" class="empty-text">暂无图片资料</text>
+      </view>
+    </view>
+
+    <view class="attachment-block" wx:if="{{summary.attachments.videos.length}}">
+      <text class="attachment-title">视频资料</text>
+      <view class="video-list">
+        <view
+          wx:for="{{summary.attachments.videos}}"
+          wx:key="url"
+          class="video-item"
+          bindtap="previewVideo"
+          data-url="{{item.url}}"
+        >
+          <text class="video-play">▶</text>
+          <view class="video-meta">
+            <text class="video-name">{{item.name}}</text>
+            <text class="video-type">{{item.type}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{!summary.decisionLocked}}">
+    <view class="section-head">
+      <text class="section-title">最终裁定</text>
+      <text class="section-tip">创始人拥有最终覆盖权</text>
+    </view>
+
+    <view class="decision-grid">
+      <view
+        wx:for="{{decisionOptions}}"
+        wx:key="value"
+        class="decision-card {{item.theme}} {{item.active ? 'is-active' : ''}}"
+        bindtap="onSelectDecision"
+        data-decision="{{item.value}}"
+      >
+        <text class="decision-label">{{item.label}}</text>
+        <text class="decision-desc">{{item.description}}</text>
+      </view>
+    </view>
+
+    <textarea
+      class="decision-note"
+      maxlength="300"
+      placeholder="填写终裁备注，说明录取判断、风险点或覆盖原因"
+      value="{{decisionNote}}"
+      bindinput="onNoteInput"
+    />
+
+    <button class="submit-btn" bindtap="onSubmitDecision" loading="{{submitting}}" disabled="{{submitting}}">
+      {{submitting ? '提交中...' : '提交终裁'}}
+    </button>
+  </view>
+
+  <view class="card" wx:if="{{summary.decisionLocked}}">
+    <view class="section-head">
+      <text class="section-title">未通过原因</text>
+      <text class="result-pill result-rejected">直接淘汰</text>
+    </view>
+    <text class="empty-text">{{summary.rejectionReason || '未填写未通过原因'}}</text>
+  </view>
+
+  <view wx:if="{{summary.founderDecision}}" class="card result-card">
+    <view class="section-head">
+      <text class="section-title">终裁结果</text>
+      <text class="result-pill result-{{summary.founderDecision.decision}}">{{summary.founderDecision.decisionLabel}}</text>
+    </view>
+
+    <view class="result-grid">
+      <view class="result-item">
+        <text class="result-label">决策人</text>
+        <text class="result-value">{{summary.founderDecision.decisionMakerName}}</text>
+      </view>
+      <view class="result-item">
+        <text class="result-label">决策时间</text>
+        <text class="result-value">{{summary.founderDecision.decidedAt}}</text>
+      </view>
+      <view class="result-item full">
+        <text class="result-label">{{summary.founderDecision.decision === 'rejected' ? '未通过原因' : '终裁备注'}}</text>
+        <text class="result-value">{{summary.founderDecision.note || (summary.founderDecision.decision === 'rejected' ? '未填写未通过原因' : '未填写备注')}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view wx:elif="{{loading}}" class="rating-review-page">
+  <view class="card">
+    <text class="empty-text">加载中...</text>
+  </view>
 </view>

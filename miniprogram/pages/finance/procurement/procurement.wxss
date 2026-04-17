@@ -1,0 +1,184 @@
+.page {
+  min-height: 100vh;
+  background: #f5f1e8;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.hero {
+  border-radius: 28rpx;
+  padding: 32rpx;
+  color: #1e1a13;
+}
+
+.sand {
+  background: linear-gradient(135deg, #e9dcc3, #f3e7cf);
+}
+
+.hero-title,
+.section-title,
+.card-title,
+.item-title,
+.stat-label {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #1e1a13;
+}
+
+.hero-desc,
+.stat-note,
+.item-sub,
+.card-sub,
+.key {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: #6e6557;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.stat-card,
+.card,
+.list-item {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 12rpx 30rpx rgba(15, 23, 42, 0.06);
+}
+
+.stat-value,
+.item-amount,
+.value {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #102a1e;
+}
+
+.section {
+  margin-top: 24rpx;
+}
+
+.section-title {
+  margin-bottom: 16rpx;
+}
+
+.row-between,
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.chip {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #f1eadb;
+  font-size: 20rpx;
+  color: #6e6557;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.warn {
+  border-left: 8rpx solid #d97706;
+}
+
+.filter-row {
+  margin-top: 24rpx;
+  white-space: nowrap;
+}
+
+.filter-chip {
+  display: inline-block;
+  margin-right: 16rpx;
+  padding: 14rpx 24rpx;
+  border-radius: 999rpx;
+  background: #ede4d3;
+  color: #6e6557;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.filter-chip-active {
+  background: #1e1a13;
+  color: #f7f1e7;
+}
+
+.meta-row {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.chip-status {
+  background: #e7f3eb;
+  color: #102a1e;
+}
+
+.note-input {
+  width: 100%;
+  min-height: 120rpx;
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 20rpx;
+  background: #f7f3ec;
+  box-sizing: border-box;
+  font-size: 24rpx;
+  color: #1e1a13;
+}
+
+.action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.action-button {
+  margin: 0;
+  border: none;
+  border-radius: 999rpx;
+  padding: 0 28rpx;
+}
+
+.action-button::after {
+  border: none;
+}
+
+.action-button.reject {
+  background: #f3dedc;
+  color: #8c2f25;
+}
+
+.action-button.approve {
+  background: #102a1e;
+  color: #f7f1e7;
+}
+
+.empty-state {
+  padding: 48rpx 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  text-align: center;
+  color: #6e6557;
+  font-size: 24rpx;
+}

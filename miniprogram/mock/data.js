@@ -263,6 +263,141 @@ export const mockPractices = [
   },
 ];
 
+// 经纪人工作台 mock 数据
+export const mockAgentWorkbench = {
+  mentalitySummary: {
+    greenCount: 4,
+    yellowCount: 2,
+    redCount: 1
+  },
+  talkTasks: [
+    {
+      id: 'talk001',
+      anchorId: '001',
+      anchorName: '小美',
+      artName: '甜心美美',
+      level: 'S',
+      signal: 'red',
+      signalLabel: '红灯',
+      source: '舞蹈老师预警',
+      moodScore: 38,
+      reason: '连续两次训练迟到，直播后复盘表达强烈自我怀疑。',
+      actionAdvice: '优先安排一对一谈心，暂停高压 PK 场次，先给正反馈。',
+      deadline: '今天 18:30'
+    },
+    {
+      id: 'talk002',
+      anchorId: '003',
+      anchorName: '琳琳',
+      artName: '琳琳子',
+      level: 'A',
+      signal: 'yellow',
+      signalLabel: '黄灯',
+      source: '红绿灯手动标记',
+      moodScore: 64,
+      reason: '排班变动后有抵触情绪，担心人设切换过快。',
+      actionAdvice: '同步本周排班逻辑，确认直播脚本只保留一个主卖点。',
+      deadline: '今天 21:00'
+    },
+    {
+      id: 'talk003',
+      anchorId: '007',
+      anchorName: '娜娜',
+      artName: '小娜',
+      level: 'C',
+      signal: 'yellow',
+      signalLabel: '黄灯',
+      source: '宿舍巡查反馈',
+      moodScore: 58,
+      reason: '新人训练期状态波动，睡眠不足影响第二天直播表现。',
+      actionAdvice: '协调训练节奏，先把晚场缩短 30 分钟。',
+      deadline: '明天 12:00'
+    }
+  ],
+  battleBoard: [
+    {
+      id: 'battle001',
+      anchorId: '001',
+      anchorName: '小美',
+      artName: '甜心美美',
+      level: 'S',
+      archetype: '甜系陪伴',
+      nextLiveTime: '今晚 19:30-23:30',
+      liveGoal: '冲刺 2.8 万流水',
+      scriptHint: '主打“下班陪伴局”，前 30 分钟用新舞蹈热场，后半程切大哥专属点歌。',
+      skills: [
+        { name: '开场留人', progress: 92 },
+        { name: '情绪互动', progress: 88 },
+        { name: '礼物转化', progress: 76 }
+      ]
+    },
+    {
+      id: 'battle002',
+      anchorId: '002',
+      anchorName: '小雪',
+      artName: '雪儿',
+      level: 'S',
+      archetype: '高能热舞',
+      nextLiveTime: '今晚 20:00-22:00',
+      liveGoal: '稳定黄金档在线 3.5k+',
+      scriptHint: '用“舞蹈 PK + 惩罚挑战”带节奏，中段安排新摄影物料做私域预热。',
+      skills: [
+        { name: '热场控节奏', progress: 89 },
+        { name: '话题延展', progress: 71 },
+        { name: '大哥维护', progress: 83 }
+      ]
+    },
+    {
+      id: 'battle003',
+      anchorId: '003',
+      anchorName: '琳琳',
+      artName: '琳琳子',
+      level: 'A',
+      archetype: '情绪治愈',
+      nextLiveTime: '明晚 18:30-21:30',
+      liveGoal: '测试“深夜树洞”新话术',
+      scriptHint: '先讲真实经历建立信任，再引导粉丝投票决定主题，不要频繁切段子。',
+      skills: [
+        { name: '故事表达', progress: 84 },
+        { name: '停留转化', progress: 67 },
+        { name: '私域引导', progress: 58 }
+      ]
+    }
+  ],
+  fanAssets: [
+    {
+      id: 'fan001',
+      anchorId: '001',
+      anchorName: '小美',
+      fanName: '南城陈总',
+      tier: '核心大哥',
+      preference: '偏爱古风造型和慢歌陪伴，周五发车概率最高。',
+      materialTag: '汉服棚拍九宫格',
+      followUp: '直播前 2 小时发摄影师新图，提醒今晚有古风专场。'
+    },
+    {
+      id: 'fan002',
+      anchorId: '002',
+      anchorName: '小雪',
+      fanName: '阿May',
+      tier: '核心大姐',
+      preference: '喜欢反差感舞蹈花絮，会收藏训练室短视频。',
+      materialTag: '训练室抓拍短片',
+      followUp: '下周二推送幕后花絮，并邀请参与新舞蹈投票。'
+    },
+    {
+      id: 'fan003',
+      anchorId: '003',
+      anchorName: '琳琳',
+      fanName: '夜猫哥',
+      tier: '潜力大哥',
+      preference: '偏好深夜聊天、情绪价值和专属昵称互动。',
+      materialTag: '治愈系夜景写真',
+      followUp: '今晚直播后单独回访，确认是否愿意进铁粉群。'
+    }
+  ]
+};
+
 // 周报数据
 export const mockWeeklyReports = [
   {

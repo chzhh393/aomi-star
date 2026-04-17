@@ -54,6 +54,6 @@ export const PERMISSIONS = {
   updateStatus: { label: '更新状态', description: '审核通过/拒绝候选人' },
   exportData: { label: '导出数据', description: '导出候选人数据' },
   viewAuditLog: { label: '查看操作日志', description: '查看系统操作日志' },
-  manageUsers: { label: '管理用户', description: '管理管理员和经纪人账号' },
+  manageUsers: { label: '管理用户', description: '管理员可在管控台增减员工账号及面试官角色' },
   assignCandidates: { label: '分配候选人', description: '分配候选人给经纪人' }
 }

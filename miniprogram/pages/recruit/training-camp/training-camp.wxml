@@ -1,0 +1,97 @@
+<view class="page" wx:if="{{!loading && todo}}">
+  <view class="hero">
+    <text class="hero-title">训练营入营待办</text>
+    <text class="hero-subtitle">请确认是否按时入营，并补充入营资料</text>
+  </view>
+
+  <view class="card">
+    <view class="section-title">待办信息</view>
+    <view class="invite-letter" wx:if="{{todo.invitationContent}}">
+      <view class="invite-letter-head">
+        <text class="invite-letter-title">训练营邀请函</text>
+        <text class="invite-letter-tag">OFFICIAL NOTICE</text>
+      </view>
+      <rich-text class="invite-letter-text" nodes="{{invitationRichText}}"></rich-text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">主播姓名</text>
+      <text class="info-value">{{candidate.basicInfo.name || '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">训练营类型</text>
+      <text class="info-value">{{displayCampType || '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">入营时间</text>
+      <text class="info-value">{{todo.startDate || '-'}} {{todo.startTime || ''}}</text>
+    </view>
+    <view class="info-row" wx:if="{{todo.remark}}">
+      <text class="info-label">备注</text>
+      <text class="info-value multiline">{{todo.remark}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">处理结果</view>
+    <view class="decision-row">
+      <view class="decision-btn {{decision === 'confirm' ? 'active' : ''}}" data-value="confirm" bindtap="switchDecision">确认入营</view>
+      <view class="decision-btn {{decision === 'reject' ? 'reject active' : 'reject'}}" data-value="reject" bindtap="switchDecision">拒绝入营</view>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{decision === 'confirm'}}">
+    <view class="section-title">证件与银行卡资料</view>
+    <text class="section-tip">上传图片用于存档，如系统未自动识别，请直接手动填写下方信息。</text>
+    <view class="upload-grid">
+      <view class="upload-box" data-field="idCardFront" bindtap="chooseImage">
+        <image wx:if="{{form.idCardFront}}" class="upload-image" src="{{form.idCardFront}}" mode="aspectFill" data-url="{{form.idCardFront}}" catchtap="previewImage" />
+        <text wx:else class="upload-text">上传身份证人像面</text>
+      </view>
+      <view class="upload-box" data-field="idCardBack" bindtap="chooseImage">
+        <image wx:if="{{form.idCardBack}}" class="upload-image" src="{{form.idCardBack}}" mode="aspectFill" data-url="{{form.idCardBack}}" catchtap="previewImage" />
+        <text wx:else class="upload-text">上传身份证国徽面</text>
+      </view>
+      <view class="upload-box full" data-field="bankCardImage" bindtap="chooseImage">
+        <image wx:if="{{form.bankCardImage}}" class="upload-image" src="{{form.bankCardImage}}" mode="aspectFill" data-url="{{form.bankCardImage}}" catchtap="previewImage" />
+        <text wx:else class="upload-text">上传银行卡照片</text>
+      </view>
+    </view>
+
+    <input class="form-input" placeholder="身份证姓名" value="{{form.idCardName}}" data-field="idCardName" bindinput="handleInput" />
+    <input class="form-input" placeholder="身份证号" value="{{form.idCardNumber}}" data-field="idCardNumber" bindinput="handleInput" />
+    <input class="form-input" placeholder="开户行" value="{{form.bankName}}" data-field="bankName" bindinput="handleInput" />
+    <input class="form-input" placeholder="银行卡户名" value="{{form.bankAccountName}}" data-field="bankAccountName" bindinput="handleInput" />
+    <input class="form-input" placeholder="银行卡号" value="{{form.bankCardNumber}}" data-field="bankCardNumber" bindinput="handleInput" />
+  </view>
+
+  <view class="card" wx:if="{{decision === 'confirm'}}">
+    <view class="section-title">紧急联系人</view>
+    <text class="section-tip">请手动填写可紧急联系到的家属或监护人信息。</text>
+    <input class="form-input" placeholder="紧急联系人姓名，例如张三" value="{{form.emergencyContactName}}" data-field="emergencyContactName" bindinput="handleInput" />
+    <input class="form-input" placeholder="紧急联系人手机号" value="{{form.emergencyContactPhone}}" data-field="emergencyContactPhone" bindinput="handleInput" />
+    <input class="form-input" placeholder="关系，例如父亲/母亲/配偶" value="{{form.emergencyContactRelation}}" data-field="emergencyContactRelation" bindinput="handleInput" />
+    <textarea class="form-textarea" placeholder="补充说明（选填）" value="{{form.emergencyContactRemark}}" data-field="emergencyContactRemark" bindinput="handleInput" />
+  </view>
+
+  <view class="card" wx:if="{{decision === 'confirm'}}">
+    <view class="section-title">通讯地址</view>
+    <text class="section-tip">请先选择省、市、区，再补充详细地址，便于后续寄送或联系。</text>
+    <picker class="region-picker" mode="region" value="{{form.addressRegion}}" bindchange="handleRegionChange">
+      <view class="region-picker-inner {{form.addressRegion.length ? 'selected' : ''}}">
+        <text>{{addressRegionText}}</text>
+      </view>
+    </picker>
+    <textarea class="form-textarea" placeholder="请输入街道、门牌号、楼栋房间等详细地址" value="{{form.addressDetail}}" data-field="addressDetail" bindinput="handleInput" />
+  </view>
+
+  <view class="card" wx:if="{{decision === 'reject'}}">
+    <view class="section-title">拒绝原因</view>
+    <textarea class="form-textarea" placeholder="请说明拒绝入营的原因" value="{{form.rejectReason}}" data-field="rejectReason" bindinput="handleInput" />
+  </view>
+
+  <button class="submit-btn" loading="{{submitting}}" bindtap="handleSubmit">{{decision === 'confirm' ? '确认入营并提交资料' : '提交拒绝原因'}}</button>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>

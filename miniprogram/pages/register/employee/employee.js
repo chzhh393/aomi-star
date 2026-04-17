@@ -4,6 +4,7 @@
 import { validateInviteCode, markInviteCodeUsed, INVITE_TYPE } from '../../../mock/invite-codes.js';
 import { createUser, USER_TYPE, ROLE } from '../../../mock/users.js';
 import { getCurrentOpenId } from '../../../utils/auth.js';
+import { getWorkspacePathByRole, isInterviewerRole } from '../../../utils/interviewer.js';
 
 Page({
   data: {
@@ -23,7 +24,13 @@ Page({
     roleMap: {
       'hr': 'HR招聘专员',
       'agent': '艺人经纪人',
-      'operations': '运营专员'
+      'operations': '运营专员',
+      'dance_teacher': '舞蹈老师',
+      'photographer': '摄影师',
+      'host_mc': '主持/MC',
+      'makeup_artist': '化妆师',
+      'admin': '管理员',
+      'stylist': '造型师'
     }
   },
 
@@ -181,13 +188,16 @@ Page({
    * 根据角色跳转到工作台
    */
   navigateToWorkspace(role) {
-    const workspaceMap = {
+    const directWorkspaceMap = {
       [ROLE.HR]: '/pages/hr/home/home',
-      [ROLE.AGENT]: '/pages/agent/home/home',
-      [ROLE.OPERATIONS]: '/pages/operations/home/home'
+      [ROLE.OPERATIONS]: '/pages/operations/home/home',
+      trainer: '/pages/trainer/home/home'
     };
-
-    const url = workspaceMap[role] || '/pages/index/index';
+    const url = directWorkspaceMap[role] || (
+      isInterviewerRole(role)
+        ? `/pages/agent/login/login?role=${role}`
+        : getWorkspacePathByRole(role)
+    );
 
     wx.reLaunch({ url });
   },

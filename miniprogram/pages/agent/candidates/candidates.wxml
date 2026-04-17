@@ -46,15 +46,27 @@
     <view
       wx:for="{{candidateList}}"
       wx:key="_id"
+      wx:for-index="index"
       class="candidate-card"
       bindtap="goToDetail"
       data-id="{{item._id}}"
     >
       <!-- 头部：姓名和状态 -->
       <view class="card-header">
-        <view class="candidate-info">
-          <text class="candidate-name">{{item.basicInfo.name}}</text>
-          <text class="candidate-id">ID: {{item._id.slice(-6)}}</text>
+        <view class="candidate-summary">
+          <image
+            wx:if="{{item.avatar}}"
+            class="candidate-avatar"
+            src="{{item.avatar}}"
+            mode="aspectFill"
+            binderror="handleAvatarError"
+            data-index="{{index}}"
+          ></image>
+          <view wx:else class="candidate-avatar avatar-placeholder">{{item.nameInitial}}</view>
+          <view class="candidate-info">
+            <text class="candidate-name">{{item.displayName}}</text>
+            <text class="candidate-id">ID: {{item._id.slice(-6)}}</text>
+          </view>
         </view>
         <view class="status-badge {{item.interview && item.interview.score ? 'scored' : 'pending'}}">
           <text class="badge-text">{{item.interview && item.interview.score ? '已打分' : '待打分'}}</text>
@@ -82,6 +94,17 @@
           <view class="info-item">
             <text class="info-label">城市：</text>
             <text class="info-value">{{item.basicInfo.location}}</text>
+          </view>
+        </view>
+
+        <view class="info-row" wx:if="{{item.assignedAgent}}">
+          <view class="info-item">
+            <text class="info-label">经纪人：</text>
+            <text class="info-value">{{item.assignedAgent.name || '-'}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">电话：</text>
+            <text class="info-value">{{item.assignedAgent.phone || '-'}}</text>
           </view>
         </view>
 

@@ -285,7 +285,12 @@
   letter-spacing: 4rpx;
   border-radius: 0;
   margin-bottom: 16rpx;
-  line-height: 104rpx;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .btn-primary:active {

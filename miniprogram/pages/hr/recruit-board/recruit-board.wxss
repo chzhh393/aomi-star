@@ -1,0 +1,160 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx;
+  background: #f6f2eb;
+}
+
+.hero,
+.empty-card,
+.candidate-card {
+  background: #fffdf8;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  box-shadow: 0 12rpx 30rpx rgba(50, 44, 36, 0.08);
+}
+
+.hero-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #1d2730;
+}
+
+.hero-desc,
+.empty-desc,
+.candidate-detail,
+.candidate-meta {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #6f665d;
+}
+
+.source-strip {
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin-top: 20rpx;
+}
+
+.source-pill,
+.bucket-tab {
+  background: #fff7ed;
+  border-radius: 999rpx;
+  padding: 12rpx 20rpx;
+}
+
+.source-name,
+.bucket-label {
+  font-size: 22rpx;
+  color: #8c5d34;
+}
+
+.source-count,
+.bucket-count {
+  margin-left: 10rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #1f2c36;
+}
+
+.bucket-tabs {
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin-top: 22rpx;
+}
+
+.bucket-tab.active {
+  background: #202f3d;
+}
+
+.bucket-tab.active .bucket-label,
+.bucket-tab.active .bucket-count {
+  color: #fff8ef;
+}
+
+.empty-card {
+  margin-top: 22rpx;
+}
+
+.empty-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1d2730;
+}
+
+.candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.candidate-main {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  min-width: 0;
+  flex: 1;
+}
+
+.candidate-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 22rpx;
+  flex-shrink: 0;
+  background: #d8d2ca;
+}
+
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #202f3d;
+  color: #fff8ef;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.candidate-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.candidate-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2831;
+}
+
+.candidate-score {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #f4e3d0;
+  font-size: 22rpx;
+  color: #8d4d22;
+}
+
+.primary-btn {
+  margin-top: 18rpx;
+  line-height: 76rpx;
+  border-radius: 999rpx;
+  background: #202f3d;
+  color: #fff8ef;
+  font-size: 24rpx;
+}
+
+.primary-btn::after {
+  border: none;
+}

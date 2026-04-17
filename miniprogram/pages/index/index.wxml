@@ -46,11 +46,11 @@
         <view class="card-icon-small">💼</view>
         <view class="card-content-small">
           <text class="card-title-small">员工入口</text>
-          <text class="card-desc-small">主播/HR/经纪人工作台</text>
+          <text class="card-desc-small">员工工作台</text>
         </view>
       </view>
       <view class="card-button-small">
-        <text class="button-text-small">选择角色</text>
+        <text class="button-text-small">进入工作台</text>
         <text class="button-arrow-small">→</text>
       </view>
     </view>

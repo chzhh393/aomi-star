@@ -1,0 +1,385 @@
+<view class="workspace-page">
+  <view class="page-glow page-glow-a"></view>
+  <view class="page-glow page-glow-b"></view>
+
+  <view class="workspace-header">
+    <view class="header-topline">
+      <view class="header-tag" style="background: {{roleConfig.accent}}">{{roleConfig.icon}} {{roleConfig.name}}</view>
+      <text class="header-kicker">Interview Workspace</text>
+    </view>
+    <text class="header-title">今天先处理你的面试名单</text>
+    <text class="header-subtitle">查看待评价与已评价候选人，进入详情后继续评分或复核记录。</text>
+  </view>
+
+  <view wx:if="{{role === 'makeup_artist'}}" class="makeup-section">
+    <view class="makeup-summary-grid">
+      <view wx:for="{{makeupSectionCards}}" wx:key="key" class="makeup-summary-card">
+        <text class="makeup-summary-title">{{item.title}}</text>
+        <text class="makeup-summary-value">{{item.summary}}</text>
+        <text class="makeup-summary-desc">{{item.desc}}</text>
+        <text class="makeup-summary-highlight">{{item.highlight}}</text>
+      </view>
+    </view>
+
+    <view class="makeup-group-stack" wx:if="{{makeupTaskGroups.length}}">
+      <view wx:for="{{makeupTaskGroups}}" wx:key="key" class="makeup-group-card">
+        <view class="makeup-group-head">
+          <text class="makeup-group-title">{{item.title}}</text>
+          <text class="makeup-group-desc">{{item.desc}}</text>
+          <text class="makeup-group-summary">{{item.summary}}</text>
+        </view>
+
+        <view class="makeup-task-list">
+          <view
+            wx:for="{{item.list}}"
+            wx:for-item="groupItem"
+            wx:key="_id"
+            class="makeup-task-card"
+            bindtap="goToDetail"
+            data-path="{{groupItem.detailPath}}"
+          >
+            <view class="candidate-head">
+              <text class="candidate-name">{{groupItem.name}}</text>
+              <text class="candidate-arrow">→</text>
+            </view>
+            <view class="candidate-info-grid">
+              <view class="info-row">
+                <text class="info-label">直播名</text>
+                <text class="info-value">{{groupItem.liveName}}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">经纪人</text>
+                <text class="info-value">{{groupItem.assignedAgentName}}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">联系电话</text>
+                <text class="info-value">{{groupItem.assignedAgentPhone}}</text>
+              </view>
+            </view>
+            <text class="makeup-focus-text">{{groupItem.focusText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{role === 'stylist'}}" class="makeup-section">
+    <view class="makeup-summary-grid">
+      <view wx:for="{{stylistSectionCards}}" wx:key="key" class="makeup-summary-card">
+        <text class="makeup-summary-title">{{item.title}}</text>
+        <text class="makeup-summary-value">{{item.summary}}</text>
+        <text class="makeup-summary-desc">{{item.desc}}</text>
+        <text class="makeup-summary-highlight">{{item.highlight}}</text>
+      </view>
+    </view>
+
+    <view class="makeup-group-stack" wx:if="{{stylistTaskGroups.length}}">
+      <view wx:for="{{stylistTaskGroups}}" wx:key="key" class="makeup-group-card">
+        <view class="makeup-group-head">
+          <text class="makeup-group-title">{{item.title}}</text>
+          <text class="makeup-group-desc">{{item.desc}}</text>
+          <text class="makeup-group-summary">{{item.summary}}</text>
+        </view>
+
+        <view class="makeup-task-list">
+          <view
+            wx:for="{{item.list}}"
+            wx:for-item="groupItem"
+            wx:key="_id"
+            class="makeup-task-card"
+            bindtap="goToDetail"
+            data-path="{{groupItem.detailPath}}"
+          >
+            <view class="candidate-head">
+              <text class="candidate-name">{{groupItem.name}}</text>
+              <text class="candidate-arrow">→</text>
+            </view>
+            <view class="candidate-info-grid">
+              <view class="info-row">
+                <text class="info-label">直播名</text>
+                <text class="info-value">{{groupItem.liveName}}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">经纪人</text>
+                <text class="info-value">{{groupItem.assignedAgentName}}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">联系电话</text>
+                <text class="info-value">{{groupItem.assignedAgentPhone}}</text>
+              </view>
+            </view>
+            <text class="makeup-focus-text">{{groupItem.focusText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="tabs-card" wx:if="{{role !== 'agent'}}">
+    <view class="tab-item {{currentTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">
+      <text class="tab-text">待评价</text>
+      <text class="tab-count">{{pendingCount}} 人</text>
+    </view>
+    <view class="tab-item {{currentTab === 'reviewed' ? 'active' : ''}}" bindtap="switchTab" data-tab="reviewed">
+      <text class="tab-text">已评价</text>
+      <text class="tab-count">{{reviewedCount}} 人</text>
+    </view>
+  </view>
+
+  <view class="candidate-list" wx:if="{{role !== 'agent'}}">
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-title">加载候选人中</text>
+      <text class="loading-copy">正在同步你当前角色下的面试名单</text>
+    </view>
+    <view class="empty-state" wx:if="{{!loading && candidateList.length === 0}}">
+      <text class="empty-mark">0</text>
+      <text class="empty-title">暂无候选人</text>
+      <text class="empty-desc">当前列表为空，后续可由 HR 分配候选人。</text>
+    </view>
+
+    <view
+      wx:for="{{candidateList}}"
+      wx:key="_id"
+      class="candidate-card"
+      bindtap="goToDetail"
+      data-path="{{item.detailPath}}"
+    >
+      <image wx:if="{{item.avatar}}" class="candidate-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+      <view wx:else class="candidate-avatar avatar-placeholder">{{item.nameInitial}}</view>
+      <view class="candidate-content">
+        <view class="candidate-head">
+          <text class="candidate-name">{{item.name}}</text>
+          <text class="candidate-arrow">→</text>
+        </view>
+        <view class="candidate-info-grid">
+          <view class="info-row">
+            <text class="info-label">直播名</text>
+            <text class="info-value">{{item.liveName || '-'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">经纪人</text>
+            <text class="info-value">{{item.assignedAgentName || '-'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">联系电话</text>
+            <text class="info-value">{{item.assignedAgentPhone || '暂未补充'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{role === 'agent'}}" class="assigned-section">
+    <view class="assigned-section-header">
+      <view>
+        <text class="assigned-section-title">我负责的主播/艺人</text>
+        <text class="assigned-section-subtitle">这里展示已分配到你名下、需要持续跟进的主播档案。</text>
+      </view>
+      <text class="assigned-section-count">{{assignedAnchorCount}} 人</text>
+    </view>
+
+    <view class="empty-state" wx:if="{{!assignedAnchorList.length}}">
+      <text class="empty-mark">AG</text>
+      <text class="empty-title">暂无分配主播</text>
+      <text class="empty-desc">当管理员将主播分配给你后，会在这里持续展示。</text>
+    </view>
+
+    <view
+      wx:for="{{assignedAnchorList}}"
+      wx:key="_id"
+      class="candidate-card"
+      bindtap="goToDetail"
+      data-path="{{item.detailPath}}"
+    >
+      <image wx:if="{{item.avatar}}" class="candidate-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+      <view wx:else class="candidate-avatar avatar-placeholder">{{item.nameInitial}}</view>
+      <view class="candidate-content">
+        <view class="candidate-head">
+          <text class="candidate-name">{{item.name}}</text>
+          <text class="candidate-arrow">→</text>
+        </view>
+        <view class="candidate-info-grid">
+          <view class="info-row">
+            <text class="info-label">直播名</text>
+            <text class="info-value">{{item.liveName || '-'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">当前阶段</text>
+            <text class="info-value">{{item.statusLabel}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">训练营</text>
+            <text class="info-value">{{item.trainingCampActionText}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">联系电话</text>
+            <text class="info-value">{{item.assignedAgentPhone || '暂未补充'}}</text>
+          </view>
+        </view>
+        <view class="assigned-action-row">
+          <text class="assigned-action-text {{item.canBookDanceCourse ? 'is-highlight' : ''}}">
+            {{item.canBookDanceCourse ? '可直接查看舞蹈老师课程表，按日期和老师为主播预约训练课程。' : '点击查看主播档案与训练营状态'}}
+          </text>
+        </view>
+        <view class="assigned-button-row">
+          <button
+            wx:if="{{item.canSendTrainingCampTodo}}"
+            class="assigned-action-btn primary"
+            catchtap="goToDetail"
+            data-path="{{item.detailPath}}"
+          >
+            发送入营邀约
+          </button>
+          <button
+            class="assigned-action-btn secondary"
+            catchtap="goToDetail"
+            data-path="{{item.detailPath}}"
+          >
+            查看主播档案
+          </button>
+          <button
+            wx:if="{{item.canBookDanceCourse}}"
+            class="assigned-action-btn primary"
+            catchtap="goToDanceCourseBooking"
+            data-path="{{item.danceCourseBookingPath}}"
+          >
+            预约训练课程
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{role === 'agent'}}" class="assigned-section">
+    <view class="assigned-section-header">
+      <view>
+        <text class="assigned-section-title">面试管理</text>
+        <text class="assigned-section-subtitle">把待评价和已评价候选人收在独立卡片里，避免和主播跟进内容混在一起。</text>
+      </view>
+      <text class="assigned-section-count">{{pendingCount + reviewedCount}} 人</text>
+    </view>
+
+    <view class="interview-manage-card">
+      <view class="interview-manage-copy">
+        <text class="interview-manage-title">经纪人面试任务</text>
+        <text class="interview-manage-desc">这里继续处理候选人面试评分与已提交记录复查。</text>
+      </view>
+      <view class="interview-manage-metrics">
+        <view class="interview-manage-metric">
+          <text class="interview-manage-value">{{pendingCount}}</text>
+          <text class="interview-manage-label">待评价</text>
+        </view>
+        <view class="interview-manage-metric">
+          <text class="interview-manage-value">{{reviewedCount}}</text>
+          <text class="interview-manage-label">已评价</text>
+        </view>
+    </view>
+  </view>
+
+  <view wx:if="{{role === 'host_mc'}}" class="makeup-section">
+    <view class="makeup-summary-grid">
+      <view wx:for="{{hostMcSectionCards}}" wx:key="key" class="makeup-summary-card">
+        <text class="makeup-summary-title">{{item.title}}</text>
+        <text class="makeup-summary-value">{{item.summary}}</text>
+        <text class="makeup-summary-desc">{{item.desc}}</text>
+        <text class="makeup-summary-highlight">{{item.highlight}}</text>
+      </view>
+    </view>
+
+    <view class="makeup-group-stack" wx:if="{{hostMcTaskGroups.length}}">
+      <view wx:for="{{hostMcTaskGroups}}" wx:key="key" class="makeup-group-card">
+        <view class="makeup-group-head">
+          <text class="makeup-group-title">{{item.title}}</text>
+          <text class="makeup-group-desc">{{item.desc}}</text>
+          <text class="makeup-group-summary">{{item.summary}}</text>
+        </view>
+
+        <view class="makeup-task-list">
+          <view
+            wx:for="{{item.list}}"
+            wx:for-item="groupItem"
+            wx:key="_id"
+            class="makeup-task-card"
+            bindtap="goToDetail"
+            data-path="{{groupItem.detailPath}}"
+          >
+            <view class="candidate-head">
+              <text class="candidate-name">{{groupItem.name}}</text>
+              <text class="candidate-arrow">→</text>
+            </view>
+            <view class="candidate-info-grid">
+              <view class="info-row">
+                <text class="info-label">直播名</text>
+                <text class="info-value">{{groupItem.liveName}}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">经纪人</text>
+                <text class="info-value">{{groupItem.assignedAgentName}}</text>
+              </view>
+              <view class="info-row">
+                <text class="info-label">联系电话</text>
+                <text class="info-value">{{groupItem.assignedAgentPhone}}</text>
+              </view>
+            </view>
+            <text class="makeup-focus-text">{{groupItem.focusText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="tabs-card">
+      <view class="tab-item {{currentTab === 'pending' ? 'active' : ''}}" bindtap="switchTab" data-tab="pending">
+        <text class="tab-text">待评价</text>
+        <text class="tab-count">{{pendingCount}} 人</text>
+      </view>
+      <view class="tab-item {{currentTab === 'reviewed' ? 'active' : ''}}" bindtap="switchTab" data-tab="reviewed">
+        <text class="tab-text">已评价</text>
+        <text class="tab-count">{{reviewedCount}} 人</text>
+      </view>
+    </view>
+
+    <view class="candidate-list">
+      <view class="loading-state" wx:if="{{loading}}">
+        <text class="loading-title">加载候选人中</text>
+        <text class="loading-copy">正在同步你当前角色下的面试名单</text>
+      </view>
+      <view class="empty-state" wx:if="{{!loading && candidateList.length === 0}}">
+        <text class="empty-mark">0</text>
+        <text class="empty-title">暂无候选人</text>
+        <text class="empty-desc">当前列表为空，后续可由 HR 分配候选人。</text>
+      </view>
+
+      <view
+        wx:for="{{candidateList}}"
+        wx:key="_id"
+        class="candidate-card"
+        bindtap="goToDetail"
+        data-path="{{item.detailPath}}"
+      >
+        <image wx:if="{{item.avatar}}" class="candidate-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+        <view wx:else class="candidate-avatar avatar-placeholder">{{item.nameInitial}}</view>
+        <view class="candidate-content">
+          <view class="candidate-head">
+            <text class="candidate-name">{{item.name}}</text>
+            <text class="candidate-arrow">→</text>
+          </view>
+          <view class="candidate-info-grid">
+            <view class="info-row">
+              <text class="info-label">直播名</text>
+              <text class="info-value">{{item.liveName || '-'}}</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">经纪人</text>
+              <text class="info-value">{{item.assignedAgentName || '-'}}</text>
+            </view>
+            <view class="info-row">
+              <text class="info-label">联系电话</text>
+              <text class="info-value">{{item.assignedAgentPhone || '暂未补充'}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

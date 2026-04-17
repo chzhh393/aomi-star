@@ -13,11 +13,11 @@ Page({
 
     // 评分结果选项
     resultOptions: [
-      { value: 'pass_s', label: 'S级通过' },
+      { value: 'pass_s', label: 'S级通过', desc: '表现突出，建议优先推进签约或重点培养。' },
       { value: 'pass_a', label: 'A级通过' },
       { value: 'pass_b', label: 'B级通过' },
-      { value: 'fail', label: '不通过' },
-      { value: 'pending', label: '待定' }
+      { value: 'fail', label: '不通过', desc: '当前不符合录用标准，不进入后续流程。' },
+      { value: 'pending', label: '待定', desc: '信息还不充分，建议补充复试或进一步观察。' }
     ],
 
     // 评价标签选项
@@ -28,6 +28,7 @@ Page({
       communication: ['口齿清晰', '逻辑清晰', '应变能力强'],
       potential: ['可塑性强', '学习能力强', '镜头感好']
     },
+    tagSections: [],
 
     // 评分数据
     scoreData: {
@@ -62,7 +63,29 @@ Page({
     }
 
     this.setData({ candidateId: options.id });
+    this.syncTagSections();
     this.loadCandidate();
+  },
+
+  syncTagSections() {
+    const categoryLabels = {
+      appearance: '外形',
+      talent: '才艺',
+      personality: '性格',
+      communication: '表达',
+      potential: '潜力'
+    };
+    const currentTags = this.data.scoreData.tags || {};
+    const tagSections = Object.keys(this.data.tagOptions).map((category) => ({
+      key: category,
+      label: categoryLabels[category] || category,
+      tags: (this.data.tagOptions[category] || []).map((tag) => ({
+        value: tag,
+        selected: (currentTags[category] || []).includes(tag)
+      }))
+    }));
+
+    this.setData({ tagSections });
   },
 
   /**
@@ -91,6 +114,7 @@ Page({
           },
           'scoreData.comment': score.comment || ''
         });
+        this.syncTagSections();
       }
     } catch (error) {
       console.error('[面试打分] 加载候选人信息失败:', error);
@@ -120,7 +144,7 @@ Page({
    */
   toggleTag(e) {
     const { category, tag } = e.currentTarget.dataset;
-    const tags = this.data.scoreData.tags[category] || [];
+    const tags = [...(this.data.scoreData.tags[category] || [])];
     const index = tags.indexOf(tag);
 
     if (index > -1) {
@@ -134,14 +158,7 @@ Page({
     this.setData({
       [`scoreData.tags.${category}`]: tags
     });
-  },
-
-  /**
-   * 判断标签是否被选中
-   */
-  isTagSelected(category, tag) {
-    const tags = this.data.scoreData.tags[category] || [];
-    return tags.includes(tag);
+    this.syncTagSections();
   },
 
   /**

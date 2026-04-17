@@ -1,0 +1,185 @@
+<view class="detail-page">
+  <view class="page-glow page-glow-a"></view>
+  <view class="page-glow page-glow-b"></view>
+
+  <view class="hero-card">
+    <view class="hero-head">
+      <view class="hero-badge" style="background: {{roleConfig.accent}}">{{roleConfig.icon}} {{roleConfig.name}}</view>
+      <view class="status-pill status-{{entryStatus}}">{{entryStatusLabel}}</view>
+    </view>
+    <text class="hero-kicker">Blind Review Session</text>
+    <text class="hero-title">进入候选人详情并继续你的评价记录</text>
+    <view class="candidate-block" wx:if="{{!loading}}">
+      <view class="candidate-meta">
+        <image
+          wx:if="{{candidateAvatar}}"
+          class="candidate-avatar"
+          src="{{candidateAvatar}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="candidate-avatar avatar-placeholder">{{candidateInitial}}</view>
+        <view class="candidate-copy">
+          <text class="candidate-name">{{candidateName}}</text>
+          <text class="candidate-subtitle">直播名：{{candidate.liveName || '-'}}</text>
+        </view>
+      </view>
+      <view class="hero-metrics">
+        <view class="metric-card">
+          <text class="metric-label">状态</text>
+          <text class="metric-value">{{entryStatusLabel}}</text>
+        </view>
+        <view class="metric-card" wx:if="{{entryTimeText}}">
+          <text class="metric-label">最近更新</text>
+          <text class="metric-value metric-value-time">{{entryTimeText}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="loading-block" wx:if="{{loading}}">
+      <text class="loading-title">加载候选人中</text>
+      <text class="loading-copy">正在同步盲评详情与个人记录</text>
+    </view>
+  </view>
+
+  <view class="info-card" wx:if="{{candidate && !loading}}">
+    <view class="card-title-row">
+      <text class="card-title">基础信息</text>
+      <text class="card-caption">仅展示当前评价所需信息</text>
+    </view>
+    <view class="info-row">
+      <text class="label">候选人姓名</text>
+      <text class="value">{{candidateName}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">直播名</text>
+      <text class="value">{{candidate.liveName || '-'}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.assignedAgent}}">
+      <text class="label">经纪人</text>
+      <text class="value">{{(candidate.assignedAgent && candidate.assignedAgent.name) || '-'}}</text>
+    </view>
+    <view class="info-row" wx:if="{{candidate.assignedAgent}}">
+      <text class="label">经纪人电话</text>
+      <text class="value">{{(candidate.assignedAgent && candidate.assignedAgent.phone) || '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">本人状态</text>
+      <text class="value">{{entryStatusLabel}}</text>
+    </view>
+    <view class="info-row" wx:if="{{entryTimeText}}">
+      <text class="label">最近记录</text>
+      <text class="value">{{entryTimeText}}</text>
+    </view>
+  </view>
+
+  <view class="info-card blind-card" wx:if="{{!loading}}">
+    <view class="card-title-row">
+      <text class="card-title">盲评说明</text>
+      <text class="card-caption">Fair Review Only</text>
+    </view>
+    <text class="blind-copy">仅可查看本人草稿和已提交内容，不展示其他面试官评分，也不展示老板终裁结果。</text>
+  </view>
+
+  <view class="info-card" wx:if="{{role === 'dance_teacher' && trainingCamp}}">
+    <view class="card-title-row">
+      <text class="card-title">训练记录复核</text>
+      <text class="card-caption">Training Review</text>
+    </view>
+    <view class="info-row">
+      <text class="label">训练营类型</text>
+      <text class="value">{{trainingCamp.campType || '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="label">入营时间</text>
+      <text class="value">{{trainingCamp.startDate || '-'}} {{trainingCamp.startTime || ''}}</text>
+    </view>
+    <view class="info-row" wx:if="{{danceCourseBooking}}">
+      <text class="label">预约课程</text>
+      <text class="value">{{danceCourseBooking.summaryText}}</text>
+    </view>
+    <view class="info-row" wx:if="{{danceCourseBooking}}">
+      <text class="label">上课地点</text>
+      <text class="value">{{danceCourseBooking.locationText}}</text>
+    </view>
+    <view class="info-row" wx:if="{{danceCourseBooking && danceCourseBooking.bookedByAgentName}}">
+      <text class="label">预约经纪人</text>
+      <text class="value">{{danceCourseBooking.bookedByAgentName}}</text>
+    </view>
+    <text class="blind-copy" wx:if="{{danceCourseBooking && danceCourseBooking.note}}">课程说明：{{danceCourseBooking.note}}</text>
+    <text class="blind-copy">该模块用于复核主播入场训练记录与离场复盘记录，不作为考勤或工时依据。</text>
+    <view class="training-record-card" wx:for="{{trainingRecords}}" wx:key="recordId">
+      <view class="training-record-head">
+        <text class="training-record-date">{{item.recordDate}}</text>
+        <text class="training-record-status status-{{item.status}}">{{item.statusLabel}}</text>
+      </view>
+      <text class="training-record-title">{{item.title || '训练记录'}}</text>
+      <text class="training-record-type">{{item.recordTypeLabel}}</text>
+      <text class="training-record-summary">{{item.summary}}</text>
+      <text class="training-record-location" wx:if="{{item.locationText}}">签到位置：{{item.locationText}}</text>
+      <text class="training-record-location" wx:if="{{item.checkedAtText}}">签到时间：{{item.checkedAtText}}</text>
+      <view class="training-record-photos" wx:if="{{item.photos.length}}">
+        <image
+          wx:for="{{item.photos}}"
+          wx:key="*this"
+          wx:for-item="recordPhoto"
+          class="training-record-photo"
+          src="{{recordPhoto}}"
+          mode="aspectFill"
+          bindtap="previewTrainingPhoto"
+          data-url="{{recordPhoto}}"
+          data-urls="{{item.photos}}"
+        />
+      </view>
+      <view class="training-feedback-block">
+        <text class="training-feedback-title">互助建议</text>
+        <textarea
+          class="training-feedback-input"
+          maxlength="300"
+          placeholder="给学员动作、自练和节奏调整建议"
+          value="{{reviewDrafts[item.recordId].supportComment}}"
+          data-record-id="{{item.recordId}}"
+          data-field="supportComment"
+          bindinput="bindReviewInput"
+        />
+      </view>
+      <view class="training-feedback-block">
+        <text class="training-feedback-title">点评反馈</text>
+        <textarea
+          class="training-feedback-input"
+          maxlength="300"
+          placeholder="点评本次签到和心得的质量与改进点"
+          value="{{reviewDrafts[item.recordId].coachingComment}}"
+          data-record-id="{{item.recordId}}"
+          data-field="coachingComment"
+          bindinput="bindReviewInput"
+        />
+      </view>
+      <view class="training-feedback-block">
+        <text class="training-feedback-title">复核结论</text>
+        <textarea
+          class="training-feedback-input compact"
+          maxlength="300"
+          placeholder="{{item.status === 'rejected' ? '请填写驳回原因' : '可补充本次复核说明'}}"
+          value="{{reviewDrafts[item.recordId].reviewComment}}"
+          data-record-id="{{item.recordId}}"
+          data-field="reviewComment"
+          bindinput="bindReviewInput"
+        />
+      </view>
+      <text class="training-record-comment" wx:if="{{item.supportComment}}">已发互助建议：{{item.supportComment}}</text>
+      <text class="training-record-comment" wx:if="{{item.coachingComment}}">已发点评反馈：{{item.coachingComment}}</text>
+      <text class="training-record-comment" wx:if="{{item.reviewComment}}">复核备注：{{item.reviewComment}}</text>
+      <view class="training-record-actions">
+        <button class="mini-review-btn approve" data-record-id="{{item.recordId}}" data-status="approved" bindtap="reviewTrainingRecord">确认</button>
+        <button class="mini-review-btn reject" data-record-id="{{item.recordId}}" data-status="rejected" bindtap="reviewTrainingRecord">拒绝</button>
+      </view>
+    </view>
+    <text class="blind-copy" wx:if="{{!trainingRecords.length}}">主播尚未提交训练记录。</text>
+  </view>
+
+  <view class="footer-card" wx:if="{{!loading}}">
+    <button class="primary-btn" bindtap="goToActionPage">
+      {{entryActionText}}
+    </button>
+    <text class="tip-text">评分页包含五维等级评分、S/C 备注、风格标签与附件草稿自动保存。</text>
+  </view>
+</view>

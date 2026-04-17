@@ -1,0 +1,68 @@
+<view class="detail-page">
+  <view class="hero-card">
+    <text class="hero-kicker">ASSET CENTER</text>
+    <text class="hero-title">视觉资产管理</text>
+    <text class="hero-desc">按主播 ID 查看原片、精修和可分发下载链接，交付动作放在详情页完成。</text>
+  </view>
+
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-title">同步资产档案中</text>
+    <text class="loading-copy">正在拉取云端归档和交付链接</text>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && !assetCategoryGroups.length}}">
+    <text class="empty-title">暂无资产档案</text>
+    <text class="empty-desc">摄影师上传素材后，会自动生成云端归档卡片。</text>
+  </view>
+
+  <view class="group-stack" wx:if="{{assetCategoryGroups.length}}">
+    <view class="group-card" wx:for="{{assetCategoryGroups}}" wx:key="key">
+      <view class="group-head">
+        <text class="group-title">{{item.title}}</text>
+        <text class="group-desc">{{item.desc}}</text>
+      </view>
+
+      <view class="asset-list">
+        <view class="asset-card" wx:for="{{item.list}}" wx:key="candidateId" wx:for-item="assetItem">
+          <view
+            class="asset-head"
+            bindtap="previewAssetGroup"
+            data-name="{{assetItem.name}}"
+            data-anchor-id="{{assetItem.anchorId}}"
+            data-summary="{{assetItem.summary}}"
+            data-original-count="{{assetItem.originalCount}}"
+            data-refined-count="{{assetItem.refinedCount}}"
+            data-owner-text="{{assetItem.ownerText}}"
+          >
+            <view>
+              <text class="asset-name">{{assetItem.name}}</text>
+              <text class="asset-subtitle">{{assetItem.anchorId}} · {{assetItem.liveName}}</text>
+            </view>
+            <text class="asset-time">{{assetItem.uploadedAt}}</text>
+          </view>
+          <view class="asset-stat-row">
+            <view class="asset-stat">
+              <text class="asset-stat-value">{{assetItem.originalCount}}</text>
+              <text class="asset-stat-label">原片</text>
+            </view>
+            <view class="asset-stat">
+              <text class="asset-stat-value">{{assetItem.refinedCount}}</text>
+              <text class="asset-stat-label">精修</text>
+            </view>
+            <view class="asset-owner">{{assetItem.ownerText}}</view>
+          </view>
+          <text class="asset-summary">{{assetItem.summary}}</text>
+          <view class="download-list">
+            <view class="download-item" wx:for="{{assetItem.downloadLinks}}" wx:for-item="linkItem" wx:key="url">
+              <view class="download-copy">
+                <text class="download-label">{{linkItem.label}}</text>
+                <text class="download-url">{{linkItem.url}}</text>
+              </view>
+              <button class="copy-btn" bindtap="copyDownloadLink" data-link="{{linkItem.url}}">复制</button>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

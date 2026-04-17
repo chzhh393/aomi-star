@@ -1,0 +1,111 @@
+<view class="page">
+  <view class="hero green">
+    <text class="hero-title">外部结算</text>
+    <text class="hero-desc">直接读取供应商结算集合，确认付款后同步更新支付状态与备注。</text>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.pendingCount}}</text>
+      <text class="stat-label">待支付笔数</text>
+      <text class="stat-note">待本批次出款</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">¥{{stats.pendingAmount}}</text>
+      <text class="stat-label">待支付金额</text>
+      <text class="stat-note">当前未完成账单</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.paidCount}}</text>
+      <text class="stat-label">已支付笔数</text>
+      <text class="stat-note">已完成出款</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">¥{{stats.paidAmount}}</text>
+      <text class="stat-label">已支付金额</text>
+      <text class="stat-note">已归档账单</text>
+    </view>
+  </view>
+
+  <scroll-view class="filter-row" scroll-x enhanced show-scrollbar="{{false}}">
+    <block wx:for="{{filterOptions}}" wx:key="value">
+      <view
+        class="filter-chip {{filter === item.value ? 'filter-chip-active' : ''}}"
+        data-filter="{{item.value}}"
+        bindtap="onFilterChange"
+      >
+        {{item.label}}
+      </view>
+    </block>
+  </scroll-view>
+
+  <view class="section">
+    <view class="section-title">账单列表</view>
+    <view wx:if="{{loading}}" class="empty-state">加载中...</view>
+    <view wx:elif="{{!filteredSettlements.length}}" class="empty-state">当前筛选下暂无结算单</view>
+    <block wx:else>
+      <block wx:for="{{filteredSettlements}}" wx:key="_id">
+        <view class="card">
+          <view class="row-between">
+            <view>
+              <text class="card-title">{{item.vendorName}}</text>
+              <text class="card-sub">{{item.bizNo}} · {{item.vendorType}}</text>
+            </view>
+            <text class="amount">{{item.amountText}}</text>
+          </view>
+
+          <view class="meta-row">
+            <text class="chip">{{item.owner || '未分配'}}</text>
+            <text class="chip chip-status">{{item.statusLabel}}</text>
+          </view>
+
+          <view class="grid">
+            <view class="grid-item">
+              <text class="key">账期</text>
+              <text class="value">{{item.cycle || '-'}}</text>
+            </view>
+            <view class="grid-item">
+              <text class="key">应付日期</text>
+              <text class="value">{{item.dueDate || '-'}}</text>
+            </view>
+            <view class="grid-item">
+              <text class="key">支付时间</text>
+              <text class="value">{{item.paidAt || '-'}}</text>
+            </view>
+            <view class="grid-item">
+              <text class="key">支付人</text>
+              <text class="value">{{item.paidBy && item.paidBy.name ? item.paidBy.name : '-'}}</text>
+            </view>
+          </view>
+
+          <text class="card-sub">账单说明：{{item.note || '无'}}</text>
+          <text wx:if="{{item.paymentNote}}" class="card-sub">支付备注：{{item.paymentNote}}</text>
+
+          <textarea
+            wx:if="{{item.status === 'pending'}}"
+            class="note-input"
+            placeholder="填写支付备注，可选"
+            auto-height
+            maxlength="500"
+            data-id="{{item._id}}"
+            bindinput="onNoteInput"
+            value="{{draftNotes[item._id] || ''}}"
+          />
+
+          <view wx:if="{{item.status === 'pending'}}" class="action-row">
+            <button
+              class="action-button approve"
+              size="mini"
+              loading="{{payingId === item._id}}"
+              disabled="{{payingId === item._id}}"
+              data-id="{{item._id}}"
+              bindtap="confirmPayment"
+            >
+              确认支付
+            </button>
+          </view>
+        </view>
+      </block>
+    </block>
+  </view>
+</view>

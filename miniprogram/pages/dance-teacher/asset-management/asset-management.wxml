@@ -1,0 +1,37 @@
+<view class="manage-page">
+  <view class="hero-card">
+    <text class="hero-kicker">Dance Assets</text>
+    <text class="hero-title">舞蹈资产管理</text>
+    <text class="hero-copy">围绕引流舞、团舞、粉丝专属舞、PK舞四类基准维护核心舞蹈资产库，并按三类版本素材沉淀。</text>
+  </view>
+
+  <view class="summary-card">
+    <view class="summary-item">
+      <text class="summary-value">{{totalDanceCount}}</text>
+      <text class="summary-label">核心曲目</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-value">{{totalVersionCount}}</text>
+      <text class="summary-label">版本素材</text>
+    </view>
+    <button class="summary-btn" bindtap="showVersionGuide">版本管理说明</button>
+  </view>
+
+  <view class="asset-list">
+    <view class="asset-card" wx:for="{{categories}}" wx:key="key">
+      <view class="asset-head">
+        <text class="asset-name">{{item.name}}</text>
+        <text class="asset-count">{{item.count}} 支</text>
+      </view>
+      <view class="tag-row">
+        <text class="tag">{{item.difficulty}}</text>
+        <text class="tag">{{item.duration}}</text>
+        <text class="tag">{{item.positioning}}</text>
+      </view>
+      <text class="asset-desc">{{item.desc}}</text>
+      <view class="version-row">
+        <text class="version-pill" wx:for="{{item.versionLabels}}" wx:key="*this" wx:for-item="versionLabel">{{versionLabel}}</text>
+      </view>
+    </view>
+  </view>
+</view>

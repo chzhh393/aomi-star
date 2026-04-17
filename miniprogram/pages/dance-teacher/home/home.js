@@ -1,155 +1,157 @@
-/**
- * 舞蹈导师工作台
- * 功能：查看待评分候选人、提交舞蹈评分
- */
+import { requireAgentLogin, getAgentInfo } from '../../../utils/agent-auth.js';
+import {
+  getCompletedInterviewCandidates,
+  getDanceTeacherBookings,
+  getPendingInterviewCandidates
+} from '../../../utils/interview-api.js';
 
-import { getAllCandidates } from '../../../mock/candidates.js';
+const DANCE_LIBRARY_BLUEPRINT = [
+  { name: '引流舞', count: 36 },
+  { name: '团舞', count: 48 },
+  { name: '粉丝专属舞', count: 24 },
+  { name: 'PK舞', count: 60 }
+];
+
+const VERSION_COUNT = 3;
+
+function buildCards({ pendingCount = 0, reviewedCount = 0, bookedCourseList = [] }) {
+  const totalDanceCount = DANCE_LIBRARY_BLUEPRINT.reduce((sum, item) => sum + item.count, 0);
+  const pendingReviewTotal = bookedCourseList.reduce((sum, item) => sum + Number(item.pendingReviewCount || 0), 0);
+  const checkedInCount = bookedCourseList.filter((item) => Number(item.trainingRecordCount || 0) > 0).length;
+  const nearestBooking = bookedCourseList[0];
+
+  return [
+    {
+      key: 'interview',
+      title: '面试管理',
+      kicker: 'Interview',
+      summary: `${pendingCount} 待评价 / ${reviewedCount} 已评价`,
+      detail: pendingCount > 0 ? '当前有新的候选人待舞蹈老师评分。' : '当前没有积压面试，可查看已评价记录。',
+      metrics: [
+        { label: '待评价', value: pendingCount },
+        { label: '已评价', value: reviewedCount }
+      ],
+      actionText: '进入面试管理',
+      path: '/pages/dance-teacher/interview-management/interview-management'
+    },
+    {
+      key: 'teaching',
+      title: '教学管理',
+      kicker: 'Teaching',
+      summary: `${bookedCourseList.length} 位预约 / ${pendingReviewTotal} 条待复核`,
+      detail: nearestBooking
+        ? `最近训练：${nearestBooking.candidateName || '主播'}，${nearestBooking.bookingSummary || '待排期'}`
+        : '当前没有预约训练，可进入教学管理维护排期和签到复核。',
+      metrics: [
+        { label: '已预约', value: bookedCourseList.length },
+        { label: '已签到', value: checkedInCount }
+      ],
+      actionText: '进入教学管理',
+      path: '/pages/dance-teacher/teaching-management/teaching-management'
+    },
+    {
+      key: 'asset',
+      title: '舞蹈资产管理',
+      kicker: 'Assets',
+      summary: `${totalDanceCount} 支曲目 / ${totalDanceCount * VERSION_COUNT} 个版本素材`,
+      detail: `当前按 ${DANCE_LIBRARY_BLUEPRINT.map((item) => item.name).join('、')} 四类基准维护资产库。`,
+      metrics: [
+        { label: '核心曲目', value: totalDanceCount },
+        { label: '版本素材', value: totalDanceCount * VERSION_COUNT }
+      ],
+      actionText: '进入资产管理',
+      path: '/pages/dance-teacher/asset-management/asset-management'
+    }
+  ];
+}
 
 Page({
   data: {
-    userInfo: null,
-    stats: {
-      totalAssigned: 0,
-      pendingEvaluation: 0,
-      completed: 0
-    },
-    pendingCandidates: [],
-    completedCandidates: []
+    loading: false,
+    cards: []
   },
 
   onLoad() {
-    this.loadUserInfo();
-    this.loadData();
-  },
-
-  /**
-   * 加载用户信息
-   */
-  loadUserInfo() {
-    const userInfo = wx.getStorageSync('user_info');
-    if (!userInfo) {
-      wx.showToast({
-        title: '请先登录',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.reLaunch({
-          url: '/pages/index/index'
-        });
-      }, 1500);
+    if (!requireAgentLogin({
+      allowedRoles: ['dance_teacher'],
+      redirectUrl: '/pages/dance-teacher/home/home'
+    })) {
       return;
     }
 
-    this.setData({
-      userInfo
-    });
+    this.loadOverview();
   },
 
-  /**
-   * 加载数据
-   */
-  loadData() {
-    const userInfo = this.data.userInfo;
-    if (!userInfo) return;
-
-    const danceTeacherId = userInfo.id;
-
-    // 获取所有候选人
-    const allCandidates = getAllCandidates();
-
-    // 1. 筛选待评分的候选人
-    // 条件：status = 'pending_rating' 且 evaluations.danceTeacher 不存在 且 interviewSchedule.interviewers 包含当前舞蹈导师
-    const pendingCandidates = allCandidates.filter(candidate => {
-      // 必须是 pending_rating 状态
-      if (candidate.status !== 'pending_rating') return false;
-
-      // 必须已分配给当前舞蹈导师
-      if (!candidate.interviewSchedule || !candidate.interviewSchedule.interviewers) return false;
-      const isAssigned = candidate.interviewSchedule.interviewers.some(
-        interviewer => interviewer.id === danceTeacherId && interviewer.role === 'dance_teacher'
-      );
-      if (!isAssigned) return false;
-
-      // 还没有提交舞蹈导师评分
-      if (candidate.evaluations && candidate.evaluations.danceTeacher) return false;
-
-      return true;
-    });
-
-    // 2. 筛选已完成的候选人（最近5个）
-    // 条件：evaluations.danceTeacher 存在且由当前导师评分
-    const completedCandidates = allCandidates
-      .filter(candidate => {
-        return candidate.evaluations &&
-               candidate.evaluations.danceTeacher &&
-               candidate.evaluations.danceTeacher.evaluatorId === danceTeacherId;
-      })
-      .slice(0, 5); // 只显示最近5个
-
-    // 3. 计算统计数据
-    const stats = {
-      totalAssigned: pendingCandidates.length + completedCandidates.length,
-      pendingEvaluation: pendingCandidates.length,
-      completed: completedCandidates.length
-    };
-
-    this.setData({
-      stats,
-      pendingCandidates,
-      completedCandidates
-    });
-
-    console.log('[舞蹈导师工作台] 数据加载完成:', {
-      totalAssigned: stats.totalAssigned,
-      pending: pendingCandidates.length,
-      completed: completedCandidates.length
-    });
+  onShow() {
+    const agentInfo = getAgentInfo();
+    if (agentInfo && agentInfo.role === 'dance_teacher') {
+      this.loadOverview();
+    }
   },
 
-  /**
-   * 开始评分
-   */
-  onEvaluateCandidate(e) {
-    const candidateId = e.currentTarget.dataset.id;
-
-    wx.navigateTo({
-      url: `/pages/recruit/dance-evaluation/dance-evaluation?candidateId=${candidateId}`
-    });
-  },
-
-  /**
-   * 刷新数据
-   */
-  onRefresh() {
-    wx.showLoading({
-      title: '刷新中...'
-    });
-
-    setTimeout(() => {
-      this.loadData();
-      wx.hideLoading();
-      wx.showToast({
-        title: '刷新成功',
-        icon: 'success'
-      });
-    }, 500);
-  },
-
-  /**
-   * 查看历史记录
-   */
-  onViewHistory() {
-    wx.showToast({
-      title: '历史记录功能开发中',
-      icon: 'none'
-    });
-  },
-
-  /**
-   * 下拉刷新
-   */
-  onPullDownRefresh() {
-    this.loadData();
+  async onPullDownRefresh() {
+    await this.loadOverview();
     wx.stopPullDownRefresh();
+  },
+
+  async loadOverview() {
+    this.setData({ loading: true });
+
+    try {
+      const agentInfo = getAgentInfo() || {};
+      const operatorId = agentInfo._id || agentInfo.id || agentInfo.username || agentInfo.name || '';
+      const [pendingResult, reviewedResult, bookingsResult] = await Promise.all([
+        getPendingInterviewCandidates({
+          role: 'dance_teacher',
+          operatorId,
+          page: 1,
+          pageSize: 1
+        }),
+        getCompletedInterviewCandidates({
+          role: 'dance_teacher',
+          operatorId,
+          page: 1,
+          pageSize: 1
+        }),
+        getDanceTeacherBookings()
+      ]);
+
+      const bookedCourseList = Array.isArray(bookingsResult.data?.list)
+        ? bookingsResult.data.list.map((item) => ({
+          ...item,
+          bookingSummary: `${item.booking?.courseDate || '-'} ${item.booking?.startTime || ''}-${item.booking?.endTime || ''}`.trim(),
+          pendingReviewCount: Number(item.pendingReviewCount || 0),
+          trainingRecordCount: Number(item.trainingRecordCount || 0)
+        }))
+        : [];
+
+      this.setData({
+        cards: buildCards({
+          pendingCount: pendingResult.data?.total || 0,
+          reviewedCount: reviewedResult.data?.total || 0,
+          bookedCourseList
+        }),
+        loading: false
+      });
+    } catch (error) {
+      console.error('[舞蹈老师工作台] 加载概览失败:', error);
+      this.setData({
+        cards: buildCards({}),
+        loading: false
+      });
+      wx.showToast({
+        title: error.message || '加载失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  goToModule(e) {
+    const { path } = e.currentTarget.dataset;
+    if (!path) {
+      return;
+    }
+
+    wx.navigateTo({ url: path });
   }
 });

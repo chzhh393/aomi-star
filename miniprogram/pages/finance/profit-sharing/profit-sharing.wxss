@@ -1,0 +1,138 @@
+.page {
+  min-height: 100vh;
+  background: #f5f1e8;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.hero {
+  background: linear-gradient(135deg, #102a1e, #1d4d36);
+  border-radius: 28rpx;
+  padding: 32rpx;
+  color: #fff;
+}
+
+.hero-title {
+  display: block;
+  font-size: 42rpx;
+  font-weight: 800;
+}
+
+.hero-desc {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.stat-card,
+.card,
+.list-item {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 12rpx 30rpx rgba(15, 23, 42, 0.06);
+}
+
+.stat-value,
+.final-value,
+.item-amount {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #102a1e;
+}
+
+.stat-label,
+.section-title,
+.card-title,
+.item-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #102a1e;
+}
+
+.stat-note,
+.card-sub,
+.item-sub,
+.key {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #6f7972;
+}
+
+.section {
+  margin-top: 24rpx;
+}
+
+.section-title {
+  margin-bottom: 16rpx;
+}
+
+.row-between,
+.list-item,
+.final-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.status {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(212, 160, 23, 0.18);
+  color: #a06e00;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.value {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #203228;
+}
+
+.final-row {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx solid #ece5d6;
+}
+
+.final-label {
+  font-size: 24rpx;
+  color: #6f7972;
+}
+
+.list-item {
+  margin-bottom: 16rpx;
+}
+
+.item-amount {
+  color: #b03030;
+}
+
+.detail-link {
+  margin-top: 18rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #1d4d36;
+}

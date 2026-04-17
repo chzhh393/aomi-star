@@ -13,6 +13,8 @@ export function parseSceneParams(options) {
     scene: null,           // 场景值
     query: {},             // URL查询参数
     scoutShareCode: null,  // 星探分享码
+    scoutId: null,         // 星探ID
+    scoutName: null,       // 星探姓名
     referralPath: null,    // 推荐路径
     rawOptions: options    // 原始参数
   };
@@ -35,6 +37,12 @@ export function parseSceneParams(options) {
     if (options.query.shareCode) {
       result.scoutShareCode = options.query.shareCode;
     }
+    if (options.query.scoutId) {
+      result.scoutId = options.query.scoutId;
+    }
+    if (options.query.scoutName) {
+      result.scoutName = options.query.scoutName;
+    }
   }
 
   // 3. 解析场景值中的参数 (小程序码场景)
@@ -48,6 +56,12 @@ export function parseSceneParams(options) {
     if (sceneParams.ref) {
       result.scoutShareCode = sceneParams.ref;
     }
+    if (sceneParams.scoutId) {
+      result.scoutId = sceneParams.scoutId;
+    }
+    if (sceneParams.scoutName) {
+      result.scoutName = sceneParams.scoutName;
+    }
 
     // 合并场景参数到query
     result.query = { ...result.query, ...sceneParams };
@@ -58,6 +72,12 @@ export function parseSceneParams(options) {
     const extraData = options.referrerInfo.extraData;
     if (extraData.shareCode) {
       result.scoutShareCode = extraData.shareCode;
+    }
+    if (extraData.scoutId) {
+      result.scoutId = extraData.scoutId;
+    }
+    if (extraData.scoutName) {
+      result.scoutName = extraData.scoutName;
     }
   }
 

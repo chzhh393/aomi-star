@@ -5,7 +5,15 @@
 .container {
   min-height: 100vh;
   background: #F0F0F0;
-  padding-bottom: 40rpx;
+}
+
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40rpx 0 calc(40rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
 
 /* ==================== 顶部横幅 ==================== */
@@ -55,6 +63,30 @@
   padding: 32rpx;
   border: 4rpx solid #000000;
   box-shadow: 6rpx 6rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.referral-tip {
+  margin-top: 24rpx;
+  padding: 20rpx 24rpx;
+  background: rgba(19, 232, 221, 0.12);
+  border-left: 6rpx solid #13E8DD;
+}
+
+.referral-tip-label {
+  display: block;
+  font-size: 20rpx;
+  font-weight: 900;
+  color: #666666;
+  letter-spacing: 2rpx;
+}
+
+.referral-tip-value {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1.6;
 }
 
 .card-header,
@@ -263,6 +295,12 @@
   letter-spacing: 2rpx;
   border-radius: 0;
   margin-bottom: 16rpx;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .btn-primary:active {

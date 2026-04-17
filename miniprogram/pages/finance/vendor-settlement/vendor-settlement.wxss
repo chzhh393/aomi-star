@@ -1,0 +1,184 @@
+.page {
+  min-height: 100vh;
+  background: #f5f1e8;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.hero {
+  border-radius: 28rpx;
+  padding: 32rpx;
+  color: #fff;
+}
+
+.green {
+  background: linear-gradient(135deg, #166b52, #24946f);
+}
+
+.hero-title,
+.section-title,
+.card-title,
+.item-title,
+.stat-label {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.hero-desc,
+.stat-note,
+.item-sub,
+.card-sub,
+.key {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.stat-card,
+.card,
+.list-item {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 12rpx 30rpx rgba(15, 23, 42, 0.06);
+}
+
+.stat-label,
+.section-title,
+.card-title,
+.item-title {
+  color: #102a1e;
+}
+
+.stat-note,
+.item-sub,
+.card-sub,
+.key {
+  color: #6f7972;
+}
+
+.stat-value,
+.amount,
+.value {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #166b52;
+}
+
+.section {
+  margin-top: 24rpx;
+}
+
+.section-title {
+  margin-bottom: 16rpx;
+}
+
+.row-between,
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.filter-row {
+  margin-top: 24rpx;
+  white-space: nowrap;
+}
+
+.filter-chip {
+  display: inline-block;
+  margin-right: 16rpx;
+  padding: 14rpx 24rpx;
+  border-radius: 999rpx;
+  background: #d7e7df;
+  color: #166b52;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.filter-chip-active {
+  background: #166b52;
+  color: #fff;
+}
+
+.meta-row {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.chip {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #edf4f0;
+  font-size: 20rpx;
+  color: #166b52;
+}
+
+.chip-status {
+  background: #e3efe8;
+}
+
+.note-input {
+  width: 100%;
+  min-height: 120rpx;
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 20rpx;
+  background: #f4f8f6;
+  box-sizing: border-box;
+  font-size: 24rpx;
+  color: #102a1e;
+}
+
+.action-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.action-button {
+  margin: 0;
+  border: none;
+  border-radius: 999rpx;
+  padding: 0 28rpx;
+  background: #166b52;
+  color: #fff;
+}
+
+.action-button::after {
+  border: none;
+}
+
+.empty-state {
+  padding: 48rpx 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  text-align: center;
+  color: #6f7972;
+  font-size: 24rpx;
+}

@@ -249,6 +249,12 @@ page {
   border-radius: 45rpx;
   box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
   transition: all 0.3s;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .submit-btn:active {

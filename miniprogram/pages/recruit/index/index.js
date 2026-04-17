@@ -3,10 +3,24 @@
 
 import { requireLogin } from '../../../utils/auth.js';
 
+function safeDecode(value) {
+  const normalized = String(value || '');
+  if (!normalized) {
+    return '';
+  }
+
+  try {
+    return decodeURIComponent(normalized);
+  } catch (error) {
+    return normalized;
+  }
+}
+
 Page({
   data: {
     // 星探推荐码
     scoutShareCode: '',
+    scoutReferral: null,
 
     // 公司信息
     companyName: '奥米光年',
@@ -15,7 +29,7 @@ Page({
     // 岗位基本信息
     jobInfo: {
       salary: '8000-13000元保底 + 22%-26%流水分成',
-      age: '18-25岁',
+      age: '18-30',
       height: '175-190cm',
       experience: '经验不限，有无经验均可'
     },
@@ -38,19 +52,35 @@ Page({
   },
 
   onLoad(options) {
-    // 获取星探推荐码（query > App全局 > 本地scene缓存）
+    // 获取星探推荐上下文（query > App全局 > 本地scene缓存）
     const app = getApp();
-    const refFromQuery = options && (options.ref || options.shareCode);
-    const refFromGlobal = app && typeof app.getScoutShareCode === 'function'
-      ? app.getScoutShareCode()
-      : (app && app.globalData ? app.globalData.scoutShareCode : '');
+    const referralFromQuery = {
+      scoutShareCode: safeDecode((options && (options.ref || options.shareCode)) || ''),
+      scoutId: safeDecode((options && options.scoutId) || ''),
+      scoutName: safeDecode((options && options.scoutName) || '')
+    };
+    const referralFromGlobal = app && typeof app.getScoutReferral === 'function'
+      ? (app.getScoutReferral() || {})
+      : {};
     const sceneParams = wx.getStorageSync('scene_params') || {};
-    const refFromScene = sceneParams.scoutShareCode || '';
-    const scoutShareCode = refFromQuery || refFromGlobal || refFromScene;
+    const referralFromScene = {
+      scoutShareCode: safeDecode(sceneParams.scoutShareCode || ''),
+      scoutId: safeDecode(sceneParams.scoutId || ''),
+      scoutName: safeDecode(sceneParams.scoutName || '')
+    };
+    const scoutReferral = {
+      scoutShareCode: referralFromQuery.scoutShareCode || safeDecode(referralFromGlobal.scoutShareCode) || referralFromScene.scoutShareCode || '',
+      scoutId: referralFromQuery.scoutId || safeDecode(referralFromGlobal.scoutId) || referralFromScene.scoutId || '',
+      scoutName: referralFromQuery.scoutName || safeDecode(referralFromGlobal.scoutName) || referralFromScene.scoutName || ''
+    };
+    const scoutShareCode = scoutReferral.scoutShareCode;
 
-    if (scoutShareCode) {
-      this.setData({ scoutShareCode });
-      console.log('[招募首页] 检测到星探推荐码:', scoutShareCode);
+    if (scoutReferral.scoutShareCode || scoutReferral.scoutId || scoutReferral.scoutName) {
+      this.setData({
+        scoutShareCode,
+        scoutReferral
+      });
+      console.log('[招募首页] 检测到星探推荐信息:', scoutReferral);
     }
 
     // 页面加载时不强制登录，让游客可以浏览
@@ -59,9 +89,19 @@ Page({
 
   // 构建报名页链接（携带推荐码）
   getApplyUrl() {
-    const scoutShareCode = this.data.scoutShareCode;
-    return scoutShareCode
-      ? `/pages/recruit/apply/apply?ref=${encodeURIComponent(scoutShareCode)}`
+    const referral = this.data.scoutReferral || {};
+    const query = [];
+    if (referral.scoutShareCode) {
+      query.push(`ref=${encodeURIComponent(referral.scoutShareCode)}`);
+    }
+    if (referral.scoutId) {
+      query.push(`scoutId=${encodeURIComponent(referral.scoutId)}`);
+    }
+    if (referral.scoutName) {
+      query.push(`scoutName=${encodeURIComponent(referral.scoutName)}`);
+    }
+    return query.length
+      ? `/pages/recruit/apply/apply?${query.join('&')}`
       : '/pages/recruit/apply/apply';
   },
 
@@ -143,7 +183,7 @@ Page({
 
           if (res.result && res.result.success && res.result.candidate) {
             // 找到报名记录，保存到本地并跳转
-            const candidateId = res.result.candidate._id;
+            const candidateId = res.result.candidate.candidateNo || res.result.candidate._id;
             wx.setStorageSync('myCandidateId', candidateId);
             wx.navigateTo({
               url: `/pages/recruit/status/status?id=${candidateId}`

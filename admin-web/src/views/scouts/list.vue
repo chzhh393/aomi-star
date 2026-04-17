@@ -18,60 +18,19 @@
         </el-col>
         <el-col :xs="24" :sm="18" class="filter-radio-col">
           <el-radio-group v-model="activeFilter" @change="handleFilterChange">
-            <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="pending">待审核</el-radio-button>
-            <el-radio-button value="rookie">新锐</el-radio-button>
-            <el-radio-button value="special">特约</el-radio-button>
-            <el-radio-button value="partner">合伙人</el-radio-button>
-            <el-radio-button value="disabled">已停用</el-radio-button>
+            <el-radio-button label="all">全部</el-radio-button>
+            <el-radio-button label="pending">待审核</el-radio-button>
+            <el-radio-button label="rookie">新锐</el-radio-button>
+            <el-radio-button label="special">特约</el-radio-button>
+            <el-radio-button label="partner">合伙人</el-radio-button>
+            <el-radio-button label="disabled">已停用</el-radio-button>
           </el-radio-group>
         </el-col>
       </el-row>
     </el-card>
 
     <!-- 统计卡片 -->
-    <div class="stats-row-flex">
-      <div class="stat-card-wrap">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.total }}</div>
-            <div class="stat-label">总星探数</div>
-          </div>
-        </el-card>
-      </div>
-      <div class="stat-card-wrap">
-        <el-card shadow="hover" class="stat-card pending">
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.pending }}</div>
-            <div class="stat-label">待审核</div>
-          </div>
-        </el-card>
-      </div>
-      <div class="stat-card-wrap">
-        <el-card shadow="hover" class="stat-card rookie">
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.rookie }}</div>
-            <div class="stat-label">新锐星探</div>
-          </div>
-        </el-card>
-      </div>
-      <div class="stat-card-wrap">
-        <el-card shadow="hover" class="stat-card special">
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.special }}</div>
-            <div class="stat-label">特约星探</div>
-          </div>
-        </el-card>
-      </div>
-      <div class="stat-card-wrap">
-        <el-card shadow="hover" class="stat-card partner">
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.partner }}</div>
-            <div class="stat-label">合伙人</div>
-          </div>
-        </el-card>
-      </div>
-    </div>
+    <MetricCardGrid :cards="metricCards" :active-key="activeFilter" @select="setFilter" />
 
     <!-- 星探列表 -->
     <div class="scout-list" v-loading="loading">
@@ -113,6 +72,10 @@
             <span class="meta-item">{{ row.profile?.phone || '-' }}</span>
             <span class="meta-divider">|</span>
             <span class="meta-item">{{ row.profile?.wechat || '-' }}</span>
+            <template v-if="row.parentScoutName">
+              <span class="meta-divider">|</span>
+              <span class="meta-item">上级：{{ row.parentScoutName }}</span>
+            </template>
           </div>
         </div>
 
@@ -126,6 +89,11 @@
           <div class="stat-item">
             <div class="stat-value">{{ row.stats?.signedCount || 0 }}</div>
             <div class="stat-label">已签约</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value">{{ row.teamStats?.totalSubScouts || 0 }}</div>
+            <div class="stat-label">二级星探</div>
           </div>
         </div>
 
@@ -325,6 +293,54 @@
           </div>
         </div>
 
+        <div class="detail-section">
+          <div class="section-title">层级关系</div>
+          <div class="info-block">
+            <div class="info-row">
+              <span class="info-label">上级星探</span>
+              <span class="info-value">{{ currentScout.parentScout?.scoutName || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">二级星探数</span>
+              <span class="info-value">{{ currentScout.teamStats?.totalSubScouts || 0 }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">团队总推荐</span>
+              <span class="info-value">{{ currentScout.teamStats?.totalReferrals || 0 }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">团队已签约</span>
+              <span class="info-value">{{ currentScout.teamStats?.totalSigned || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="scoutSubScouts.length > 0" class="detail-section">
+          <div class="section-title">我的二级星探（{{ scoutSubScouts.length }}人）</div>
+          <div class="referral-list">
+            <div
+              v-for="subScout in scoutSubScouts"
+              :key="subScout._id"
+              class="referral-item"
+            >
+              <div class="referral-name">{{ subScout.profile?.name || '-' }}</div>
+              <div class="referral-meta">
+                {{ subScout.profile?.phone || '-' }} / {{ statusLabel(subScout.status) }}
+              </div>
+              <div class="referral-meta">
+                推荐 {{ subScout.stats?.referredCount || 0 }} 人 / 已签约 {{ subScout.stats?.signedCount || 0 }} 人
+              </div>
+              <el-tag
+                :type="gradeTagType(subScout.grade)"
+                size="small"
+                effect="plain"
+              >
+                {{ gradeLabel(subScout.grade) }}
+              </el-tag>
+            </div>
+          </div>
+        </div>
+
         <!-- 6. 推荐的候选人列表 -->
         <div v-if="scoutReferrals.length > 0" class="detail-section">
           <div class="section-title">推荐的候选人（{{ scoutReferrals.length }}人）</div>
@@ -390,9 +406,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
+import { useRoute, useRouter } from 'vue-router'
 import { getScouts, getScoutDetail } from '../../api/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { hasPermission } from '../../utils/permission'
+import MetricCardGrid from '../../components/common/metric-card-grid.vue'
+const route = useRoute()
+const router = useRouter()
 
 // 等级配置
 const GRADE_CONFIG = {
@@ -450,11 +470,19 @@ const stats = reactive({
   special: 0,
   partner: 0
 })
+const metricCards = computed(() => [
+  { key: 'all', value: stats.total, label: '总星探数', tone: 'default' },
+  { key: 'pending', value: stats.pending, label: '待审核', tone: 'pending' },
+  { key: 'rookie', value: stats.rookie, label: '新锐星探', tone: 'rookie' },
+  { key: 'special', value: stats.special, label: '特约星探', tone: 'special' },
+  { key: 'partner', value: stats.partner, label: '合伙人', tone: 'partner' }
+])
 
 // 详情弹窗
 const detailVisible = ref(false)
 const currentScout = ref(null)
 const scoutReferrals = ref([])
+const scoutSubScouts = ref([])
 
 // 候选人状态映射
 const getCandidateStatusType = (status) => {
@@ -568,6 +596,21 @@ const handleSearch = () => {
 
 // 筛选变化
 const handleFilterChange = () => {
+  router.replace({
+    query: activeFilter.value === 'all'
+      ? { ...route.query, status: undefined }
+      : { ...route.query, status: activeFilter.value }
+  })
+  applyFilter()
+}
+
+const setFilter = (filter) => {
+  activeFilter.value = filter
+  router.replace({
+    query: filter === 'all'
+      ? { ...route.query, status: undefined }
+      : { ...route.query, status: filter }
+  })
   applyFilter()
 }
 
@@ -578,6 +621,7 @@ const handleView = async (row) => {
     if (result.success) {
       currentScout.value = result.scout
       scoutReferrals.value = result.referrals || []
+      scoutSubScouts.value = result.subScouts || []
       detailVisible.value = true
     } else {
       ElMessage.error(result.error || '获取星探详情失败')
@@ -758,6 +802,10 @@ const confirmRestore = (scout) => {
 }
 
 onMounted(() => {
+  const routeStatus = typeof route.query.status === 'string' ? route.query.status : ''
+  if (['all', 'pending', 'rookie', 'special', 'partner', 'disabled'].includes(routeStatus)) {
+    activeFilter.value = routeStatus
+  }
   loadScouts()
 })
 </script>
@@ -778,62 +826,6 @@ onMounted(() => {
 
 .filter-card :deep(.el-card__body) {
   padding: 16px;
-}
-
-/* 统计卡片 */
-.stats-row-flex {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.stat-card-wrap {
-  flex: 1;
-  min-width: 0;
-}
-
-.stat-card {
-  background: #252525;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.stat-card.pending {
-  border-left: 3px solid #e6a23c;
-}
-
-.stat-card.rookie {
-  border-left: 3px solid #909399;
-}
-
-.stat-card.special {
-  border-left: 3px solid #e6a23c;
-}
-
-.stat-card.partner {
-  border-left: 3px solid #f56c6c;
-}
-
-.stat-content {
-  text-align: center;
-}
-
-.stat-content > .stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 8px;
-}
-
-.stat-content > .stat-label {
-  font-size: 14px;
-  color: #999;
 }
 
 /* 星探列表 */
@@ -1164,24 +1156,6 @@ onMounted(() => {
 @media (max-width: 767px) {
   .filter-radio-col {
     margin-top: 10px;
-  }
-
-  .stats-row-flex {
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-
-  .stat-card :deep(.el-card__body) {
-    padding: 8px 4px;
-  }
-
-  .stat-content > .stat-value {
-    font-size: 16px;
-    margin-bottom: 2px;
-  }
-
-  .stat-content > .stat-label {
-    font-size: 10px;
   }
 
   .stats-grid {

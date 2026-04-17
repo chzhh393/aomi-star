@@ -7,6 +7,15 @@ cloud.init({
 
 const db = cloud.database();
 
+function resolveUserIdentityByCandidateStatus(user = {}) {
+  const status = user?.candidateInfo?.status || '';
+  const isAnchor = ['signed', 'training', 'active'].includes(status);
+  return {
+    userType: isAnchor ? 'anchor' : 'candidate',
+    role: isAnchor ? 'anchor' : 'candidate'
+  };
+}
+
 // 云函数入口函数
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
@@ -33,11 +42,18 @@ exports.main = async (event, context) => {
     if (userRes.data.length > 0) {
       // 老用户，更新最后登录时间
       user = userRes.data[0];
+      const identity = resolveUserIdentityByCandidateStatus(user);
       await db.collection('users').doc(user._id).update({
         data: {
-          lastLoginAt: db.serverDate()
+          lastLoginAt: db.serverDate(),
+          userType: identity.userType,
+          role: identity.role
         }
       });
+      user = {
+        ...user,
+        ...identity
+      };
       console.log('[login] 老用户登录:', user._id);
     } else {
       // 新用户，创建用户记录

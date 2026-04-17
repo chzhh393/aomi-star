@@ -1,21 +1,33 @@
-// pages/scout/team/team.js
 import { requireLogin, getCurrentOpenId } from '../../../utils/auth.js';
+import { getGradeLabel } from '../../../utils/scout-level.js';
 
 Page({
   data: {
     loading: true,
+    scoutId: '',
+    focusScout: null,
+    activeSummaryFilter: 'all',
+    activeSummaryFilterLabel: '全部二级星探',
     myInfo: null,
+    myGradeLabel: '',
+    filteredDirectScouts: [],
     team: {
       directScouts: [],
       summary: {
         totalScouts: 0,
+        activeScouts: 0,
+        pendingScouts: 0,
         totalReferred: 0,
-        totalSigned: 0
+        totalSigned: 0,
+        totalCommission: 0
       }
     }
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    this.setData({
+      scoutId: options.scoutId || ''
+    });
     this.ensureLogin();
   },
 
@@ -27,7 +39,6 @@ Page({
     this.loadTeamData();
   },
 
-  // 确保用户已登录
   async ensureLogin() {
     const openId = getCurrentOpenId();
     if (!openId) {
@@ -35,7 +46,6 @@ Page({
         title: '需要登录',
         content: '请先登录后查看团队信息',
         onSuccess: () => {
-          console.log('[团队页面] 登录成功');
           this.loadTeamData();
         },
         onCancel: () => {
@@ -45,7 +55,6 @@ Page({
     }
   },
 
-  // 加载团队数据
   async loadTeamData() {
     this.setData({ loading: true });
 
@@ -65,36 +74,37 @@ Page({
       }
 
       const { myInfo, team } = res.result;
+      const myGradeLabel = getGradeLabel(myInfo.grade || 'rookie');
 
-      // 检查是否为星探合伙人
-      if (myInfo.level && myInfo.level.depth > 1) {
-        wx.showModal({
-          title: '提示',
-          content: '特约星探暂不支持查看团队',
-          showCancel: false,
-          success: () => {
-            wx.navigateBack();
-          }
-        });
-        return;
+      if (team.directScouts && team.directScouts.length > 0) {
+        team.directScouts = team.directScouts.map((scout) => ({
+          ...scout,
+          createdAtText: this.formatTime(scout.createdAt),
+          gradeLabel: getGradeLabel(scout.grade || 'rookie')
+        }));
       }
 
-      // 格式化下级星探的时间
-      if (team.directScouts && team.directScouts.length > 0) {
-        team.directScouts = team.directScouts.map(scout => {
-          scout.createdAtText = this.formatTime(scout.createdAt);
-          return scout;
+      const focusScout = this.data.scoutId
+        ? (team.directScouts || []).find((scout) => scout._id === this.data.scoutId) || null
+        : null;
+
+      if (focusScout) {
+        wx.setNavigationBarTitle({
+          title: `${focusScout.name || '王牌星探'}详情`
         });
       }
 
       this.setData({
         myInfo,
+        myGradeLabel,
         team,
+        focusScout,
+        activeSummaryFilterLabel: this.getSummaryFilterLabel(this.data.activeSummaryFilter),
+        filteredDirectScouts: this.applySummaryFilter(team.directScouts || [], this.data.activeSummaryFilter),
         loading: false
       });
 
       wx.stopPullDownRefresh();
-
     } catch (error) {
       console.error('[团队页面] 加载数据失败:', error);
       wx.showToast({
@@ -106,7 +116,6 @@ Page({
     }
   },
 
-  // 格式化时间
   formatTime(timestamp) {
     if (!timestamp) return '';
 
@@ -116,5 +125,48 @@ Page({
     const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+  },
+
+  applySummaryFilter(list = [], filterKey = 'all') {
+    switch (filterKey) {
+      case 'active':
+        return list.filter((item) => item.status === 'active');
+      case 'pending':
+        return list.filter((item) => item.status === 'pending');
+      case 'referred':
+        return list.filter((item) => Number(item?.stats?.referredCount || 0) > 0);
+      case 'signed':
+        return list.filter((item) => Number(item?.stats?.signedCount || 0) > 0);
+      case 'commission':
+        return list.filter((item) => Number(item?.stats?.totalCommission || 0) > 0);
+      case 'all':
+      default:
+        return list;
+    }
+  },
+
+  getSummaryFilterLabel(filterKey = 'all') {
+    const map = {
+      all: '全部二级星探',
+      active: '活跃二级',
+      pending: '待审核二级',
+      referred: '有推荐成果的二级',
+      signed: '有签约成果的二级',
+      commission: '有佣金产出的二级'
+    };
+    return map[filterKey] || map.all;
+  },
+
+  onSummaryFilter(e) {
+    const { filter } = e.currentTarget.dataset;
+    const nextFilter = filter || 'all';
+    const activeSummaryFilter = this.data.activeSummaryFilter === nextFilter ? 'all' : nextFilter;
+    const directScouts = this.data.team?.directScouts || [];
+
+    this.setData({
+      activeSummaryFilter,
+      activeSummaryFilterLabel: this.getSummaryFilterLabel(activeSummaryFilter),
+      filteredDirectScouts: this.applySummaryFilter(directScouts, activeSummaryFilter)
+    });
   }
 });

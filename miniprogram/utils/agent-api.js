@@ -35,14 +35,15 @@ async function callAdminFunction(action, data = {}) {
     if (res.result && res.result.success) {
       return res.result;
     } else {
+      const errorMsg = res.result?.message || res.result?.error || '请求失败';
       // 检查是否是Token过期
-      if (res.result?.message?.includes('token') ||
-          res.result?.message?.includes('登录') ||
-          res.result?.message?.includes('过期')) {
+      if (errorMsg.includes('token') ||
+          errorMsg.includes('登录') ||
+          errorMsg.includes('过期')) {
         handleTokenExpired();
       }
 
-      throw new Error(res.result?.message || '请求失败');
+      throw new Error(errorMsg);
     }
   } catch (error) {
     console.error(`[经纪人API] ${action} 失败:`, error);
@@ -71,7 +72,12 @@ export async function getCandidateList(params = {}) {
     });
 
     wx.hideLoading();
-    return result;
+    return result.data || {
+      list: [],
+      total: 0,
+      page: params.page || 1,
+      pageSize: params.pageSize || 20
+    };
   } catch (error) {
     wx.hideLoading();
     wx.showToast({
@@ -105,6 +111,122 @@ export async function getCandidateDetail(candidateId) {
     wx.hideLoading();
     wx.showToast({
       title: error.message || '获取候选人详情失败',
+      icon: 'none'
+    });
+    throw error;
+  }
+}
+
+export async function getCandidateInterviewEvaluations(candidateId) {
+  try {
+    if (!candidateId) {
+      throw new Error('候选人ID不能为空');
+    }
+
+    const result = await callAdminFunction('getCandidateInterviewEvaluations', {
+      id: candidateId
+    });
+
+    return result.data || {
+      candidate: null,
+      sharedMaterials: null,
+      evaluations: []
+    };
+  } catch (error) {
+    console.error('[经纪人API] 获取面试评价汇总失败:', error);
+    throw error;
+  }
+}
+
+export async function getTrainingCampRecords(candidateId) {
+  try {
+    if (!candidateId) {
+      throw new Error('候选人ID不能为空');
+    }
+
+    const result = await callAdminFunction('getTrainingCampRecords', {
+      candidateId
+    });
+
+    return result.data || {
+      candidateId,
+      trainingCamp: {},
+      assignedAgent: null
+    };
+  } catch (error) {
+    console.error('[经纪人API] 获取训练营记录失败:', error);
+    throw error;
+  }
+}
+
+export async function createTrainingCampTodo(candidateId, payload = {}) {
+  try {
+    if (!candidateId) {
+      throw new Error('候选人ID不能为空');
+    }
+
+    if (!payload.campType || !payload.startDate) {
+      throw new Error('请填写训练营类型和入营时间');
+    }
+
+    wx.showLoading({ title: '发送中...', mask: true });
+
+    const result = await callAdminFunction('createTrainingCampTodo', {
+      candidateId,
+      campType: payload.campType,
+      startDate: payload.startDate,
+      startTime: payload.startTime,
+      remark: payload.remark || ''
+    });
+
+    wx.hideLoading();
+    wx.showToast({
+      title: '已发送',
+      icon: 'success'
+    });
+
+    return result;
+  } catch (error) {
+    wx.hideLoading();
+    wx.showToast({
+      title: error.message || '发送失败',
+      icon: 'none'
+    });
+    throw error;
+  }
+}
+
+export async function listDanceCourseSlots(params = {}) {
+  try {
+    const result = await callAdminFunction('listDanceCourseSlots', params);
+    return result.data || { list: [] };
+  } catch (error) {
+    console.error('[经纪人API] 获取舞蹈课程表失败:', error);
+    throw error;
+  }
+}
+
+export async function bookDanceCourseSlot(candidateId, slotId) {
+  try {
+    if (!candidateId || !slotId) {
+      throw new Error('请选择预约课程');
+    }
+
+    wx.showLoading({ title: '预约中...', mask: true });
+    const result = await callAdminFunction('bookDanceCourseSlot', {
+      candidateId,
+      slotId
+    });
+    wx.hideLoading();
+    wx.showToast({
+      title: '预约成功',
+      icon: 'success'
+    });
+    return result;
+  } catch (error) {
+    wx.hideLoading();
+    wx.showToast({
+      title: error.message || '预约失败',
       icon: 'none'
     });
     throw error;
@@ -150,6 +272,47 @@ export async function scoreInterview(candidateId, scoreData) {
       icon: 'success'
     });
 
+    return result;
+  } catch (error) {
+    wx.hideLoading();
+    wx.showToast({
+      title: error.message || '提交失败',
+      icon: 'none'
+    });
+    throw error;
+  }
+}
+
+/**
+ * 提交面试官评价
+ * @param {String} candidateId - 候选人ID
+ * @param {String} role - 面试官角色
+ * @param {Object} evaluation - 评价数据
+ * @returns {Promise<Object>}
+ */
+export async function submitInterviewerEvaluation(candidateId, role, evaluation) {
+  try {
+    if (!candidateId) {
+      throw new Error('候选人ID不能为空');
+    }
+
+    if (!role) {
+      throw new Error('角色不能为空');
+    }
+
+    if (!evaluation || typeof evaluation !== 'object') {
+      throw new Error('评价数据不能为空');
+    }
+
+    wx.showLoading({ title: '提交中...', mask: true });
+
+    const result = await callAdminFunction('submitInterviewerEvaluation', {
+      candidateId,
+      role,
+      evaluation
+    });
+
+    wx.hideLoading();
     return result;
   } catch (error) {
     wx.hideLoading();
@@ -370,13 +533,13 @@ export async function uploadVideoToCloud(tempFilePath, candidateId) {
  * @returns {Promise<Array<String>>} 云存储URL数组
  */
 export async function batchUploadImages(tempFilePaths, candidateId, onProgress) {
-  const urls = [];
+  const urls = new Array(tempFilePaths.length).fill('');
   const total = tempFilePaths.length;
 
   for (let i = 0; i < total; i++) {
     try {
       const url = await uploadImageToCloud(tempFilePaths[i], candidateId);
-      urls.push(url);
+      urls[i] = url;
 
       // 更新进度
       if (onProgress) {
@@ -399,13 +562,13 @@ export async function batchUploadImages(tempFilePaths, candidateId, onProgress) 
  * @returns {Promise<Array<String>>} 云存储URL数组
  */
 export async function batchUploadVideos(tempFilePaths, candidateId, onProgress) {
-  const urls = [];
+  const urls = new Array(tempFilePaths.length).fill('');
   const total = tempFilePaths.length;
 
   for (let i = 0; i < total; i++) {
     try {
       const url = await uploadVideoToCloud(tempFilePaths[i], candidateId);
-      urls.push(url);
+      urls[i] = url;
 
       // 更新进度
       if (onProgress) {

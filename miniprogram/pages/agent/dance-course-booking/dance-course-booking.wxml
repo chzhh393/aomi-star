@@ -1,0 +1,122 @@
+<view class="dance-course-page">
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-icon">💃</text>
+    <text class="loading-text">正在加载训练课信息...</text>
+  </view>
+
+  <view class="page-content" wx:if="{{!loading && candidate}}">
+    <view class="hero-card">
+      <text class="hero-kicker">Dance Course</text>
+      <text class="hero-title">舞蹈训练预约</text>
+      <text class="hero-copy">{{candidate.basicInfo.name}} · {{candidate.basicInfo.age || '-'}}岁 · {{candidate.basicInfo.height || '-'}}cm</text>
+    </view>
+
+    <view class="info-card" wx:if="{{danceCourseBooking}}">
+      <view class="card-title">
+        <text class="title-icon">🗓️</text>
+        <text class="title-text">当前预约</text>
+      </view>
+
+      <view class="info-list">
+        <view class="info-item">
+          <text class="label">已预约课程</text>
+          <text class="value">{{danceCourseBooking.summaryText}}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">预约状态</text>
+          <text class="value">{{danceCourseBooking.statusLabel}}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">课程模式</text>
+          <text class="value">{{danceCourseBooking.modeLabel}}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">舞蹈老师</text>
+          <text class="value">{{danceCourseBooking.teacherName || '-'}}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">上课地点</text>
+          <text class="value">{{danceCourseBooking.locationText}}</text>
+        </view>
+        <view class="info-item" wx:if="{{danceCourseBooking.status === 'waitlisted' && danceCourseBooking.waitlistPosition}}">
+          <text class="label">当前排位</text>
+          <text class="value">第 {{danceCourseBooking.waitlistPosition}} 位</text>
+        </view>
+      </view>
+
+      <view class="note-card" wx:if="{{danceCourseBooking.note}}">
+        <text class="note-title">课程说明</text>
+        <text class="note-text">{{danceCourseBooking.note}}</text>
+      </view>
+    </view>
+
+    <view class="info-card" wx:if="{{canBookDanceCourse}}">
+      <view class="card-title">
+        <text class="title-icon">📚</text>
+        <text class="title-text">可预约时段</text>
+      </view>
+
+      <view class="empty-state" wx:if="{{!groupedDanceCourseSlots.length}}">
+        <text class="empty-title">暂无可预约时段</text>
+        <text class="empty-copy">当前还没有可预约的舞蹈课程时段，请先让舞蹈老师维护课程表。</text>
+      </view>
+
+      <view class="schedule-day-list" wx:if="{{groupedDanceCourseSlots.length}}">
+        <view
+          wx:for="{{groupedDanceCourseSlots}}"
+          wx:key="dateKey"
+          wx:for-item="dateGroup"
+          class="schedule-day-card"
+        >
+          <view class="schedule-day-head">
+            <text class="schedule-day-title">{{dateGroup.dateLabel}}</text>
+            <text class="schedule-day-count">共有 {{dateGroup.teacherCount}} 位舞蹈老师</text>
+          </view>
+
+          <view
+            wx:for="{{dateGroup.teachers}}"
+            wx:key="teacherKey"
+            wx:for-item="teacherGroup"
+            class="teacher-group-card"
+          >
+            <view class="teacher-group-head">
+              <text class="teacher-group-name">{{teacherGroup.teacherName}}</text>
+              <text class="teacher-group-count">{{teacherGroup.slotCount}} 节课</text>
+            </view>
+
+            <view
+              wx:for="{{teacherGroup.slots}}"
+              wx:key="_id"
+              wx:for-item="slot"
+              class="dance-course-card {{danceCourseBooking && danceCourseBooking.slotId === slot._id ? 'is-active' : ''}}"
+            >
+              <view class="dance-course-head">
+                <text class="dance-course-time">{{slot.summaryText}}</text>
+                <text class="dance-course-capacity">{{slot.capacityText}}</text>
+              </view>
+              <text class="dance-course-meta">课程模式：{{slot.modeLabel}}</text>
+              <text class="dance-course-meta">地点：{{slot.locationText}}</text>
+              <text class="dance-course-meta" wx:if="{{slot.bookedNames}}">已预约：{{slot.bookedNames}}</text>
+              <text class="dance-course-meta" wx:if="{{slot.waitlistText}}">{{slot.waitlistText}}</text>
+              <text class="dance-course-meta" wx:if="{{slot.note}}">说明：{{slot.note}}</text>
+              <button
+                class="dance-course-btn"
+                loading="{{bookingSubmitting}}"
+                disabled="{{bookingSubmitting}}"
+                bindtap="bookDanceCourse"
+                data-slot-id="{{slot._id}}"
+              >
+                {{danceCourseBooking && danceCourseBooking.slotId === slot._id ? '改约当前课程' : slot.actionText}}
+              </button>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{!canBookDanceCourse && !danceCourseBooking}}">
+      <text class="empty-title">当前不可预约训练课</text>
+      <text class="empty-copy">主播需要先完成面试终裁通过并分配经纪人，才会开放训练课预约。</text>
+    </view>
+  </view>
+</view>

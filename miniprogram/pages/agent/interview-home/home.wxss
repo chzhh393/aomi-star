@@ -1,0 +1,17 @@
+page {
+  background: #f7f3eb;
+}
+
+.redirect-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+.redirect-text {
+  font-size: 28rpx;
+  color: #5d5751;
+}

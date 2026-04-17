@@ -12,8 +12,177 @@ function isEmpty(value) {
   return value === undefined || value === null || String(value).trim() === '';
 }
 
+function normalizeText(value, max = 100) {
+  return String(value || '').trim().slice(0, max);
+}
+
 function toBoolean(value) {
   return value === true || value === 'true' || value === 1 || value === '1';
+}
+
+function isValidIdCard(value) {
+  return /^[1-9]\d{16}[\dXx]$/.test(String(value || '').trim());
+}
+
+function isValidPhone(value) {
+  return /^1\d{10}$/.test(String(value || '').trim());
+}
+
+function normalizeNumber(value, decimals = 6) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) {
+    return null;
+  }
+  return Number(num.toFixed(decimals));
+}
+
+async function resolveScoutReferral(data = {}) {
+  const scoutId = normalizeText(data.scoutId, 64);
+  const scoutShareCode = normalizeText(data.scoutShareCode, 64);
+  const scoutName = normalizeText(data.scoutName, 100);
+
+  let scout = null;
+
+  if (scoutId) {
+    const scoutRes = await db.collection('scouts').doc(scoutId).get().catch(() => null);
+    if (scoutRes?.data?.status === 'active') {
+      scout = scoutRes.data;
+    }
+  }
+
+  if (!scout && scoutShareCode) {
+    const scoutRes = await db.collection('scouts').where({
+      shareCode: scoutShareCode,
+      status: 'active'
+    }).limit(1).get();
+    if (scoutRes.data.length > 0) {
+      scout = scoutRes.data[0];
+    }
+  }
+
+  if (!scout) {
+    return {
+      scout: null,
+      input: {
+        scoutId,
+        scoutShareCode,
+        scoutName
+      }
+    };
+  }
+
+  return {
+    scout,
+    input: {
+      scoutId,
+      scoutShareCode: scout.shareCode || scoutShareCode,
+      scoutName: scout.profile?.name || scoutName
+    }
+  };
+}
+
+function isActiveCandidate(candidate) {
+  return !!candidate && !candidate.deletedAt;
+}
+
+function formatDateSegment(dateValue) {
+  const date = new Date(dateValue || Date.now());
+  const year = String(date.getFullYear()).slice(-2);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
+}
+
+function formatDateTime(dateValue = Date.now()) {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hour}:${minute}`;
+}
+
+function buildCandidateNo(docId, dateValue) {
+  const normalizedId = normalizeText(docId, 64).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  const suffix = normalizedId.slice(-6).padStart(6, '0');
+  return `C${formatDateSegment(dateValue)}${suffix}`;
+}
+
+async function ensureCandidateNo(candidate) {
+  if (!candidate || !candidate._id) {
+    return candidate || null;
+  }
+
+  if (candidate.candidateNo) {
+    return candidate;
+  }
+
+  const candidateNo = buildCandidateNo(candidate._id, candidate.createdAt || candidate.updatedAt || Date.now());
+
+  await db.collection('candidates').doc(candidate._id).update({
+    data: {
+      candidateNo,
+      updatedAt: db.serverDate()
+    }
+  }).catch(() => null);
+
+  if (candidate.openId) {
+    await db.collection('users').where({
+      openId: candidate.openId
+    }).update({
+      data: {
+        'candidateInfo.candidateNo': candidateNo,
+        updatedAt: db.serverDate()
+      }
+    }).catch(() => null);
+  }
+
+  return {
+    ...candidate,
+    candidateNo
+  };
+}
+
+async function getCandidateByIdentifier(identifier) {
+  const normalized = normalizeText(identifier, 100);
+  if (!normalized) {
+    return null;
+  }
+
+  const directRes = await db.collection('candidates').doc(normalized).get().catch(() => null);
+  if (directRes?.data && isActiveCandidate(directRes.data)) {
+    return ensureCandidateNo(directRes.data);
+  }
+
+  const candidateNoRes = await db.collection('candidates').where({
+    candidateNo: normalized
+  }).limit(1).get();
+  const candidate = candidateNoRes.data?.[0];
+  if (candidate && isActiveCandidate(candidate)) {
+    return ensureCandidateNo(candidate);
+  }
+
+  return null;
+}
+
+async function getLatestActiveCandidateByOpenId(openId) {
+  const res = await db.collection('candidates').where({
+    openId
+  }).get();
+
+  const candidates = (res.data || [])
+    .filter((candidate) => isActiveCandidate(candidate))
+    .sort((a, b) => {
+      const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return bTime - aTime;
+    });
+
+  return ensureCandidateNo(candidates[0] || null);
 }
 
 function validateCandidateFormData(data) {
@@ -66,10 +235,18 @@ exports.main = async (event) => {
         return await getCandidate(data.id);
       case 'getByOpenId':
         return await getCandidateByOpenId(openId);
+      case 'list':
+        return await listCandidates(data);
+      case 'markPayslipRead':
+        return await markPayslipRead(openId);
       case 'update':
         return await updateCandidate(openId, data);
       case 'updateStatus':
         return await updateCandidateStatus(data.id, data.status);
+      case 'respondTrainingCampTodo':
+        return await respondTrainingCampTodo(openId, data);
+      case 'submitTrainingDailyRecord':
+        return await submitTrainingDailyRecord(openId, data);
       default:
         return {
           success: false,
@@ -88,15 +265,12 @@ exports.main = async (event) => {
 // 提交报名
 async function submitCandidate(openId, data) {
   // 检查是否已经报名过
-  const existRes = await db.collection('candidates').where({
-    openId: openId
-  }).get();
-
-  if (existRes.data.length > 0) {
+  const existingCandidate = await getLatestActiveCandidateByOpenId(openId);
+  if (existingCandidate) {
     return {
       success: false,
       error: '您已经报名过了',
-      candidate: existRes.data[0]
+      candidate: existingCandidate
     };
   }
 
@@ -112,6 +286,8 @@ async function submitCandidate(openId, data) {
 
   // 上传视频到云存储
   const uploadedVideos = await uploadVideos(openId, data.formData.talent.videos);
+
+  const referralResult = await resolveScoutReferral(data);
 
   // 创建候选人记录
   const candidateData = {
@@ -157,7 +333,7 @@ async function submitCandidate(openId, data) {
 
     // 来源
     source: data.source || '官网报名',
-    referredBy: data.scoutShareCode || null,
+    referredBy: referralResult.input.scoutShareCode || null,
 
     // 状态
     status: 'pending',
@@ -168,31 +344,33 @@ async function submitCandidate(openId, data) {
   };
 
   // 如果有推荐码，查找星探并关联（扁平推荐，不再构建链条）
-  if (data.scoutShareCode) {
-    const scoutRes = await db.collection('scouts').where({
-      shareCode: data.scoutShareCode,
-      status: 'active'
-    }).get();
+  if (referralResult.scout) {
+    const scout = referralResult.scout;
 
-    if (scoutRes.data.length > 0) {
-      const scout = scoutRes.data[0];
+    candidateData.referral = {
+      scoutId: scout._id,
+      scoutShareCode: scout.shareCode || referralResult.input.scoutShareCode || '',
+      scoutName: scout.profile?.name || referralResult.input.scoutName || '',
+      scoutGrade: scout.grade || 'rookie',
+      referredAt: db.serverDate()
+    };
 
-      candidateData.referral = {
-        scoutId: scout._id,
-        scoutShareCode: data.scoutShareCode,
-        scoutName: scout.profile.name,
-        scoutGrade: scout.grade || 'rookie',
-        referredAt: db.serverDate()
-      };
-
-      console.log('[candidate] 关联星探成功:', scout.profile.name, '等级:', scout.grade || 'rookie');
-    } else {
-      console.log('[candidate] 推荐码无效或星探已停用:', data.scoutShareCode);
-    }
+    console.log('[candidate] 关联星探成功:', candidateData.referral.scoutName, '等级:', scout.grade || 'rookie');
+  } else if (referralResult.input.scoutId || referralResult.input.scoutShareCode) {
+    console.log('[candidate] 推荐星探未匹配成功:', referralResult.input);
   }
 
   const createRes = await db.collection('candidates').add({
     data: candidateData
+  });
+
+  const candidateNo = buildCandidateNo(createRes._id, Date.now());
+
+  await db.collection('candidates').doc(createRes._id).update({
+    data: {
+      candidateNo,
+      updatedAt: db.serverDate()
+    }
   });
 
   // 更新用户信息，关联候选人ID
@@ -201,6 +379,7 @@ async function submitCandidate(openId, data) {
   }).update({
     data: {
       'candidateInfo.candidateId': createRes._id,
+      'candidateInfo.candidateNo': candidateNo,
       'candidateInfo.appliedAt': db.serverDate(),
       'candidateInfo.status': 'pending',
       'profile.name': candidateData.basicInfo.name,
@@ -228,6 +407,7 @@ async function submitCandidate(openId, data) {
   return {
     success: true,
     candidateId: createRes._id,
+    candidateNo,
     message: '报名成功'
   };
 }
@@ -297,15 +477,10 @@ async function uploadVideos(openId, videos) {
 // 修改报名信息（仅 pending 状态可修改）
 async function updateCandidate(openId, data) {
   // 查找当前用户的报名记录
-  const existRes = await db.collection('candidates').where({
-    openId: openId
-  }).get();
-
-  if (existRes.data.length === 0) {
+  const candidate = await getLatestActiveCandidateByOpenId(openId);
+  if (!candidate) {
     return { success: false, error: '未找到报名记录' };
   }
-
-  const candidate = existRes.data[0];
 
   if (candidate.status !== 'pending') {
     return { success: false, error: '当前状态不允许修改' };
@@ -373,15 +548,16 @@ async function updateCandidate(openId, data) {
   return {
     success: true,
     candidateId: candidate._id,
+    candidateNo: candidate.candidateNo || '',
     message: '修改成功'
   };
 }
 
 // 根据ID获取候选人信息
 async function getCandidate(id) {
-  const res = await db.collection('candidates').doc(id).get();
+  const candidate = await getCandidateByIdentifier(id);
 
-  if (!res.data) {
+  if (!candidate) {
     return {
       success: false,
       error: '候选人不存在'
@@ -390,17 +566,14 @@ async function getCandidate(id) {
 
   return {
     success: true,
-    candidate: res.data
+    candidate
   };
 }
 
 // 根据 openId 获取候选人信息
 async function getCandidateByOpenId(openId) {
-  const res = await db.collection('candidates').where({
-    openId: openId
-  }).get();
-
-  if (res.data.length === 0) {
+  const candidate = await getLatestActiveCandidateByOpenId(openId);
+  if (!candidate) {
     return {
       success: false,
       error: '未找到报名记录'
@@ -409,7 +582,93 @@ async function getCandidateByOpenId(openId) {
 
   return {
     success: true,
-    candidate: res.data[0]
+    candidate
+  };
+}
+
+async function listCandidates(data = {}) {
+  const page = Math.max(1, Number(data.page || 1));
+  const pageSize = Math.min(100, Math.max(1, Number(data.pageSize || 20)));
+  const keyword = normalizeText(data.keyword || '', 100);
+  const inputStatuses = Array.isArray(data.statuses) ? data.statuses : [];
+  const statuses = inputStatuses
+    .map((item) => normalizeText(item, 40))
+    .filter(Boolean);
+
+  const conditions = {
+    deletedAt: _.exists(false)
+  };
+
+  if (statuses.length > 0) {
+    conditions.status = _.in(statuses);
+  }
+
+  if (keyword) {
+    conditions['basicInfo.name'] = db.RegExp({
+      regexp: keyword,
+      options: 'i'
+    });
+  }
+
+  const query = db.collection('candidates').where(conditions);
+  const skip = (page - 1) * pageSize;
+  const countRes = await query.count();
+  const total = countRes.total || 0;
+  const res = await query
+    .orderBy('updatedAt', 'desc')
+    .skip(skip)
+    .limit(pageSize)
+    .get();
+
+  const list = await Promise.all((res.data || []).map((item) => ensureCandidateNo(item)));
+
+  return {
+    success: true,
+    data: {
+      list,
+      total,
+      page,
+      pageSize
+    }
+  };
+}
+
+async function markPayslipRead(openId) {
+  const candidate = await getLatestActiveCandidateByOpenId(openId);
+  if (!candidate) {
+    return {
+      success: false,
+      error: '未找到主播信息'
+    };
+  }
+
+  const payslip = candidate?.commission?.payslip || null;
+  if (!payslip || payslip.status !== 'sent') {
+    return {
+      success: false,
+      error: '暂无可查看工资条'
+    };
+  }
+
+  if (payslip.receiptStatus === 'viewed') {
+    return {
+      success: true,
+      message: '工资条已查看'
+    };
+  }
+
+  await db.collection('candidates').doc(candidate._id).update({
+    data: {
+      'commission.payslip.receiptStatus': 'viewed',
+      'commission.payslip.receiptViewedAt': new Date(),
+      'commission.payslip.receiptViewedAtText': formatDateTime(),
+      updatedAt: db.serverDate()
+    }
+  });
+
+  return {
+    success: true,
+    message: '工资条查看回执已记录'
   };
 }
 
@@ -488,6 +747,256 @@ async function updateCandidateStatus(id, status) {
   return {
     success: true,
     message: '状态更新成功'
+  };
+}
+
+async function syncCandidateStatusToUser(openId, status) {
+  if (!openId || !status) {
+    return;
+  }
+  const isAnchor = ['signed', 'training', 'active'].includes(status);
+
+  await db.collection('users').where({
+    openId
+  }).update({
+    data: {
+      userType: isAnchor ? 'anchor' : 'candidate',
+      role: isAnchor ? 'anchor' : 'candidate',
+      'candidateInfo.status': status,
+      updatedAt: db.serverDate()
+    }
+  }).catch(() => null);
+}
+
+function validateTrainingCampSubmission(submission) {
+  if (!submission || typeof submission !== 'object') {
+    return '请完善入营资料';
+  }
+
+  if (isEmpty(submission.idCardFront)) {
+    return '请上传身份证人像面';
+  }
+
+  if (isEmpty(submission.idCardBack)) {
+    return '请上传身份证国徽面';
+  }
+
+  if (isEmpty(submission.bankCardImage)) {
+    return '请上传银行卡照片';
+  }
+
+  if (isEmpty(submission.idCardName)) {
+    return '请输入身份证姓名';
+  }
+
+  if (!isValidIdCard(submission.idCardNumber)) {
+    return '请输入正确的身份证号';
+  }
+
+  if (isEmpty(submission.bankName)) {
+    return '请输入开户行';
+  }
+
+  if (isEmpty(submission.bankAccountName)) {
+    return '请输入银行卡户名';
+  }
+
+  if (isEmpty(submission.bankCardNumber)) {
+    return '请输入银行卡号';
+  }
+
+  if (isEmpty(submission.emergencyContactName)) {
+    return '请输入紧急联系人姓名';
+  }
+
+  if (!isValidPhone(submission.emergencyContactPhone)) {
+    return '请输入正确的紧急联系人手机号';
+  }
+
+  if (isEmpty(submission.emergencyContactRelation)) {
+    return '请输入与紧急联系人的关系';
+  }
+
+  return '';
+}
+
+function buildTrainingCampSubmission(candidate, submission) {
+  const candidateName = normalizeText(candidate?.basicInfo?.name, 50);
+  const addressRegion = Array.isArray(submission.addressRegion)
+    ? submission.addressRegion.map((item) => normalizeText(item, 30)).filter(Boolean).slice(0, 3)
+    : [];
+  const addressDetail = normalizeText(submission.addressDetail, 120);
+  const normalizedSubmission = {
+    idCardFront: submission.idCardFront,
+    idCardBack: submission.idCardBack,
+    bankCardImage: submission.bankCardImage,
+    idCardName: normalizeText(submission.idCardName, 50) || candidateName,
+    idCardNumber: normalizeText(submission.idCardNumber, 18).toUpperCase(),
+    bankName: normalizeText(submission.bankName, 80),
+    bankAccountName: normalizeText(submission.bankAccountName, 50) || candidateName,
+    bankCardNumber: normalizeText(submission.bankCardNumber, 40),
+    emergencyContactName: normalizeText(submission.emergencyContactName, 50),
+    emergencyContactPhone: normalizeText(submission.emergencyContactPhone, 20),
+    emergencyContactRelation: normalizeText(submission.emergencyContactRelation, 30),
+    emergencyContactRemark: normalizeText(submission.emergencyContactRemark, 100),
+    communicationAddress: normalizeText(
+      submission.communicationAddress || [addressRegion.join(' '), addressDetail].filter(Boolean).join(' '),
+      200
+    ),
+    addressRegion,
+    addressDetail
+  };
+
+  return normalizedSubmission;
+}
+
+async function respondTrainingCampTodo(openId, data) {
+  const candidate = await getLatestActiveCandidateByOpenId(openId);
+  if (!candidate) {
+    return { success: false, error: '未找到报名记录' };
+  }
+
+  const todo = candidate.trainingCampTodo;
+  if (!todo || todo.status !== 'pending') {
+    return { success: false, error: '当前没有待处理的入营待办' };
+  }
+
+  const decision = normalizeText(data?.decision, 20);
+  if (!['confirm', 'reject'].includes(decision)) {
+    return { success: false, error: '无效的处理结果' };
+  }
+
+  const updateData = {
+    'trainingCampTodo.status': decision === 'confirm' ? 'confirmed' : 'rejected',
+    'trainingCampTodo.decision': decision,
+    'trainingCampTodo.respondedAt': db.serverDate(),
+    updatedAt: db.serverDate()
+  };
+
+  if (decision === 'reject') {
+    const rejectReason = normalizeText(data?.rejectReason, 300);
+    if (!rejectReason) {
+      return { success: false, error: '请填写拒绝原因' };
+    }
+
+    updateData['trainingCampTodo.rejectReason'] = rejectReason;
+
+    await db.collection('candidates').doc(candidate._id).update({
+      data: updateData
+    });
+
+    return {
+      success: true,
+      message: '已提交拒绝原因'
+    };
+  }
+
+  const submission = buildTrainingCampSubmission(candidate, data?.submission || {});
+  const validationError = validateTrainingCampSubmission(submission);
+  if (validationError) {
+    return { success: false, error: validationError };
+  }
+
+  updateData.status = 'training';
+  updateData.trainingCamp = {
+    campType: todo.campType || '',
+    startDate: todo.startDate || '',
+    startTime: todo.startTime || '',
+    remark: todo.remark || '',
+    invitationContent: todo.invitationContent || '',
+    assignedBy: todo.sentBy || {},
+    confirmedAt: db.serverDate(),
+    status: 'scheduled'
+  };
+  updateData.onboardingProfile = submission;
+  updateData['trainingCampTodo.submission'] = submission;
+
+  await db.collection('candidates').doc(candidate._id).update({
+    data: updateData
+  });
+
+  await syncCandidateStatusToUser(openId, 'training');
+
+  return {
+    success: true,
+    message: '入营确认成功'
+  };
+}
+
+async function submitTrainingDailyRecord(openId, data) {
+  const candidate = await getLatestActiveCandidateByOpenId(openId);
+  if (!candidate) {
+    return { success: false, error: '未找到报名记录' };
+  }
+
+  if (candidate.status !== 'training') {
+    return { success: false, error: '当前不在训练营阶段' };
+  }
+
+  const recordDate = normalizeText(data?.recordDate, 20) || new Date().toISOString().slice(0, 10);
+  const recordType = normalizeText(data?.recordType, 30) || 'entry_note';
+  const typeTitleMap = {
+    entry_note: '舞蹈室入场训练记录',
+    exit_note: '舞蹈室离场复盘记录'
+  };
+  const title = normalizeText(data?.title, 60) || typeTitleMap[recordType] || '舞蹈室训练记录';
+  const summary = normalizeText(data?.summary, 300);
+  const photos = Array.isArray(data?.photos) ? data.photos.filter((item) => !isEmpty(item)).slice(0, 6) : [];
+  const rawLocationSnapshot = data?.locationSnapshot && typeof data.locationSnapshot === 'object'
+    ? data.locationSnapshot
+    : null;
+  const locationSnapshot = rawLocationSnapshot ? {
+    latitude: normalizeNumber(rawLocationSnapshot.latitude),
+    longitude: normalizeNumber(rawLocationSnapshot.longitude),
+    distanceMeters: Math.max(0, Math.round(Number(rawLocationSnapshot.distanceMeters) || 0)),
+    checkedAt: normalizeText(rawLocationSnapshot.checkedAt, 40),
+    baseName: normalizeText(rawLocationSnapshot.baseName, 50)
+  } : null;
+
+  if (!summary) {
+    return { success: false, error: '请填写今日训练心得或成果记录' };
+  }
+
+  const currentRecords = Array.isArray(candidate.trainingCamp?.dailyRecords)
+    ? candidate.trainingCamp.dailyRecords
+    : [];
+
+  const duplicated = currentRecords.find((item) => (
+    item &&
+    item.recordDate === recordDate &&
+    item.recordType === recordType
+  ));
+
+  if (duplicated) {
+    return { success: false, error: '今天已提交过同类型训练记录' };
+  }
+
+  const recordId = `tr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const nextRecord = {
+    recordId,
+    recordDate,
+    recordType,
+    title,
+    summary,
+    photos,
+    locationSnapshot,
+    status: 'pending_review',
+    reviewComment: '',
+    createdAt: db.serverDate()
+  };
+
+  await db.collection('candidates').doc(candidate._id).update({
+    data: {
+      'trainingCamp.dailyRecords': [...currentRecords, nextRecord],
+      'trainingCamp.lastRecordDate': recordDate,
+      updatedAt: db.serverDate()
+    }
+  });
+
+  return {
+    success: true,
+    message: '训练记录提交成功',
+    recordId
   };
 }
 

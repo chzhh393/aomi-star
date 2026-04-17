@@ -186,6 +186,23 @@
   margin-top: 2rpx;
 }
 
+.info-icon-box {
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+  background: #000000;
+  border: 2rpx solid #13E8DD;
+}
+
+.info-icon-text {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
 .info-content {
   flex: 1;
 }

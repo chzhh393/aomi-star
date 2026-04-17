@@ -1,0 +1,154 @@
+<view class="container">
+  <view class="hero-panel">
+    <view class="hero-topline">
+      <text class="hero-badge" bindlongpress="onRevealDebug">FINANCE OPS</text>
+      <text class="hero-date">本月结算周期</text>
+    </view>
+    <view class="hero-title">财务工作台</view>
+    <view class="hero-subtitle">围绕主播分润、采购资产、外部结算和老板看板的统一财务入口</view>
+
+    <view class="hero-user">
+      <view class="hero-user-avatar">¥</view>
+      <view class="hero-user-content">
+        <view class="hero-user-name">{{user.profile.nickname || user.profile.name}}</view>
+        <view class="hero-user-role">{{user.profile.department}} · {{user.profile.jobTitle}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{debugVisible}}" class="debug-panel">
+      <view class="debug-title">调试入口</view>
+      <view class="debug-desc">初始化采购审批与外部结算演示数据，仅用于联调环境。</view>
+      <button
+        class="debug-button"
+        loading="{{seeding}}"
+        disabled="{{seeding}}"
+        bindtap="seedFinanceDemoData"
+      >
+        {{seeding ? '初始化中...' : '初始化财务演示数据'}}
+      </button>
+    </view>
+  </view>
+
+  <view class="summary-grid">
+    <block wx:for="{{summaryCards}}" wx:key="id">
+      <view class="summary-card tone-{{item.tone}}" data-id="{{item.id}}" bindtap="onSummaryTap">
+        <view class="summary-value-row">
+          <text class="summary-value">{{item.value}}</text>
+          <text wx:if="{{item.unit}}" class="summary-unit">{{item.unit}}</text>
+        </view>
+        <view class="summary-label">{{item.label}}</view>
+        <view class="summary-note">{{item.note}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">CONTROL TOWER</text>
+      <text class="section-title">关键监控</text>
+    </view>
+    <view class="metric-list">
+      <block wx:for="{{coreMetrics}}" wx:key="id">
+        <view class="metric-item" data-id="{{item.id}}" bindtap="onMetricTap">
+          <view class="metric-main">
+            <text class="metric-label">{{item.label}}</text>
+            <text class="metric-value">{{item.value}}</text>
+          </view>
+          <view class="metric-detail">{{item.detail}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">FOUR MODULES</text>
+      <text class="section-title">四大功能</text>
+    </view>
+    <view class="module-list">
+      <block wx:for="{{moduleCards}}" wx:key="id">
+        <view class="module-card tone-{{item.tone}}" data-title="{{item.title}}" data-route="{{item.route || ''}}" bindtap="onModuleTap">
+          <view class="module-top">
+            <text class="module-tag">{{item.tag}}</text>
+            <text class="module-progress">{{item.progress}}%</text>
+          </view>
+          <view class="module-title">{{item.title}}</view>
+          <view class="module-desc">{{item.desc}}</view>
+
+          <view class="module-progress-bar">
+            <view class="module-progress-fill" style="width: {{item.progress}}%;"></view>
+          </view>
+
+          <view class="chip-row">
+            <block wx:for="{{item.chips}}" wx:for-item="chip" wx:key="*this">
+              <text class="chip">{{chip}}</text>
+            </block>
+          </view>
+
+          <view class="module-metrics">
+            <block wx:for="{{item.metrics}}" wx:for-item="metric" wx:key="label">
+              <view class="module-metric">
+                <text class="module-metric-label">{{metric.label}}</text>
+                <text class="module-metric-value">{{metric.value}}</text>
+              </view>
+            </block>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">SETTLEMENT FLOW</text>
+      <text class="section-title">本月结算流程</text>
+    </view>
+    <view class="flow-list">
+      <block wx:for="{{settlementFlow}}" wx:key="id">
+        <view class="flow-item status-{{item.status}}">
+          <view class="flow-dot"></view>
+          <view class="flow-content">
+            <view class="flow-name">{{item.name}}</view>
+            <view class="flow-desc">{{item.desc}}</view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">ALERT CENTER</text>
+      <text class="section-title">待处理预警</text>
+    </view>
+    <view class="alert-list">
+      <block wx:for="{{alerts}}" wx:key="id">
+        <view class="alert-item level-{{item.level}}">
+          <view class="alert-title-row">
+            <text class="alert-title">{{item.title}}</text>
+            <text class="alert-owner">{{item.owner}}</text>
+          </view>
+          <view class="alert-desc">{{item.desc}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">QUICK ACTIONS</text>
+      <text class="section-title">快捷入口</text>
+    </view>
+    <view class="action-list">
+      <block wx:for="{{quickActions}}" wx:key="id">
+        <view class="action-item" data-label="{{item.label}}" data-route="{{item.route || ''}}" bindtap="onActionTap">
+          <view class="action-accent" style="background: {{item.accent}};"></view>
+          <view class="action-content">
+            <view class="action-label">{{item.label}}</view>
+            <view class="action-desc">{{item.desc}}</view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

@@ -51,6 +51,20 @@ Page({
         }
       },
       {
+        id: 'MC001',
+        role: ROLE.HOST_MC,
+        emoji: '🎤',
+        label: '主持/MC',
+        userType: 'internal_employee',
+        profile: {
+          name: '周主持',
+          nickname: '周MC',
+          phone: '138****1005',
+          department: '主持部',
+          jobTitle: '主持/MC'
+        }
+      },
+      {
         id: 'MA001',
         role: ROLE.MAKEUP_ARTIST,
         emoji: '💄',
@@ -92,6 +106,19 @@ Page({
         }
       },
       {
+        id: 'ADM001',
+        role: ROLE.ADMIN,
+        emoji: '⚙️',
+        label: '管理员',
+        userType: 'internal_employee',
+        profile: {
+          name: '系统管理员',
+          phone: '138****0000',
+          department: '管理部',
+          jobTitle: '系统管理员'
+        }
+      },
+      {
         id: 'OP001',
         role: ROLE.OPERATIONS,
         emoji: '⚙️',
@@ -102,6 +129,19 @@ Page({
           phone: '138****4001',
           department: '运营部',
           jobTitle: '运营专员'
+        }
+      },
+      {
+        id: 'FIN001',
+        role: ROLE.FINANCE,
+        emoji: '💰',
+        label: '财务',
+        userType: 'internal_employee',
+        profile: {
+          name: '财务A',
+          phone: '138****5001',
+          department: '财务部',
+          jobTitle: '财务专员'
         }
       },
       {

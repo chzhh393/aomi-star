@@ -1,0 +1,146 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx;
+  background: #f6f2eb;
+}
+
+.hero,
+.stat-card,
+.card,
+.empty-card {
+  padding: 28rpx;
+  border-radius: 24rpx;
+  background: #fffdf8;
+  box-shadow: 0 12rpx 30rpx rgba(50, 44, 36, 0.08);
+}
+
+.hero-title {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #1f2831;
+}
+
+.hero-desc,
+.stat-label,
+.card-meta,
+.empty-text {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #72685f;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.stat-value {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #1f2831;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.candidate-main {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  min-width: 0;
+  flex: 1;
+}
+
+.candidate-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 22rpx;
+  flex-shrink: 0;
+  background: #d8d2ca;
+}
+
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #202f3d;
+  color: #fff8ef;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.candidate-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.card-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2831;
+}
+
+.card-status {
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #f4e3d0;
+  font-size: 22rpx;
+  color: #8d4d22;
+}
+
+.action-row {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin-top: 18rpx;
+}
+
+.action-btn {
+  margin: 0;
+  padding: 0 22rpx;
+  min-height: 72rpx;
+  border-radius: 999rpx;
+  background: #202f3d;
+  color: #fff8ef;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.action-btn.secondary {
+  background: #d6925c;
+}
+
+.action-btn.ghost {
+  background: #efe7dc;
+  color: #6f5338;
+}
+
+.action-btn::after {
+  border: none;
+}
+
+.empty-card {
+  margin-top: 22rpx;
+}

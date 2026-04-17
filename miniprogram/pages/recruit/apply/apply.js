@@ -3,7 +3,7 @@ import { getCurrentOpenId, requireLogin } from '../../../utils/auth.js';
 
 const RECRUIT_SUBSCRIBE_TEMPLATE_IDS = [
   '-0O7BnI57E_sDWOYezEjF8hlFAB3kaWQPOniWmkDXvc', // 报名审核通知
-  'hIAElgobOhB20TJwf7TKvxkiR0G9w2m-KCDZRFORCC8'  // 日程提醒
+  'AzXHROkY7zpm1KJXL8qC3cxex3RZii_37KUuETS5p_I'  // 面试安排
 ];
 const DRAFT_STORAGE_KEY = 'applyDraft';
 const DRAFT_SAVE_DEBOUNCE_MS = 1200;
@@ -11,6 +11,7 @@ const DRAFT_SAVE_DEBOUNCE_MS = 1200;
 Page({
   data: {
     scoutShareCode: '',   // 星探分享码
+    scoutReferral: null,
 
     // 当前步骤
     currentStep: 0,
@@ -75,18 +76,53 @@ Page({
     // 上传状态
     uploading: false,
 
+    keyboardVisible: false,
+
     // 编辑模式
-    isEditMode: false
+    isEditMode: false,
+    genderIndex: 0,
+    mbtiIndex: -1
   },
 
   async onLoad(options) {
     this._skipDraftSave = false;
+    this._keyboardHandler = (res = {}) => {
+      this.setData({
+        keyboardVisible: Number(res.height || 0) > 0
+      });
+    };
+    if (wx.onKeyboardHeightChange) {
+      wx.onKeyboardHeightChange(this._keyboardHandler);
+    }
 
-    // 获取星探推荐码
-    const { ref, mode } = options || {};
-    if (ref) {
-      this.setData({ scoutShareCode: ref });
-      console.log('[报名] 检测到星探推荐码:', ref);
+    // 获取星探推荐上下文
+    const { mode } = options || {};
+    const app = getApp();
+    const sceneParams = wx.getStorageSync('scene_params') || {};
+    const referralFromOptions = {
+      scoutShareCode: (options && (options.ref || options.shareCode)) || '',
+      scoutId: (options && options.scoutId) || '',
+      scoutName: (options && options.scoutName) || ''
+    };
+    const referralFromGlobal = app && typeof app.getScoutReferral === 'function'
+      ? (app.getScoutReferral() || {})
+      : {};
+    const referralFromScene = {
+      scoutShareCode: sceneParams.scoutShareCode || '',
+      scoutId: sceneParams.scoutId || '',
+      scoutName: sceneParams.scoutName || ''
+    };
+    const scoutReferral = {
+      scoutShareCode: referralFromOptions.scoutShareCode || referralFromGlobal.scoutShareCode || referralFromScene.scoutShareCode || '',
+      scoutId: referralFromOptions.scoutId || referralFromGlobal.scoutId || referralFromScene.scoutId || '',
+      scoutName: referralFromOptions.scoutName || referralFromGlobal.scoutName || referralFromScene.scoutName || ''
+    };
+    if (scoutReferral.scoutShareCode || scoutReferral.scoutId) {
+      this.setData({
+        scoutShareCode: scoutReferral.scoutShareCode,
+        scoutReferral
+      });
+      console.log('[报名] 检测到星探推荐信息:', scoutReferral);
     }
 
     // 确保用户已登录
@@ -115,6 +151,9 @@ Page({
     if (this._draftSaveTimer) {
       clearTimeout(this._draftSaveTimer);
       this._draftSaveTimer = null;
+    }
+    if (wx.offKeyboardHeightChange && this._keyboardHandler) {
+      wx.offKeyboardHeightChange(this._keyboardHandler);
     }
   },
 
@@ -185,7 +224,11 @@ Page({
           }
         };
 
-        this.setData({ formData });
+        this.setData({
+          formData,
+          genderIndex: this.getPickerIndex(this.data.genderOptions, formData.basicInfo.gender, 0),
+          mbtiIndex: this.getPickerIndex(this.data.mbtiOptions, formData.basicInfo.mbti, -1)
+        });
         wx.hideLoading();
       } else {
         wx.hideLoading();
@@ -318,10 +361,25 @@ Page({
     const { field, options } = e.currentTarget.dataset;
     const index = e.detail.value;
     const value = this.data[options][index];
-    this.setData({
+    const updates = {
       [`formData.${field}`]: value
-    });
+    };
+
+    if (field === 'basicInfo.gender') {
+      updates.genderIndex = Number(index);
+    }
+
+    if (field === 'basicInfo.mbti') {
+      updates.mbtiIndex = Number(index);
+    }
+
+    this.setData(updates);
     this.saveDraft();
+  },
+
+  getPickerIndex(options = [], value = '', fallback = 0) {
+    const index = options.indexOf(value);
+    return index >= 0 ? index : fallback;
   },
 
   // 滑块变化
@@ -489,6 +547,7 @@ Page({
       formData: JSON.parse(JSON.stringify(this.data.formData)),
       currentStep: this.data.currentStep || 0,
       scoutShareCode: this.data.scoutShareCode || '',
+      scoutReferral: this.data.scoutReferral || null,
       updatedAt: Date.now()
     };
   },
@@ -502,6 +561,7 @@ Page({
         formData: this.normalizeFormData(rawDraft.formData),
         currentStep: typeof rawDraft.currentStep === 'number' ? rawDraft.currentStep : 0,
         scoutShareCode: rawDraft.scoutShareCode || '',
+        scoutReferral: rawDraft.scoutReferral || null,
         updatedAt: rawDraft.updatedAt || rawDraft.clientUpdatedAt || 0
       };
     }
@@ -510,6 +570,7 @@ Page({
       formData: this.normalizeFormData(rawDraft),
       currentStep: 0,
       scoutShareCode: '',
+      scoutReferral: null,
       updatedAt: 0
     };
   },
@@ -527,6 +588,9 @@ Page({
         ...normalized.basicInfo,
         ...formData.basicInfo
       };
+      if (!normalized.basicInfo.gender) {
+        normalized.basicInfo.gender = '男';
+      }
       if (!Array.isArray(normalized.basicInfo.hobbies)) {
         normalized.basicInfo.hobbies = [];
       }
@@ -571,19 +635,30 @@ Page({
       Math.max(localDraft.currentStep || 0, 0),
       this.data.steps.length - 1
     );
-    const scoutShareCode = this.data.scoutShareCode || localDraft.scoutShareCode || '';
+    const currentReferral = this.data.scoutReferral || {};
+    const draftReferral = localDraft.scoutReferral || {};
+    const scoutReferral = {
+      scoutShareCode: currentReferral.scoutShareCode || this.data.scoutShareCode || draftReferral.scoutShareCode || localDraft.scoutShareCode || '',
+      scoutId: currentReferral.scoutId || draftReferral.scoutId || '',
+      scoutName: currentReferral.scoutName || draftReferral.scoutName || ''
+    };
+    const scoutShareCode = scoutReferral.scoutShareCode;
 
     this.setData({
       formData: localDraft.formData,
       currentStep: step,
-      scoutShareCode
+      scoutShareCode,
+      scoutReferral,
+      genderIndex: this.getPickerIndex(this.data.genderOptions, localDraft.formData.basicInfo.gender, 0),
+      mbtiIndex: this.getPickerIndex(this.data.mbtiOptions, localDraft.formData.basicInfo.mbti, -1)
     });
 
     // 回写到本地，保证下一次离线也能恢复
     wx.setStorageSync(DRAFT_STORAGE_KEY, {
       ...localDraft,
       currentStep: step,
-      scoutShareCode
+      scoutShareCode,
+      scoutReferral
     });
   },
 
@@ -806,9 +881,37 @@ Page({
         });
       });
       console.log('[报名] 订阅消息结果:', result);
+
+      const acceptedCount = RECRUIT_SUBSCRIBE_TEMPLATE_IDS.filter((id) => result?.[id] === 'accept').length;
+      const deniedCount = RECRUIT_SUBSCRIBE_TEMPLATE_IDS.filter((id) => result?.[id] === 'reject').length;
+
+      if (acceptedCount > 0) {
+        wx.showToast({
+          title: '已开启通知提醒',
+          icon: 'success'
+        });
+        return;
+      }
+
+      if (deniedCount > 0) {
+        wx.showToast({
+          title: '未授权通知提醒',
+          icon: 'none'
+        });
+        return;
+      }
+
+      wx.showToast({
+        title: '已沿用上次通知设置',
+        icon: 'none'
+      });
     } catch (error) {
       // 用户拒绝或取消不应阻断报名流程
       console.warn('[报名] 订阅消息授权未完成:', error);
+      wx.showToast({
+        title: '未开启通知提醒',
+        icon: 'none'
+      });
     }
   },
 
@@ -899,6 +1002,7 @@ Page({
       }
 
       // 4. 准备提交数据
+      const hasScoutReferral = Boolean(this.data.scoutReferral?.scoutId || scoutShareCode);
       const submitData = {
         formData: {
           basicInfo: {
@@ -917,8 +1021,10 @@ Page({
             incomeScreenshot: uploadedIncomeScreenshot
           }
         },
-        source: scoutShareCode ? '星探推荐' : '官网报名',
-        scoutShareCode: scoutShareCode || null
+        source: hasScoutReferral ? '星探推荐' : '官网报名',
+        scoutShareCode: scoutShareCode || null,
+        scoutId: this.data.scoutReferral?.scoutId || null,
+        scoutName: this.data.scoutReferral?.scoutName || null
       };
 
       // 4. 调用云函数提交/更新
@@ -938,12 +1044,18 @@ Page({
       if (res.result && res.result.success) {
         wx.hideLoading();
 
+        const candidateIdentifier = res.result.candidateNo || res.result.candidateId;
+
         // 保存候选人ID到本地
-        wx.setStorageSync('myCandidateId', res.result.candidateId);
+        wx.setStorageSync('myCandidateId', candidateIdentifier);
 
         // 清除草稿
         this.clearDraft({ lockSaving: true });
         wx.removeStorageSync('scene_params');
+        const app = getApp();
+        if (app && typeof app.clearScoutReferral === 'function') {
+          app.clearScoutReferral();
+        }
 
         this.setData({ uploading: false });
 
@@ -956,7 +1068,7 @@ Page({
         // 跳转到状态页
         setTimeout(() => {
           wx.reLaunch({
-            url: `/pages/recruit/status/status?id=${res.result.candidateId}`
+            url: `/pages/recruit/status/status?id=${candidateIdentifier}`
           });
         }, 2000);
 

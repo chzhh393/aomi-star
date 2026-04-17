@@ -97,6 +97,84 @@ let inviteCodes = [
     usedBy: [],
     createdAt: '2025-11-01'
   },
+  {
+    code: 'DANCE2025TEST',
+    type: INVITE_TYPE.EMPLOYEE,
+    presetRole: 'dance_teacher',
+    maxUses: 5,
+    usedCount: 0,
+    expiresAt: '2026-12-31',
+    status: INVITE_STATUS.ACTIVE,
+    createdBy: 'ADMIN',
+    note: '测试用舞蹈老师邀请码',
+    usedBy: [],
+    createdAt: '2026-03-17'
+  },
+  {
+    code: 'PHOTO2025TEST',
+    type: INVITE_TYPE.EMPLOYEE,
+    presetRole: 'photographer',
+    maxUses: 5,
+    usedCount: 0,
+    expiresAt: '2026-12-31',
+    status: INVITE_STATUS.ACTIVE,
+    createdBy: 'ADMIN',
+    note: '测试用摄影师邀请码',
+    usedBy: [],
+    createdAt: '2026-03-17'
+  },
+  {
+    code: 'MC2025TEST',
+    type: INVITE_TYPE.EMPLOYEE,
+    presetRole: 'host_mc',
+    maxUses: 5,
+    usedCount: 0,
+    expiresAt: '2026-12-31',
+    status: INVITE_STATUS.ACTIVE,
+    createdBy: 'ADMIN',
+    note: '测试用主持/MC邀请码',
+    usedBy: [],
+    createdAt: '2026-03-17'
+  },
+  {
+    code: 'ADMIN2025TEST',
+    type: INVITE_TYPE.EMPLOYEE,
+    presetRole: 'admin',
+    maxUses: 5,
+    usedCount: 0,
+    expiresAt: '2026-12-31',
+    status: INVITE_STATUS.ACTIVE,
+    createdBy: 'ADMIN',
+    note: '测试用管理员邀请码',
+    usedBy: [],
+    createdAt: '2026-03-17'
+  },
+  {
+    code: 'MAKEUP2025TEST',
+    type: INVITE_TYPE.EMPLOYEE,
+    presetRole: 'makeup_artist',
+    maxUses: 5,
+    usedCount: 0,
+    expiresAt: '2026-12-31',
+    status: INVITE_STATUS.ACTIVE,
+    createdBy: 'ADMIN',
+    note: '测试用化妆师邀请码',
+    usedBy: [],
+    createdAt: '2026-03-17'
+  },
+  {
+    code: 'ROLE42025TEST',
+    type: INVITE_TYPE.EMPLOYEE,
+    presetRole: 'stylist',
+    maxUses: 5,
+    usedCount: 0,
+    expiresAt: '2026-12-31',
+    status: INVITE_STATUS.ACTIVE,
+    createdBy: 'ADMIN',
+    note: '测试用第四角色邀请码',
+    usedBy: [],
+    createdAt: '2026-03-17'
+  },
 
 ];
 

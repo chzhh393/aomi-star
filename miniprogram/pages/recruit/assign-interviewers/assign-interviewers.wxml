@@ -82,6 +82,49 @@
     <!-- 摄像师 -->
     <view class="interviewer-group">
       <view class="group-label">
+        <text class="label-icon">⚙️</text>
+        <text class="label-text">管理员</text>
+      </view>
+      <view class="interviewer-list">
+        <view
+          wx:for="{{admins}}"
+          wx:key="id"
+          class="interviewer-item {{formData.selectedInterviewers[item.id] ? 'selected' : ''}}"
+          bindtap="onToggleInterviewer"
+          data-id="{{item.id}}"
+          data-role="admin"
+          data-name="{{item.profile.name}}"
+        >
+          <text class="interviewer-name">{{item.profile.name}}</text>
+          <text class="check-icon">{{formData.selectedInterviewers[item.id] ? '✓' : ''}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="interviewer-group">
+      <view class="group-label">
+        <text class="label-icon">⭐</text>
+        <text class="label-text">经纪人</text>
+      </view>
+      <view class="interviewer-list">
+        <view
+          wx:for="{{agents}}"
+          wx:key="id"
+          class="interviewer-item {{formData.selectedInterviewers[item.id] ? 'selected' : ''}}"
+          bindtap="onToggleInterviewer"
+          data-id="{{item.id}}"
+          data-role="agent"
+          data-name="{{item.profile.name}}"
+        >
+          <text class="interviewer-name">{{item.profile.name}}</text>
+          <text class="check-icon">{{formData.selectedInterviewers[item.id] ? '✓' : ''}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 摄像师 -->
+    <view class="interviewer-group">
+      <view class="group-label">
         <text class="label-icon">📸</text>
         <text class="label-text">摄像师</text>
       </view>
@@ -115,6 +158,28 @@
           bindtap="onToggleInterviewer"
           data-id="{{item.id}}"
           data-role="dance_teacher"
+          data-name="{{item.profile.name}}"
+        >
+          <text class="interviewer-name">{{item.profile.name}}</text>
+          <text class="check-icon">{{formData.selectedInterviewers[item.id] ? '✓' : ''}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 化妆师 -->
+    <view class="interviewer-group">
+      <view class="group-label">
+        <text class="label-icon">🎤</text>
+        <text class="label-text">主持/MC</text>
+      </view>
+      <view class="interviewer-list">
+        <view
+          wx:for="{{hostMcs}}"
+          wx:key="id"
+          class="interviewer-item {{formData.selectedInterviewers[item.id] ? 'selected' : ''}}"
+          bindtap="onToggleInterviewer"
+          data-id="{{item.id}}"
+          data-role="host_mc"
           data-name="{{item.profile.name}}"
         >
           <text class="interviewer-name">{{item.profile.name}}</text>

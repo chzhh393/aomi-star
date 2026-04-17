@@ -1,321 +1,274 @@
-/* HR工作台样式 - 街头运动风格 */
-
 .hr-home {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20rpx;
+  padding: 28rpx;
+  background:
+    radial-gradient(circle at top right, rgba(255, 212, 163, 0.45), transparent 26%),
+    linear-gradient(180deg, #18212b 0%, #223141 34%, #f2ebe2 34%, #f7f2ea 100%);
 }
 
-/* ========== 顶部用户信息 ========== */
-.header {
-  margin-bottom: 30rpx;
-}
-
-.user-info {
+.hero-panel {
   display: flex;
-  align-items: center;
-  gap: 20rpx;
-  padding: 30rpx;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 20rpx;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 36rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #21303f, #10181f);
+  color: #fff9ef;
+  box-shadow: 0 20rpx 50rpx rgba(17, 23, 30, 0.24);
 }
 
-.role-badge {
-  font-size: 28rpx;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 10rpx 20rpx;
-  border-radius: 30rpx;
-  font-weight: bold;
+.hero-copy {
+  flex: 1;
 }
 
-.username {
-  font-size: 32rpx;
-  color: #fff;
-  font-weight: bold;
+.hero-kicker {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 6rpx;
+  color: #f6b26b;
 }
 
-/* ========== 数据统计 ========== */
-.stats-section {
-  margin-bottom: 30rpx;
+.hero-title {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 52rpx;
+  font-weight: 700;
 }
 
-.stats-card {
-  display: flex;
-  justify-content: space-around;
-  padding: 40rpx 20rpx;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.15);
+.hero-desc {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: rgba(255, 249, 239, 0.78);
 }
 
-.stat-item {
+.hero-user {
+  min-width: 168rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10rpx;
+  justify-content: space-between;
 }
 
-.stat-item.primary .stat-value {
-  color: #667eea;
-  font-size: 48rpx;
+.user-role {
+  font-size: 20rpx;
+  color: #f6b26b;
+  letter-spacing: 4rpx;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18rpx;
+  margin-top: 24rpx;
+}
+
+.stat-card {
+  padding: 28rpx;
+  border-radius: 24rpx;
+  background: #fffdf8;
+  box-shadow: 0 12rpx 30rpx rgba(50, 44, 36, 0.08);
+}
+
+.stat-card.accent {
+  background: linear-gradient(135deg, #f6b26b, #e88d52);
+  color: #1f1710;
 }
 
 .stat-value {
-  font-size: 40rpx;
-  font-weight: bold;
-  color: #333;
+  display: block;
+  font-size: 48rpx;
+  font-weight: 700;
 }
 
 .stat-label {
+  display: block;
+  margin-top: 12rpx;
   font-size: 24rpx;
-  color: #999;
+  color: #6b625b;
 }
 
-/* ========== 任务列表区域 ========== */
-.tasks-section {
-  margin-bottom: 30rpx;
+.stat-card.accent .stat-label {
+  color: rgba(31, 23, 16, 0.78);
+}
+
+.section {
+  margin-top: 28rpx;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20rpx;
-  padding: 0 10rpx;
+  margin-bottom: 18rpx;
 }
 
 .section-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 2rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1a232d;
 }
 
-.section-count {
-  font-size: 28rpx;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8rpx 20rpx;
-  border-radius: 20rpx;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80rpx 40rpx;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20rpx;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-}
-
-.empty-icon {
-  font-size: 80rpx;
-  margin-bottom: 20rpx;
-}
-
-.empty-text {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* ========== 候选人卡片 ========== */
-.candidate-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.candidate-card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-}
-
-.candidate-card:active {
-  transform: scale(0.98);
-}
-
-/* 待审核候选人 - 紧急标记 */
-.candidate-card.urgent {
-  border-left: 6rpx solid #FF6B6B;
-}
-
-.candidate-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20rpx;
-}
-
-.candidate-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.candidate-name {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-.candidate-id {
+.section-subtitle,
+.section-link {
   font-size: 24rpx;
-  color: #999;
+  color: #8d6f52;
 }
 
-/* 紧急徽章 */
-.urgent-badge {
-  background: #FF6B6B;
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18rpx;
+}
+
+.module-card {
+  min-height: 252rpx;
+  padding: 28rpx;
+  border-radius: 26rpx;
+  background: linear-gradient(180deg, #fffdf7, #f4ece3);
+  box-shadow: 0 16rpx 36rpx rgba(40, 32, 26, 0.08);
+}
+
+.module-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #202830;
+}
+
+.module-desc {
+  display: block;
+  min-height: 104rpx;
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #6f665d;
+}
+
+.module-metric {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #9a4f23;
+}
+
+.module-highlight {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #7a7268;
+}
+
+.module-cta {
+  display: inline-flex;
+  margin-top: 18rpx;
   padding: 10rpx 20rpx;
-  border-radius: 10rpx;
+  border-radius: 999rpx;
+  background: #1c2b37;
+  color: #fff6ea;
+  font-size: 22rpx;
 }
 
-.urgent-badge .badge-text {
-  font-size: 24rpx;
-  color: #fff;
-  font-weight: bold;
+.empty-card {
+  padding: 34rpx;
+  border-radius: 24rpx;
+  background: #fffaf2;
 }
 
-.candidate-details {
-  padding: 20rpx 0;
-  border-top: 1px solid #f0f0f0;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 20rpx;
-}
-
-.detail-item {
-  display: flex;
-  margin-bottom: 10rpx;
-  font-size: 26rpx;
-}
-
-.detail-item:last-child {
-  margin-bottom: 0;
-}
-
-.detail-label {
-  color: #999;
-  width: 180rpx;
-}
-
-.detail-value {
-  color: #333;
-  flex: 1;
-}
-
-.action-btn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20rpx;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 15rpx;
-}
-
-.btn-text {
+.empty-title {
+  display: block;
   font-size: 28rpx;
-  color: #fff;
-  font-weight: bold;
+  font-weight: 700;
+  color: #26303a;
 }
 
-/* ========== 已完成列表 ========== */
-.completed-section {
-  margin-bottom: 30rpx;
+.empty-desc {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #756b63;
 }
 
-.completed-list {
+.priority-list,
+.followup-list {
   display: flex;
   flex-direction: column;
-  gap: 15rpx;
+  gap: 16rpx;
 }
 
-.completed-card {
+.priority-card,
+.followup-card {
+  padding: 26rpx 28rpx;
+  border-radius: 24rpx;
+  background: #fffdf8;
+  box-shadow: 0 12rpx 30rpx rgba(50, 44, 36, 0.08);
+}
+
+.priority-card {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  padding: 25rpx 30rpx;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 15rpx;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  transition: transform 0.2s;
-}
-
-.completed-card:active {
-  transform: scale(0.98);
-}
-
-.completed-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.completed-name {
-  font-size: 28rpx;
-  color: #fff;
-  font-weight: bold;
-}
-
-.completed-status {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.completed-arrow {
-  width: 50rpx;
-  height: 50rpx;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.arrow-icon {
-  font-size: 28rpx;
-  color: #fff;
-}
-
-/* ========== 快捷功能 ========== */
-.quick-actions {
-  display: flex;
   gap: 20rpx;
-  margin-bottom: 40rpx;
 }
 
-.action-item {
+.priority-copy {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10rpx;
-  padding: 30rpx 20rpx;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 15rpx;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  transition: transform 0.2s;
 }
 
-.action-item:active {
-  transform: scale(0.95);
+.priority-tag,
+.followup-grade {
+  display: inline-flex;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #f5e5d3;
+  color: #8d4c20;
+  font-size: 20rpx;
 }
 
-.action-icon {
-  font-size: 40rpx;
+.priority-name,
+.followup-name {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2831;
 }
 
-.action-text {
+.priority-subtitle,
+.followup-meta,
+.followup-state {
+  display: block;
+  margin-top: 8rpx;
   font-size: 24rpx;
-  color: #fff;
+  line-height: 1.6;
+  color: #756b63;
+}
+
+.priority-btn {
+  margin: 0;
+  padding: 0 24rpx;
+  line-height: 72rpx;
+  border-radius: 999rpx;
+  background: #20303f;
+  color: #fff8ee;
+  font-size: 24rpx;
+}
+
+.priority-btn::after {
+  border: none;
+}
+
+.followup-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

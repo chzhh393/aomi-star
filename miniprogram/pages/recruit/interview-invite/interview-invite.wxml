@@ -35,7 +35,7 @@
     <view class="flow-item">
       <view class="flow-number">02</view>
       <view class="flow-content">
-        <view class="flow-title">妆前拍摄（外形打分）</view>
+        <view class="flow-title">妆前拍摄</view>
         <view class="flow-desc">拍摄 4 方位全身照 + 1 张半身特写。</view>
       </view>
     </view>
@@ -85,7 +85,9 @@
       </view>
 
       <view class="info-row">
-        <text class="info-icon">&#x1F4CD;</text>
+        <view class="info-icon-box">
+          <text class="info-icon-text">📍</text>
+        </view>
         <view class="info-content">
           <view class="info-label">面试地点</view>
           <view class="info-value">{{interview && interview.location ? interview.location : defaultLocation}}</view>
@@ -94,7 +96,9 @@
       </view>
 
       <view class="info-row">
-        <text class="info-icon">&#x1F4DE;</text>
+        <view class="info-icon-box">
+          <text class="info-icon-text">📞</text>
+        </view>
         <view class="info-content">
           <view class="info-label">联系电话</view>
           <view class="info-value">{{contactPhone}}</view>
@@ -111,7 +115,7 @@
   </view>
 
   <!-- 操作按钮 -->
-  <view class="actions-block">
+  <view class="actions-block" wx:if="{{!(interview && interview.date && interview.time)}}">
     <button class="action-btn btn-primary" bindtap="callPhone">
       <text class="btn-text">电话确认面试时间</text>
     </button>

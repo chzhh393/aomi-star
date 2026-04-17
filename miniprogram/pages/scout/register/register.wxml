@@ -25,6 +25,33 @@
 
   <!-- 申请表单 -->
   <view wx:else class="form-content">
+    <view wx:if="{{inviterScout}}" class="status-card pending">
+      <view class="status-title">{{invitePlan ? invitePlan.title : '二级星探招募入口'}}</view>
+      <view class="status-desc">上级星探：{{inviterScout.scoutName || '未命名星探'}}</view>
+      <view class="status-desc">绑定后，你推荐的主播业绩会同步计入上级星探团队成果。</view>
+    </view>
+
+    <view wx:if="{{invitePlan}}" class="invite-plan-card">
+      <view class="invite-plan-title">收益分配方案</view>
+      <view class="invite-plan-row">
+        <text class="invite-plan-label">签约奖</text>
+        <text class="invite-plan-value">{{invitePlan.signingAward}} 元</text>
+      </view>
+      <view class="invite-plan-row">
+        <text class="invite-plan-label">S档定级奖</text>
+        <text class="invite-plan-value">{{invitePlan.levelAwards.S}} 元</text>
+      </view>
+      <view class="invite-plan-row">
+        <text class="invite-plan-label">A档定级奖</text>
+        <text class="invite-plan-value">{{invitePlan.levelAwards.A}} 元</text>
+      </view>
+      <view class="invite-plan-row">
+        <text class="invite-plan-label">B档定级奖</text>
+        <text class="invite-plan-value">{{invitePlan.levelAwards.B}} 元</text>
+      </view>
+      <view class="invite-plan-tip">提交申请后，系统会按该邀请方案记录你的收益分配配置。</view>
+    </view>
+
     <view class="form-section">
       <view class="section-title">基本信息</view>
 

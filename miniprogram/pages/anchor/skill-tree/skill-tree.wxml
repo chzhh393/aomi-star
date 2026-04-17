@@ -1,0 +1,28 @@
+<view class="detail-page">
+  <view class="hero-card">
+    <text class="hero-kicker">SKILL TREE</text>
+    <text class="hero-title">{{heroTitle}}</text>
+    <text class="hero-copy">4 类舞蹈能力实时刷新，达到 80% 即点亮“已掌握”勋章。</text>
+    <text class="hero-badge">{{masteredCount}} 枚勋章已点亮</text>
+  </view>
+
+  <view class="loading-card" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="skill-list" wx:if="{{!loading}}">
+    <view class="skill-card" wx:for="{{skillTree}}" wx:key="key">
+      <view class="skill-head">
+        <text class="skill-name">{{item.name}}</text>
+        <text class="skill-badge {{item.mastered ? 'is-mastered' : ''}}">{{item.badgeText}}</text>
+      </view>
+      <view class="skill-bar">
+        <view class="skill-bar-fill" style="width: {{item.progress}}%;"></view>
+      </view>
+      <view class="skill-meta">
+        <text class="skill-progress">{{item.progressText}}</text>
+        <text class="skill-status">{{item.mastered ? '已掌握' : '继续闯关'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

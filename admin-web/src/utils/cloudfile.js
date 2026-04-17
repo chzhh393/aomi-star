@@ -7,6 +7,7 @@ const IS_DEV = import.meta.env.DEV
 const cache = new Map()
 
 const CHUNK_SIZE = 40
+const RETRY_DELAY_MS = 250
 
 function isCloudFileId(value) {
   return typeof value === 'string' && value.startsWith('cloud://')
@@ -18,6 +19,10 @@ function chunkArray(list, size) {
     chunks.push(list.slice(i, i + size))
   }
   return chunks
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function parseFileList(payload) {
@@ -79,12 +84,26 @@ async function requestViaAdminApi(fileIds) {
   return parseFileList(res.result)
 }
 
-async function resolveByRequester(fileIds, requester) {
+async function resolveByRequester(fileIds, requester, options = {}) {
   if (!fileIds.length) return
-  const chunks = chunkArray(fileIds, CHUNK_SIZE)
-  for (const chunk of chunks) {
-    const fileList = await requester(chunk)
-    saveFileListToCache(fileList)
+  const {
+    maxAttempts = 1,
+    retryDelayMs = RETRY_DELAY_MS
+  } = options
+
+  let unresolved = [...fileIds]
+
+  for (let attempt = 0; attempt < maxAttempts && unresolved.length; attempt += 1) {
+    const chunks = chunkArray(unresolved, CHUNK_SIZE)
+    for (const chunk of chunks) {
+      const fileList = await requester(chunk)
+      saveFileListToCache(fileList)
+    }
+
+    unresolved = unresolved.filter((id) => !cache.has(id))
+    if (unresolved.length && attempt < maxAttempts - 1) {
+      await sleep(retryDelayMs)
+    }
   }
 }
 
@@ -97,9 +116,13 @@ export async function resolveCloudFileIds(fileIds) {
   if (uncached.length > 0) {
     try {
       if (IS_DEV) {
-        await resolveByRequester(uncached, requestViaDevProxy)
+        await resolveByRequester(uncached, requestViaDevProxy, {
+          maxAttempts: 2
+        })
       } else {
-        await resolveByRequester(uncached, requestViaAdminApi)
+        await resolveByRequester(uncached, requestViaAdminApi, {
+          maxAttempts: 2
+        })
       }
     } catch (err) {
       console.error('转换云文件链接失败（主通道）:', err)
@@ -109,7 +132,10 @@ export async function resolveCloudFileIds(fileIds) {
     const unresolved = uncached.filter(id => !cache.has(id))
     if (unresolved.length > 0) {
       try {
-        await resolveByRequester(unresolved, requestViaAdminApi)
+        await resolveByRequester(unresolved, requestViaAdminApi, {
+          maxAttempts: 3,
+          retryDelayMs: 400
+        })
       } catch (err) {
         console.error('转换云文件链接失败（兜底通道）:', err)
       }
@@ -140,6 +166,22 @@ export async function resolveCandidateImages(candidates) {
   const pushCloudId = (value) => {
     if (isCloudFileId(value)) fileIds.push(value)
   }
+  const mapDisplayUrl = (url, urlMap) => (isCloudFileId(url) ? (urlMap[url] || '') : url)
+  const mapMediaEntry = (entry, urlMap) => {
+    if (!entry) return entry
+    if (typeof entry === 'string') {
+      return {
+        url: mapDisplayUrl(entry, urlMap)
+      }
+    }
+    if (typeof entry !== 'object') return entry
+
+    return {
+      ...entry,
+      url: mapDisplayUrl(entry.url || entry.fileId || entry.fileID || entry.path || '', urlMap),
+      thumb: mapDisplayUrl(entry.thumb, urlMap)
+    }
+  }
 
   for (const c of candidates) {
     if (c.images) {
@@ -158,19 +200,44 @@ export async function resolveCandidateImages(candidates) {
         pushCloudId(v?.thumb)
       }
     }
+    if (c.interview?.materials?.photos) {
+      for (const photo of c.interview.materials.photos) {
+        if (typeof photo === 'string') {
+          pushCloudId(photo)
+          continue
+        }
+        pushCloudId(photo?.url)
+        pushCloudId(photo?.fileId)
+        pushCloudId(photo?.fileID)
+        pushCloudId(photo?.path)
+        pushCloudId(photo?.thumb)
+      }
+    }
+    if (c.interview?.materials?.videos) {
+      for (const video of c.interview.materials.videos) {
+        if (typeof video === 'string') {
+          pushCloudId(video)
+          continue
+        }
+        pushCloudId(video?.url)
+        pushCloudId(video?.fileId)
+        pushCloudId(video?.fileID)
+        pushCloudId(video?.path)
+        pushCloudId(video?.thumb)
+      }
+    }
   }
 
   if (fileIds.length === 0) return candidates
 
   const urlMap = await resolveCloudFileIds(fileIds)
-  const mapDisplayUrl = (url) => (isCloudFileId(url) ? (urlMap[url] || '') : url)
 
   return candidates.map(c => {
     const result = { ...c }
     if (c.images) {
       const newImages = {}
       for (const [key, url] of Object.entries(c.images)) {
-        newImages[key] = mapDisplayUrl(url)
+        newImages[key] = mapDisplayUrl(url, urlMap)
       }
       result.images = newImages
     }
@@ -186,8 +253,8 @@ export async function resolveCandidateImages(candidates) {
           }
           return {
             ...v,
-            url: mapDisplayUrl(v.url),
-            thumb: mapDisplayUrl(v.thumb)
+            url: mapDisplayUrl(v.url, urlMap),
+            thumb: mapDisplayUrl(v.thumb, urlMap)
           }
         })
       }
@@ -195,7 +262,21 @@ export async function resolveCandidateImages(candidates) {
     if (c.experience?.incomeScreenshot) {
       result.experience = {
         ...c.experience,
-        incomeScreenshot: mapDisplayUrl(c.experience.incomeScreenshot)
+        incomeScreenshot: mapDisplayUrl(c.experience.incomeScreenshot, urlMap)
+      }
+    }
+    if (c.interview?.materials) {
+      result.interview = {
+        ...c.interview,
+        materials: {
+          ...c.interview.materials,
+          photos: Array.isArray(c.interview.materials.photos)
+            ? c.interview.materials.photos.map((photo) => mapMediaEntry(photo, urlMap))
+            : c.interview.materials.photos,
+          videos: Array.isArray(c.interview.materials.videos)
+            ? c.interview.materials.videos.map((video) => mapMediaEntry(video, urlMap))
+            : c.interview.materials.videos
+        }
       }
     }
     return result

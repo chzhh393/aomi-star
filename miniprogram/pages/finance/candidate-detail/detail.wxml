@@ -1,0 +1,207 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="empty-state">加载中...</view>
+
+  <view wx:elif="{{candidate}}">
+    <view class="hero">
+      <text class="hero-title">{{candidate.name}}</text>
+      <text class="hero-desc">{{candidate.artName}} · {{candidate.city}} · {{candidate.status}}</text>
+    </view>
+
+    <view class="action-row">
+      <button
+        class="action-button action-primary"
+        loading="{{openingContract}}"
+        disabled="{{openingContract}}"
+        bindtap="openContract"
+      >
+        查看合同文件
+      </button>
+      <button class="action-button action-secondary" bindtap="openContractReview">去合同审核</button>
+      <button class="action-button action-secondary" bindtap="openProfitSharingDetail">去分润明细</button>
+    </view>
+
+    <view class="section">
+      <view class="section-title">基本信息</view>
+      <view class="card grid">
+        <view class="grid-item"><text class="label">手机号</text><text class="value">{{candidate.phone}}</text></view>
+        <view class="grid-item"><text class="label">年龄</text><text class="value">{{candidate.age}}</text></view>
+        <view class="grid-item"><text class="label">性别</text><text class="value">{{candidate.gender}}</text></view>
+        <view class="grid-item"><text class="label">城市</text><text class="value">{{candidate.city}}</text></view>
+        <view class="grid-item"><text class="label">身高</text><text class="value">{{candidate.height}}</text></view>
+        <view class="grid-item"><text class="label">体重</text><text class="value">{{candidate.weight}}</text></view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">直播经验</view>
+      <view class="card grid">
+        <view class="grid-item"><text class="label">平台</text><text class="value">{{candidate.platform}}</text></view>
+        <view class="grid-item"><text class="label">最高粉丝</text><text class="value">{{candidate.maxFans}}</text></view>
+        <view class="grid-item"><text class="label">最高收入</text><text class="value">{{candidate.maxIncome}}</text></view>
+        <view class="grid-item"><text class="label">期望薪资</text><text class="value">{{candidate.salaryRange}}</text></view>
+        <view class="grid-item grid-item-full"><text class="label">投入时间</text><text class="value">{{candidate.timeCommitment}}</text></view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">合同流程</view>
+      <view class="card grid">
+        <view class="grid-item grid-item-full"><text class="label">合同名称</text><text class="value">{{candidate.contractTitle}}</text></view>
+        <view class="grid-item"><text class="label">合同类型</text><text class="value">{{candidate.contractType}}</text></view>
+        <view class="grid-item"><text class="label">分润比例</text><text class="value">{{candidate.contractCommission}}</text></view>
+        <view class="grid-item"><text class="label">流程状态</text><text class="value">{{candidate.workflowStatus}}</text></view>
+        <view class="grid-item"><text class="label">财务审核</text><text class="value">{{candidate.financeStatus}}</text></view>
+        <view class="grid-item"><text class="label">审核人</text><text class="value">{{candidate.financeReviewer}}</text></view>
+        <view class="grid-item grid-item-full"><text class="label">审核时间</text><text class="value">{{candidate.financeReviewedAt}}</text></view>
+        <view class="grid-item grid-item-full"><text class="label">审核意见</text><text class="value">{{candidate.financeComment}}</text></view>
+        <view class="grid-item grid-item-full"><text class="label">合同文件</text><text class="value">{{candidate.contractFileName}}</text></view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">分润信息</view>
+      <view class="card grid">
+        <view class="grid-item"><text class="label">支付状态</text><text class="value">{{candidate.commissionStatus}}</text></view>
+        <view class="grid-item"><text class="label">应发提成</text><text class="value">{{candidate.commissionAmount}}</text></view>
+        <view class="grid-item"><text class="label">计算时间</text><text class="value">{{candidate.commissionCalculatedAt}}</text></view>
+        <view class="grid-item"><text class="label">支付时间</text><text class="value">{{candidate.commissionPaidAt}}</text></view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">照片资料</view>
+      <view wx:if="{{!candidate.photos.length}}" class="empty-state">暂无照片资料</view>
+      <view wx:else class="media-grid">
+        <image
+          wx:for="{{candidate.photos}}"
+          wx:key="*this"
+          class="media-image"
+          src="{{item}}"
+          mode="aspectFill"
+          data-url="{{item}}"
+          bindtap="previewImage"
+        />
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">试镜视频</view>
+      <block wx:if="{{!candidate.auditionVideos.length}}">
+        <view class="empty-state">暂无试镜视频</view>
+      </block>
+      <block wx:else>
+        <block wx:for="{{candidate.auditionVideos}}" wx:key="url">
+          <view class="card row-between">
+            <view>
+              <text class="value">{{item.name}}</text>
+              <text class="label">点击复制链接后可在浏览器中打开</text>
+            </view>
+            <button class="mini-button" data-url="{{item.url}}" bindtap="openVideo">复制链接</button>
+          </view>
+        </block>
+      </block>
+    </view>
+
+    <view class="section">
+      <view class="section-title">共享面试材料</view>
+      <view wx:if="{{!sharedMaterials.images.length && !sharedMaterials.videos.length && !sharedMaterials.comment}}" class="empty-state">暂无共享材料</view>
+      <view wx:else class="card">
+        <view class="grid">
+          <view class="grid-item"><text class="label">上传人</text><text class="value">{{sharedMaterials.uploadedBy || '-'}}</text></view>
+          <view class="grid-item"><text class="label">上传时间</text><text class="value">{{sharedMaterials.uploadedAt || '-'}}</text></view>
+          <view class="grid-item grid-item-full"><text class="label">备注</text><text class="value">{{sharedMaterials.comment || '暂无'}}</text></view>
+        </view>
+
+        <view wx:if="{{sharedMaterials.images.length}}" class="subsection">
+          <text class="subsection-title">共享图片</text>
+          <view class="media-grid">
+            <image
+              wx:for="{{sharedMaterials.images}}"
+              wx:key="url"
+              class="media-image"
+              src="{{item.url}}"
+              mode="aspectFill"
+              data-url="{{item.url}}"
+              bindtap="previewSharedImage"
+            />
+          </view>
+        </view>
+
+        <view wx:if="{{sharedMaterials.videos.length}}" class="subsection">
+          <text class="subsection-title">共享视频</text>
+          <block wx:for="{{sharedMaterials.videos}}" wx:key="url">
+            <view class="row-between video-item">
+              <view>
+                <text class="value">{{item.name || item.title || '共享视频'}}</text>
+                <text class="label">点击复制链接后可在浏览器中打开</text>
+              </view>
+              <button class="mini-button" data-url="{{item.url}}" bindtap="openVideo">复制链接</button>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">面试评价摘要</view>
+      <block wx:if="{{!interviewEvaluations.length}}">
+        <view class="empty-state">暂无面试评价</view>
+      </block>
+      <block wx:else>
+        <block wx:for="{{interviewEvaluations}}" wx:key="roleName">
+          <view class="card">
+            <view class="row-between">
+              <view>
+                <text class="value">{{item.roleName}}</text>
+                <text class="label">{{item.evaluatorName}} · {{item.evaluatedAtText}}</text>
+              </view>
+              <text class="status-chip">{{item.statusLabel}}</text>
+            </view>
+
+            <view class="grid evaluation-grid">
+              <view class="grid-item"><text class="label">评分</text><text class="value">{{item.scoreText}}</text></view>
+              <view class="grid-item grid-item-full"><text class="label">评语</text><text class="value">{{item.commentText || '暂无'}}</text></view>
+            </view>
+
+            <view wx:if="{{item.dimensionEntries.length}}" class="subsection">
+              <text class="subsection-title">维度打分</text>
+              <view class="tag-row">
+                <text wx:for="{{item.dimensionEntries}}" wx:key="0" class="tag">{{item[0]}} {{item[1]}}</text>
+              </view>
+            </view>
+
+            <view wx:if="{{item.styleTags.length}}" class="subsection">
+              <text class="subsection-title">风格标签</text>
+              <view class="tag-row">
+                <text wx:for="{{item.styleTags}}" wx:key="*this" class="tag">{{item}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
+      </block>
+    </view>
+
+    <view class="section">
+      <view class="section-title">收益分配</view>
+      <block wx:if="{{!candidate.distribution.length}}">
+        <view class="empty-state">暂无收益分配明细</view>
+      </block>
+      <block wx:else>
+        <block wx:for="{{candidate.distribution}}" wx:key="scoutName">
+          <view class="card">
+            <view class="row-between">
+              <view>
+                <text class="value">{{item.scoutName}}</text>
+                <text class="label">{{item.typeLabel}}</text>
+              </view>
+              <view class="align-right">
+              <text class="value">{{item.amountText}}</text>
+              <text class="label">占比 {{item.percentage}}%</text>
+              </view>
+            </view>
+          </view>
+        </block>
+      </block>
+    </view>
+  </view>
+</view>

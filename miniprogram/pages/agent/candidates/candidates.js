@@ -4,6 +4,25 @@
 
 import { requireAgentLogin } from '../../../utils/agent-auth.js';
 import { getCandidateList, getAgentStats } from '../../../utils/agent-api.js';
+import {
+  getCandidateAssignedAgent,
+  getCandidateAvatar,
+  getCandidateDisplayName,
+  hydrateCandidateAvatarList
+} from '../../../utils/interviewer.js';
+
+function mapCandidate(candidate = {}) {
+  const displayName = getCandidateDisplayName(candidate);
+  const assignedAgent = getCandidateAssignedAgent(candidate);
+
+  return {
+    ...candidate,
+    assignedAgent,
+    avatar: getCandidateAvatar(candidate),
+    displayName,
+    nameInitial: displayName ? displayName.slice(0, 1) : '?'
+  };
+}
 
 Page({
   data: {
@@ -82,13 +101,15 @@ Page({
 
       console.log('[候选人列表] 加载结果:', result);
 
+      const hydratedCandidateList = await hydrateCandidateAvatarList(result.list || []);
+      const mappedCandidateList = hydratedCandidateList.map(mapCandidate);
       const newList = refresh
-        ? result.list
-        : [...this.data.candidateList, ...result.list];
+        ? mappedCandidateList
+        : [...this.data.candidateList, ...mappedCandidateList];
 
       this.setData({
         candidateList: newList,
-        hasMore: result.list.length >= this.data.pageSize,
+        hasMore: mappedCandidateList.length >= this.data.pageSize,
         loading: false
       });
     } catch (error) {
@@ -137,6 +158,17 @@ Page({
     const candidateId = e.currentTarget.dataset.id;
     wx.navigateTo({
       url: `/pages/agent/candidate-detail/candidate-detail?id=${candidateId}`
+    });
+  },
+
+  handleAvatarError(e) {
+    const { index } = e.currentTarget.dataset;
+    if (typeof index !== 'number') {
+      return;
+    }
+
+    this.setData({
+      [`candidateList[${index}].avatar`]: ''
     });
   },
 

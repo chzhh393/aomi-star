@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "我的技能树",
+  "navigationBarBackgroundColor": "#2A231C",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F4EFE6"
+}

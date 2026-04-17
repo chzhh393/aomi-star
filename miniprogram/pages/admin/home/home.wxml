@@ -1,0 +1,214 @@
+<view class="container">
+  <view class="hero-panel">
+    <view class="hero-topline">
+      <text class="hero-badge">ADMIN CONTROL</text>
+      <text class="hero-date">老板权限工作台</text>
+    </view>
+    <view class="hero-title">管理员工作台</view>
+    <view class="hero-subtitle">把老板待办、经营入口、预算审批和提成冻结集中在一个首页，不再只看面试评价。</view>
+
+    <view class="hero-user">
+      <view class="hero-user-avatar">管</view>
+      <view class="hero-user-content">
+        <view class="hero-user-name">{{user.name || user.username || '管理员'}}</view>
+        <view class="hero-user-role">管理员 · 老板特权与终审控制台</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="summary-grid">
+    <block wx:for="{{summaryCards}}" wx:key="id">
+      <view class="summary-card tone-{{item.tone}}">
+        <view class="summary-value-row">
+          <text class="summary-value">{{item.value}}</text>
+          <text wx:if="{{item.unit}}" class="summary-unit">{{item.unit}}</text>
+        </view>
+        <view class="summary-label">{{item.label}}</view>
+        <view class="summary-note">{{item.note}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">PRIORITY</text>
+      <text class="section-title">老板待办</text>
+    </view>
+
+    <view wx:if="{{!pendingProcurements.length && !pendingCommissions.length && !frozenCommissions.length}}" class="metric-item">
+      <view class="metric-main">
+        <text class="metric-label">当前没有老板待办</text>
+        <text class="metric-value">0</text>
+      </view>
+      <view class="metric-detail">超额采购、一键停发和冻结记录都会显示在这里。</view>
+    </view>
+
+    <view wx:for="{{pendingProcurements}}" wx:key="_id" class="todo-card" data-route="/pages/finance/boss-dashboard/boss-dashboard" bindtap="onActionTap">
+      <view class="todo-row">
+        <view>
+          <text class="todo-title">{{item.itemName}}</text>
+          <text class="todo-sub">{{item.requester}} · {{item.amountText}}</text>
+        </view>
+        <text class="todo-badge">待批采购</text>
+      </view>
+      <text class="todo-desc">财务意见：{{item.financeReviewNote || '已提交老板审批'}}</text>
+    </view>
+
+    <view wx:for="{{pendingCommissions}}" wx:key="candidateId" class="todo-card" data-route="/pages/finance/boss-dashboard/boss-dashboard" bindtap="onActionTap">
+      <view class="todo-row">
+        <view>
+          <text class="todo-title">{{item.candidateName}}</text>
+          <text class="todo-sub">待发提成 {{item.totalAmountText}}</text>
+        </view>
+        <text class="todo-badge danger">可停发</text>
+      </view>
+      <text class="todo-desc">计算时间：{{item.calculatedAtText || '-'}}</text>
+    </view>
+
+    <view wx:for="{{frozenCommissions}}" wx:key="candidateId" class="todo-card frozen" data-route="/pages/finance/boss-dashboard/boss-dashboard" bindtap="onActionTap">
+      <view class="todo-row">
+        <view>
+          <text class="todo-title">{{item.candidateName}}</text>
+          <text class="todo-sub">冻结金额 {{item.totalAmountText}}</text>
+        </view>
+        <text class="todo-badge frozen-badge">已冻结</text>
+      </view>
+      <text class="todo-desc">原因：{{item.reason || '未填写'}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">SCOUT REVIEW</text>
+      <text class="section-title">待审核星探</text>
+    </view>
+
+    <view wx:if="{{!pendingScouts.length}}" class="metric-item">
+      <view class="metric-main">
+        <text class="metric-label">当前没有待审核星探</text>
+        <text class="metric-value">0</text>
+      </view>
+      <view class="metric-detail">新提交的星探申请会在这里显示身份证号掩码、联系方式和申请理由。</view>
+    </view>
+
+    <view wx:for="{{pendingScouts}}" wx:key="id" class="todo-card scout-card">
+      <view class="todo-row">
+        <view>
+          <text class="todo-title">{{item.name}}</text>
+          <text class="todo-sub">手机号：{{item.phone}} · 证件号：{{item.idCardMasked}}</text>
+        </view>
+        <text class="todo-badge scout-badge">待审核</text>
+      </view>
+      <text class="todo-desc">微信号：{{item.wechat}}</text>
+      <text class="todo-desc">上级星探：{{item.inviterName}}</text>
+      <text wx:if="{{item.inviteTitle}}" class="todo-desc">邀请方案：{{item.inviteTitle}}</text>
+      <text class="todo-desc">申请时间：{{item.appliedAtText}}</text>
+      <text class="todo-desc">申请理由：{{item.reason}}</text>
+      <view class="scout-actions">
+        <button
+          class="scout-action scout-action-reject"
+          data-id="{{item.id}}"
+          data-approved="{{false}}"
+          loading="{{reviewingScoutId === item.id}}"
+          disabled="{{!!reviewingScoutId}}"
+          bindtap="reviewScoutApplication"
+        >
+          拒绝
+        </button>
+        <button
+          class="scout-action scout-action-approve"
+          data-id="{{item.id}}"
+          data-approved="{{true}}"
+          loading="{{reviewingScoutId === item.id}}"
+          disabled="{{!!reviewingScoutId}}"
+          bindtap="reviewScoutApplication"
+        >
+          通过
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">CONTROL TOWER</text>
+      <text class="section-title">关键监控</text>
+    </view>
+    <view class="metric-list">
+      <block wx:for="{{coreMetrics}}" wx:key="id">
+        <view class="metric-item">
+          <view class="metric-main">
+            <text class="metric-label">{{item.label}}</text>
+            <text class="metric-value">{{item.value}}</text>
+          </view>
+          <view class="metric-detail">{{item.detail}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">FOUR MODULES</text>
+      <text class="section-title">经营模块</text>
+    </view>
+    <view class="module-list">
+      <block wx:for="{{moduleCards}}" wx:key="id">
+        <view class="module-card tone-{{item.tone}}" data-title="{{item.title}}" data-route="{{item.route || ''}}" bindtap="onModuleTap">
+          <view class="module-top">
+            <text class="module-tag">{{item.tag}}</text>
+            <text class="module-progress">{{item.progress}}%</text>
+          </view>
+          <view class="module-title">{{item.title}}</view>
+          <view class="module-desc">{{item.desc}}</view>
+
+          <view class="module-progress-bar">
+            <view class="module-progress-fill" style="width: {{item.progress}}%;"></view>
+          </view>
+
+          <view class="chip-row">
+            <block wx:for="{{item.chips}}" wx:for-item="chip" wx:key="*this">
+              <text class="chip">{{chip}}</text>
+            </block>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">ALERT CENTER</text>
+      <text class="section-title">待处理预警</text>
+    </view>
+    <view class="alert-list">
+      <block wx:for="{{alerts}}" wx:key="id">
+        <view class="alert-item level-{{item.level}}">
+          <view class="alert-title-row">
+            <text class="alert-title">{{item.title}}</text>
+            <text class="alert-owner">{{item.owner}}</text>
+          </view>
+          <view class="alert-desc">{{item.desc}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <text class="section-en">QUICK ACTIONS</text>
+      <text class="section-title">快捷入口</text>
+    </view>
+    <view class="action-list">
+      <block wx:for="{{quickActions}}" wx:key="id">
+        <view class="action-item" data-label="{{item.label}}" data-route="{{item.route || ''}}" bindtap="onActionTap">
+          <view class="action-accent" style="background: {{item.accent}};"></view>
+          <view class="action-content">
+            <view class="action-label">{{item.label}}</view>
+            <view class="action-desc">{{item.desc}}</view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

@@ -6,7 +6,7 @@
   </view>
 
   <!-- 等待审核 -->
-  <view wx:elif="{{scout.status === 'pending'}}" class="pending-container">
+  <view wx:elif="{{showPending}}" class="pending-container">
     <view class="pending-card">
       <view class="pending-icon">⏳</view>
       <view class="pending-title">申请审核中</view>
@@ -14,29 +14,14 @@
     </view>
   </view>
 
-  <!-- 被拒绝 -->
-  <view wx:elif="{{scout.status === 'rejected'}}" class="pending-container">
-    <view class="pending-card rejected">
-      <view class="pending-icon">❌</view>
-      <view class="pending-title">申请未通过</view>
-      <view class="pending-desc" wx:if="{{scout.application.reviewNote}}">
-        原因：{{scout.application.reviewNote}}
-      </view>
-      <navigator url="/pages/scout/register/register" class="reapply-link">重新申请</navigator>
-    </view>
-  </view>
-
   <!-- 正常工作台 -->
   <view wx:else class="content">
-    <!-- 头部卡片 -->
     <view class="header-card">
       <view class="welcome">
         <text class="name">{{scout.profile.name}}</text>
-        <view class="grade-badge grade-{{scout.grade || 'rookie'}}" bindtap="goGradeIntro">{{gradeLabel}} ›</view>
+        <view class="grade-badge grade-{{scoutGradeClass}}" bindtap="goGradeIntro">{{gradeLabel}} ›</view>
       </view>
-
-      <!-- 升级进度 -->
-      <view wx:if="{{upgradeProgress && upgradeProgress.nextGrade}}" class="upgrade-section">
+      <view wx:if="{{showUpgradeProgress}}" class="upgrade-section">
         <view class="upgrade-label">
           升级进度：{{upgradeProgress.current}}/{{upgradeProgress.target}} 签约
         </view>
@@ -47,88 +32,142 @@
       <view wx:else class="upgrade-section">
         <view class="upgrade-label max-grade">已达最高等级</view>
       </view>
-
-      <!-- 等级权益入口（醒目按钮） -->
       <view class="grade-entry-btn" bindtap="goGradeIntro">
         <view class="grade-entry-left">
-          <text class="grade-entry-icon">💰</text>
+          <view class="grade-entry-icon-wrap">
+            <text class="grade-entry-icon">¥</text>
+          </view>
           <view class="grade-entry-text">
-            <text class="grade-entry-title">等级权益与费用</text>
-            <text class="grade-entry-desc">查看各等级星探费标准和结算方式</text>
+            <text class="grade-entry-kicker">PROFIT GUIDE</text>
+            <text class="grade-entry-title">星探收益</text>
+            <text class="grade-entry-desc">查看各等级收益标准、结算方式和升级差异</text>
           </view>
         </view>
         <text class="grade-entry-arrow">›</text>
       </view>
 
-      <!-- 分享入口 -->
       <view class="share-section">
-        <button class="action-btn primary" open-type="share">
-          分享小程序给好友
-        </button>
+        <view class="share-action-grid">
+          <button class="share-action-card share-action-primary" open-type="share" bindtap="prepareRecruitShare">
+            <text class="share-action-kicker">RECRUIT HOST</text>
+            <text class="share-action-title">分享主播报名</text>
+            <text class="share-action-desc">邀请主播报名</text>
+          </button>
+          <button
+            class="share-action-card share-action-secondary {{aceActionClass}}"
+            bindtap="openAcePlanModal"
+          >
+            <text class="share-action-kicker">{{aceFeatureKicker}}</text>
+            <text class="share-action-title">招募王牌星探</text>
+            <text class="share-action-desc">{{aceFeatureDesc}}</text>
+          </button>
+        </view>
+        <view class="share-tip">
+          <text class="share-tip-text">分享链接已自动带上你的推荐码，主播从这个入口报名会回到你的推荐名下。</text>
+          <text class="share-tip-code">推荐码：{{shareCodeText}}</text>
+          <text wx:if="{{showPartnerLock}}" class="share-tip-lock">当前为{{gradeLabel}}，升级到合伙人星探后可生成王牌专属邀请。</text>
+        </view>
       </view>
     </view>
 
-    <!-- 统计数据 -->
     <view class="stats-section">
       <view class="section-title">数据概览</view>
       <view class="stats-grid">
         <view class="stat-item">
-          <view class="stat-value">{{scout.stats.referredCount || 0}}</view>
+          <view class="stat-value">{{scout.stats.referredCount}}</view>
           <view class="stat-label">总推荐</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">{{scout.stats.signedCount || 0}}</view>
+          <view class="stat-value">{{scout.stats.signedCount}}</view>
           <view class="stat-label">已签约</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">{{scout.stats.totalCommission || 0}}</view>
+          <view class="stat-value">{{scout.stats.totalCommission}}</view>
           <view class="stat-label">总佣金</view>
         </view>
         <view class="stat-item">
-          <view class="stat-value">{{scout.stats.paidCommission || 0}}</view>
+          <view class="stat-value">{{scout.stats.paidCommission}}</view>
           <view class="stat-label">已提现</view>
         </view>
       </view>
     </view>
 
-    <!-- 筛选器 -->
-    <view class="filter-section">
-      <view class="section-title">推荐的候选人</view>
-      <view class="filter-tabs">
-        <view
-          class="filter-tab {{currentFilter === 'all' ? 'active' : ''}}"
-          data-filter="all"
-          bindtap="onFilterChange"
-        >
-          全部({{referrals.length}})
+    <view class="stats-section">
+      <view class="section-title">团队成果</view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <view class="stat-value">{{teamStats.totalSubScouts}}</view>
+          <view class="stat-label">王牌星探</view>
         </view>
-        <view
-          class="filter-tab {{currentFilter === 'in_progress' ? 'active' : ''}}"
-          data-filter="in_progress"
-          bindtap="onFilterChange"
-        >
-          进行中
+        <view class="stat-item">
+          <view class="stat-value">{{teamStats.activeSubScouts}}</view>
+          <view class="stat-label">活跃王牌</view>
         </view>
-        <view
-          class="filter-tab {{currentFilter === 'settled' ? 'active' : ''}}"
-          data-filter="settled"
-          bindtap="onFilterChange"
-        >
-          已签约
+        <view class="stat-item">
+          <view class="stat-value">{{teamStats.totalReferrals}}</view>
+          <view class="stat-label">团队总推荐</view>
         </view>
+        <view class="stat-item">
+          <view class="stat-value">{{teamStats.totalSigned}}</view>
+          <view class="stat-label">团队已签约</view>
+        </view>
+      </view>
+      <navigator url="/pages/scout/team/team" class="team-entry-link">查看团队明细 ›</navigator>
+    </view>
+
+    <view class="referrals-section" wx:if="{{hasSubScouts}}">
+      <view class="section-title">我的王牌星探</view>
+      <view class="referral-list">
         <view
-          class="filter-tab {{currentFilter === 'rejected' ? 'active' : ''}}"
-          data-filter="rejected"
-          bindtap="onFilterChange"
+          class="referral-item referral-item-clickable"
+          wx:for="{{subScouts}}"
+          wx:key="_id"
+          bindtap="onViewSubScoutDetail"
+          data-id="{{item._id}}"
         >
-          未通过
+          <view class="referral-header">
+            <view class="candidate-info">
+              <text class="candidate-name">{{item.displayName}}</text>
+              <text class="candidate-meta">{{item.displayPhone}}</text>
+            </view>
+            <view class="status-badge status-{{item.status}}">{{item.statusText}}</view>
+          </view>
+          <view class="referral-details">
+            <view class="detail-row">
+              <text class="detail-label">等级</text>
+              <text class="detail-value">{{item.gradeText}}</text>
+            </view>
+            <view class="detail-row">
+              <text class="detail-label">推荐主播</text>
+              <text class="detail-value">{{item.referredCountText}}</text>
+            </view>
+            <view class="detail-row">
+              <text class="detail-label">已签约</text>
+              <text class="detail-value">{{item.signedCountText}}</text>
+            </view>
+          </view>
+          <view class="sub-scout-entry">查看团队明细 ›</view>
         </view>
       </view>
     </view>
 
-    <!-- 候选人列表 -->
+    <view class="filter-section">
+      <view class="section-title">推荐的候选人</view>
+      <view class="filter-tabs">
+        <view
+          wx:for="{{filterTabs}}"
+          wx:key="key"
+          class="filter-tab {{item.activeClass}}"
+          data-filter="{{item.key}}"
+          bindtap="onFilterChange"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </view>
+
     <view class="referrals-section">
-      <view wx:if="{{filteredReferrals.length === 0}}" class="empty-state">
+      <view wx:if="{{showReferralEmpty}}" class="empty-state">
         <text class="empty-text">暂无推荐记录</text>
         <text class="empty-hint">分享小程序给潜在主播，开始赚取推荐奖励！</text>
       </view>
@@ -144,17 +183,14 @@
           <view class="referral-header">
             <view class="candidate-info">
               <text class="candidate-name">{{item.basicInfo.name}}</text>
-              <text class="candidate-meta">
-                {{item.basicInfo.age}}岁 | {{item.basicInfo.height}}cm
-              </text>
+              <text class="candidate-meta">{{item.displayMeta}}</text>
             </view>
             <view class="status-badge status-{{item.status}}">
-              {{statusMap[item.status] || item.status}}
+              {{item.statusText}}
             </view>
           </view>
 
-          <!-- 生命周期进度条（拒绝状态不显示） -->
-          <view wx:if="{{item.status !== 'rejected'}}" class="lifecycle-bar">
+          <view wx:if="{{item.showLifecycle}}" class="lifecycle-bar">
             <view
               wx:for="{{item._stages}}"
               wx:for-item="stage"
@@ -162,15 +198,14 @@
               class="lifecycle-step {{stage.state}}"
             >
               <view class="lc-dot"></view>
-              <text class="lc-label">{{lifecycleStages[index].label}}</text>
+              <text class="lc-label">{{stage.label}}</text>
             </view>
           </view>
 
-          <!-- 结算提示 -->
-          <view wx:if="{{item.status === 'signed'}}" class="settlement-hint">
+          <view wx:if="{{item.showSignedHint}}" class="settlement-hint">
             已结算预付 ¥300，待考核期后结算剩余
           </view>
-          <view wx:elif="{{item.status === 'probation'}}" class="settlement-hint probation">
+          <view wx:elif="{{item.showProbationHint}}" class="settlement-hint probation">
             考核期中，开播满3个月后定级结算
           </view>
 
@@ -184,12 +219,132 @@
       </view>
     </view>
 
-    <!-- 刷新按钮 -->
-    <view class="refresh-section">
-      <button class="refresh-btn" bindtap="onRefresh">刷新数据</button>
+    <view wx:if="{{acePlanVisible}}" class="ace-plan-mask" bindtap="closeAcePlanModal">
+      <view class="ace-plan-modal" catchtap="stopModalPropagation">
+        <view class="ace-plan-header">
+          <view>
+            <view class="ace-plan-title">收益分配方案</view>
+            <view class="ace-plan-subtitle">确认后生成王牌专属邀请海报/链接</view>
+          </view>
+          <view class="ace-plan-close" bindtap="closeAcePlanModal">×</view>
+        </view>
+
+        <view class="ace-plan-section">
+          <view class="ace-plan-section-title">签约奖调节</view>
+          <view class="ace-plan-total">系统显示总包 {{aceRewards.signingTotal}} 元</view>
+          <view class="ace-plan-input-row">
+            <text class="ace-plan-input-label">发给王牌</text>
+            <input
+              class="ace-plan-input"
+              type="number"
+              value="{{aceRewards.signingAceAmount}}"
+              bindinput="onAceSigningAmountInput"
+              placeholder="请输入金额"
+            />
+            <text class="ace-plan-unit">元</text>
+          </view>
+          <view class="ace-plan-allowance">您的管理津贴：{{aceManagementAllowance.signing}} 元</view>
+        </view>
+
+        <view class="ace-plan-section">
+          <view class="ace-plan-section-title">定级奖调节</view>
+          <view class="ace-plan-level-list">
+            <view class="ace-plan-level-item">
+              <view class="ace-plan-level-head">
+                <text class="ace-plan-level-name">S档奖励</text>
+                <text class="ace-plan-level-total">总包 {{aceRewards.levelTotals.S}} 元</text>
+              </view>
+              <view class="ace-plan-input-row">
+                <text class="ace-plan-input-label">发给王牌</text>
+                <input
+                  class="ace-plan-input"
+                  type="number"
+                  value="{{aceRewards.levelAceAmounts.S}}"
+                  data-grade="S"
+                  bindinput="onAceLevelAmountInput"
+                  placeholder="请输入金额"
+                />
+                <text class="ace-plan-unit">元</text>
+              </view>
+              <view class="ace-plan-allowance">您的管理津贴：{{aceManagementAllowance.level.S}} 元</view>
+            </view>
+
+            <view class="ace-plan-level-item">
+              <view class="ace-plan-level-head">
+                <text class="ace-plan-level-name">A档奖励</text>
+                <text class="ace-plan-level-total">总包 {{aceRewards.levelTotals.A}} 元</text>
+              </view>
+              <view class="ace-plan-input-row">
+                <text class="ace-plan-input-label">发给王牌</text>
+                <input
+                  class="ace-plan-input"
+                  type="number"
+                  value="{{aceRewards.levelAceAmounts.A}}"
+                  data-grade="A"
+                  bindinput="onAceLevelAmountInput"
+                  placeholder="请输入金额"
+                />
+                <text class="ace-plan-unit">元</text>
+              </view>
+              <view class="ace-plan-allowance">您的管理津贴：{{aceManagementAllowance.level.A}} 元</view>
+            </view>
+
+            <view class="ace-plan-level-item">
+              <view class="ace-plan-level-head">
+                <text class="ace-plan-level-name">B档奖励</text>
+                <text class="ace-plan-level-total">总包 {{aceRewards.levelTotals.B}} 元</text>
+              </view>
+              <view class="ace-plan-input-row">
+                <text class="ace-plan-input-label">发给王牌</text>
+                <input
+                  class="ace-plan-input"
+                  type="number"
+                  value="{{aceRewards.levelAceAmounts.B}}"
+                  data-grade="B"
+                  bindinput="onAceLevelAmountInput"
+                  placeholder="请输入金额"
+                />
+                <text class="ace-plan-unit">元</text>
+              </view>
+              <view class="ace-plan-allowance">您的管理津贴：{{aceManagementAllowance.level.B}} 元</view>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{aceInviteGenerated}}" id="acePlanResult" class="ace-plan-result">
+          <text class="ace-plan-result-kicker">ACE SCOUT READY</text>
+          <view class="ace-plan-result-title">王牌专属邀请已生成</view>
+          <view class="ace-plan-result-desc">{{aceInviteSummary}}</view>
+          <view class="ace-plan-result-link-card">
+            <text class="ace-plan-result-link-label">专属邀请码</text>
+            <text class="ace-plan-result-link">{{aceInviteCode}}</text>
+          </view>
+          <view class="ace-plan-result-actions">
+            <button class="ace-plan-share-btn" open-type="share" data-share-type="ace-scout" bindtap="prepareAceShare">
+              <text class="ace-plan-action-kicker">ACE POSTER</text>
+              <text class="ace-plan-action-title">分享邀请海报</text>
+              <text class="ace-plan-action-desc">发送专属海报给王牌星探</text>
+            </button>
+          </view>
+        </view>
+
+        <button class="ace-plan-generate-btn" bindtap="onGenerateAceInvite">
+          {{aceGenerateButtonText}}
+        </button>
+      </view>
     </view>
   </view>
 
-  <!-- 隐藏的分享海报 canvas -->
-  <canvas type="2d" id="shareCanvas" style="position:fixed;left:-9999px;width:500px;height:400px;"></canvas>
+  <canvas
+    wx:if="{{renderShareCanvas}}"
+    type="2d"
+    id="shareCanvas"
+    style="position:fixed;left:-9999px;width:500px;height:400px;"
+  ></canvas>
+  <canvas
+    wx:if="{{renderAceShareCanvas}}"
+    type="2d"
+    id="aceShareCanvas"
+    style="position:fixed;left:-9999px;width:500px;height:560px;"
+  ></canvas>
 </view>

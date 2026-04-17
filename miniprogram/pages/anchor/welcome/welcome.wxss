@@ -1,107 +1,217 @@
-/* 主播欢迎页面样式 */
-
-.welcome-page {
+.welcome-page,
+.detail-page,
+.fallback-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 30%, #f5f5f5 30%);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(224, 122, 44, 0.16), transparent 24%),
+    radial-gradient(circle at 92% 10%, rgba(45, 162, 153, 0.14), transparent 24%),
+    linear-gradient(180deg, #f3ede2 0%, #efe7da 100%);
   padding: 40rpx 20rpx 20rpx;
 }
 
-/* ========== 欢迎横幅 ========== */
-.welcome-banner {
+.detail-page {
+  padding-bottom: 48rpx;
+}
+
+.fallback-page {
+  display: flex;
+  align-items: center;
+  padding-top: 0;
+}
+
+.welcome-banner,
+.info-card,
+.steps-card,
+.detail-hero,
+.skill-card,
+.demo-card,
+.task-card,
+.empty-panel,
+.fallback-card {
+  border-radius: 28rpx;
+  border: 2rpx solid rgba(101, 82, 57, 0.12);
+  box-shadow: 0 18rpx 44rpx rgba(50, 37, 20, 0.08);
+}
+
+.welcome-banner,
+.detail-hero {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 60rpx 30rpx;
-  margin-bottom: 30rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  background: linear-gradient(135deg, #1a1714 0%, #2a231c 100%);
 }
 
 .banner-icon {
   font-size: 120rpx;
-  margin-bottom: 30rpx;
-  animation: bounce 1s infinite;
+  margin-bottom: 18rpx;
+  align-self: center;
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20rpx);
-  }
+.banner-title,
+.detail-title {
+  font-size: 42rpx;
+  font-weight: 900;
+  color: #fff8ef;
 }
 
-.banner-title {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 15rpx;
-  text-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.2);
+.banner-subtitle,
+.detail-copy {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: rgba(255, 247, 235, 0.82);
 }
 
-.banner-subtitle {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
+.detail-kicker {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
 }
 
-/* ========== 信息卡片 ========== */
-.info-card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 30rpx;
+.detail-badge {
+  align-self: flex-start;
+  margin-top: 18rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 210, 123, 0.18);
+  color: #ffd27b;
+  font-size: 20rpx;
+  font-weight: 800;
+}
+
+.info-card,
+.steps-card,
+.skill-card,
+.demo-card,
+.task-card,
+.empty-panel,
+.fallback-card {
+  background: rgba(255, 251, 245, 0.94);
+  padding: 26rpx;
   margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.fallback-card {
+  width: 100%;
+  padding: 36rpx 30rpx;
+}
+
+.fallback-kicker {
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+  color: #9c7f63;
+}
+
+.fallback-title {
+  margin-top: 18rpx;
+  font-size: 40rpx;
+  line-height: 1.3;
+  font-weight: 900;
+  color: #241c16;
+}
+
+.fallback-copy {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  line-height: 1.8;
+  color: #7a6653;
+}
+
+.fallback-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 30rpx;
+}
+
+.fallback-primary-btn,
+.fallback-secondary-btn {
+  width: 100%;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.fallback-primary-btn {
+  background: linear-gradient(135deg, #df7b2c 0%, #1f7d70 100%);
+  color: #fff;
+}
+
+.fallback-secondary-btn {
+  background: rgba(31, 125, 112, 0.08);
+  color: #1f7d70;
 }
 
 .card-header {
   padding-bottom: 20rpx;
   margin-bottom: 20rpx;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2rpx solid rgba(140, 115, 84, 0.12);
 }
 
-.card-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
+.card-title,
+.step-title,
+.skill-name,
+.demo-title,
+.task-title {
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #241c16;
 }
 
-/* ========== 主播信息 ========== */
-.info-content {
+.info-content,
+.steps-list,
+.skill-list,
+.demo-list,
+.task-list {
   display: flex;
   flex-direction: column;
-  gap: 15rpx;
+  gap: 18rpx;
+}
+
+.info-row,
+.agent-content,
+.agent-info,
+.step-item,
+.skill-head,
+.skill-meta,
+.demo-head {
+  display: flex;
 }
 
 .info-row {
-  display: flex;
   align-items: center;
   font-size: 28rpx;
 }
 
 .info-row .label {
-  color: #999;
+  color: #7a6653;
   width: 150rpx;
 }
 
 .info-row .value {
-  color: #333;
+  color: #241c16;
   flex: 1;
 }
 
 .info-row .value.highlight {
-  color: #667eea;
-  font-weight: bold;
-  font-size: 30rpx;
+  color: #c65b16;
+  font-weight: 800;
 }
 
-/* ========== 经纪人信息 ========== */
 .agent-content {
-  display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .agent-info {
-  display: flex;
   align-items: center;
   gap: 20rpx;
   flex: 1;
@@ -111,7 +221,7 @@
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #df7b2c, #1f7d70);
   color: #fff;
   display: flex;
   align-items: center;
@@ -132,56 +242,77 @@
   color: #333;
 }
 
-.agent-role {
+.agent-role,
+.step-desc,
+.skill-status,
+.demo-scene,
+.demo-duration,
+.demo-tip,
+.demo-rate,
+.task-detail {
   font-size: 24rpx;
-  color: #999;
+  color: #7a6653;
+  line-height: 1.7;
 }
 
-.contact-btn {
-  padding: 15rpx 30rpx;
-  background: #667eea;
+.contact-btn,
+.enter-btn,
+.record-btn {
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.contact-btn,
+.record-btn {
+  padding: 0 30rpx;
+  min-width: 220rpx;
+  height: 76rpx;
+  border-radius: 38rpx;
+  background: #df7b2c;
   color: #fff;
-  border-radius: 30rpx;
   font-size: 26rpx;
-  border: none;
+  font-weight: 800;
 }
 
-.contact-btn::after {
-  border: none;
-}
-
-.contact-btn:active {
-  opacity: 0.8;
-}
-
-/* ========== 下一步指引 ========== */
-.steps-card {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-}
-
-.steps-list {
+.detail-action-bar {
   display: flex;
-  flex-direction: column;
-  gap: 20rpx;
+  justify-content: center;
+  margin: 8rpx 0 28rpx;
+}
+
+.section-block {
+  margin-bottom: 28rpx;
+}
+
+.section-heading {
+  margin-bottom: 18rpx;
+  padding: 0 6rpx;
+}
+
+.section-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #241c16;
+}
+
+.section-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #8a745d;
 }
 
 .step-item {
-  display: flex;
   align-items: flex-start;
   gap: 20rpx;
   padding: 20rpx;
-  background: #f8f8f8;
-  border-radius: 15rpx;
-  transition: all 0.3s;
-}
-
-.step-item:active {
-  background: #f0f0f0;
-  transform: scale(0.98);
+  background: #f8f3eb;
+  border-radius: 18rpx;
 }
 
 .step-icon {
@@ -190,25 +321,9 @@
 }
 
 .step-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
   flex: 1;
 }
 
-.step-title {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-.step-desc {
-  font-size: 24rpx;
-  color: #666;
-  line-height: 1.5;
-}
-
-/* ========== 操作按钮 ========== */
 .action-section {
   padding: 20rpx 0 40rpx;
 }
@@ -216,17 +331,145 @@
 .enter-btn {
   width: 100%;
   height: 90rpx;
-  line-height: 90rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #df7b2c 0%, #1f7d70 100%);
   border-radius: 45rpx;
   font-size: 32rpx;
   color: #fff;
-  font-weight: bold;
-  border: none;
-  box-shadow: 0 8rpx 20rpx rgba(102, 126, 234, 0.4);
+  font-weight: 900;
 }
 
-.enter-btn:active {
-  opacity: 0.8;
-  transform: scale(0.98);
+.skill-head,
+.skill-meta,
+.demo-head {
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.skill-badge {
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(191, 146, 72, 0.12);
+  color: #9a5e16;
+  font-size: 20rpx;
+  font-weight: 800;
+}
+
+.skill-badge.is-mastered {
+  background: rgba(43, 150, 128, 0.14);
+  color: #117264;
+}
+
+.skill-bar {
+  margin-top: 16rpx;
+  height: 20rpx;
+  border-radius: 999rpx;
+  background: #efe6d9;
+  overflow: hidden;
+}
+
+.skill-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #df7b2c 0%, #2aa99b 100%);
+}
+
+.skill-progress,
+.task-value {
+  display: block;
+  margin-top: 18rpx;
+  color: #c65b16;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.rate-switcher {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 22rpx;
+}
+
+.rate-chip {
+  padding: 10rpx 22rpx;
+  border-radius: 999rpx;
+  background: #efe6d9;
+  color: #7a6653;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.rate-chip.active {
+  background: #1f7d70;
+  color: #fff;
+}
+
+.demo-video,
+.demo-empty {
+  width: 100%;
+  height: 320rpx;
+  margin-top: 18rpx;
+  border-radius: 22rpx;
+  background: #161616;
+}
+
+.demo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32rpx;
+}
+
+.demo-empty-title {
+  color: #fff4e6;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.demo-empty-copy {
+  margin-top: 12rpx;
+  color: rgba(255, 244, 230, 0.78);
+  font-size: 22rpx;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.photo-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18rpx;
+  margin-top: 22rpx;
+}
+
+.photo-card {
+  width: calc(50% - 9rpx);
+  height: 220rpx;
+  border-radius: 22rpx;
+  overflow: hidden;
+  background: #e7ded0;
+}
+
+.refined-photo {
+  width: 100%;
+  height: 100%;
+}
+
+.empty-panel {
+  text-align: center;
+  color: #7a6653;
+}
+
+.photo-empty {
+  margin-bottom: 0;
+}
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  gap: 20rpx;
+  padding: 40rpx;
+  box-sizing: border-box;
 }

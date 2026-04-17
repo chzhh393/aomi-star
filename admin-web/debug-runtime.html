@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Runtime Debug</title>
+    <link
+      rel="stylesheet"
+      crossorigin
+      href="https://cloud1-0g9rnpap8488905b-1384963457.tcloudbaseapp.com/admin/assets/index-BMNBIusq.css"
+    />
+    <style>
+      #debug-log {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        z-index: 99999;
+        width: min(720px, calc(100vw - 24px));
+        max-height: 50vh;
+        overflow: auto;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.88);
+        color: #ff8a8a;
+        font: 12px/1.5 monospace;
+        border: 1px solid #444;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <pre id="debug-log">booting...</pre>
+    <script type="module">
+      const logEl = document.getElementById('debug-log')
+      const write = (...args) => {
+        logEl.textContent += `\n${args.map((item) => {
+          if (item instanceof Error) {
+            return `${item.name}: ${item.message}\n${item.stack || ''}`
+          }
+          if (typeof item === 'object') {
+            try {
+              return JSON.stringify(item, null, 2)
+            } catch {
+              return String(item)
+            }
+          }
+          return String(item)
+        }).join(' ')}`
+      }
+
+      window.addEventListener('error', (event) => {
+        write('window.error', event.message, event.filename, event.lineno, event.colno)
+        if (event.error) write(event.error)
+      })
+
+      window.addEventListener('unhandledrejection', (event) => {
+        write('unhandledrejection', event.reason)
+      })
+
+      write('location', location.href)
+
+      import('https://cloud1-0g9rnpap8488905b-1384963457.tcloudbaseapp.com/admin/assets/index-Cmsf-WPS.js')
+        .then(() => write('remote entry loaded'))
+        .catch((error) => write('import failed', error))
+    </script>
+  </body>
+</html>

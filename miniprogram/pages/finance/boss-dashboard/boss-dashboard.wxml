@@ -1,0 +1,195 @@
+<view class="page">
+  <view class="hero plum">
+    <text class="hero-title">老板财务看板</text>
+    <text class="hero-desc">实时看单人 ROI、基地总营收、月度总支出，并直接处理超额采购与提成冻结。</text>
+    <text class="hero-tip">{{isBoss ? '当前账号具备老板审批权，可直接操作。' : '当前账号仅可查看经营数据，不可执行老板特权。'}}</text>
+    <button wx:if="{{isBoss}}" class="notify-btn" size="mini" bindtap="enableBossAlerts">开启手机提醒</button>
+  </view>
+
+  <view class="stats-grid">
+    <block wx:for="{{stats}}" wx:key="id">
+      <view class="stat-card">
+        <text class="stat-value">{{item.value}}</text>
+        <text class="stat-label">{{item.label}}</text>
+        <text class="stat-note">{{item.note}}</text>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">
+    <view class="row-between">
+      <view class="section-heading">
+        <view class="section-title">团队经营分析</view>
+        <text class="section-desc">财务数据支持按团和经纪人小组查看，直接判断谁在赚钱、谁在亏损。</text>
+      </view>
+      <view class="dimension-switch">
+        <view class="switch-chip {{selectedDimension === 'team' ? 'active' : ''}}" data-key="team" bindtap="switchDimension">按团</view>
+        <view class="switch-chip {{selectedDimension === 'group' ? 'active' : ''}}" data-key="group" bindtap="switchDimension">按小组</view>
+      </view>
+    </view>
+
+    <view class="stats-grid compact">
+      <block wx:for="{{currentDimension.summaryCards}}" wx:key="id">
+        <view class="stat-card">
+          <text class="stat-value">{{item.value}}</text>
+          <text class="stat-label">{{item.label}}</text>
+          <text class="stat-note">{{item.note}}</text>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{!currentDimension.ranking.length}}" class="card">
+      <text class="card-title">暂无{{currentDimension.label}}经营数据</text>
+      <text class="item-sub">当前没有可用于分组的经纪人或候选人数据，后续补充团队字段后会自动聚合。</text>
+    </view>
+
+    <block wx:for="{{currentDimension.ranking}}" wx:key="id">
+      <view class="card">
+        <view class="row-between">
+          <view>
+            <text class="card-title">{{item.name}}</text>
+            <text class="item-sub">{{item.agentNamesText}}</text>
+          </view>
+          <text class="roi-value {{item.isLoss ? 'loss' : 'profit'}}">{{item.statusLabel}}</text>
+        </view>
+        <view class="grid">
+          <view class="grid-item"><text class="key">营收</text><text class="value">{{item.revenueText}}</text></view>
+          <view class="grid-item"><text class="key">总成本</text><text class="value">{{item.totalCostText}}</text></view>
+          <view class="grid-item"><text class="key">利润</text><text class="value {{item.isLoss ? 'loss' : 'profit'}}">{{item.profitText}}</text></view>
+          <view class="grid-item"><text class="key">利润率</text><text class="value {{item.isLoss ? 'loss' : 'profit'}}">{{item.profitRateText}}</text></view>
+          <view class="grid-item"><text class="key">候选人</text><text class="value">{{item.candidateCountText}}</text></view>
+          <view class="grid-item"><text class="key">经纪人</text><text class="value">{{item.agentCountText}}</text></view>
+        </view>
+        <text class="item-sub">直接成本：{{item.directCostText}} · 公共成本分摊：{{item.sharedCostText}} · ROI {{item.roiText}}</text>
+      </view>
+    </block>
+
+    <view wx:if="{{currentDimension.lossMakers.length}}" class="card warning-card">
+      <text class="card-title">亏损预警</text>
+      <block wx:for="{{currentDimension.lossMakers}}" wx:key="id">
+        <view class="warn-row">
+          <view>
+            <text class="item-title">{{item.name}}</text>
+            <text class="item-sub">{{item.agentNamesText}}</text>
+          </view>
+          <view class="warn-values">
+            <text class="warn-profit">{{item.profitText}}</text>
+            <text class="item-sub">利润率 {{item.profitRateText}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">老板待办</view>
+    <view wx:if="{{!pendingProcurements.length && !pendingCommissions.length && !frozenCommissions.length}}" class="card">
+      <text class="card-title">当前没有待处理老板事项</text>
+      <text class="item-sub">超过 5000 元的采购会自动出现在这里，冻结提成也会集中展示。</text>
+    </view>
+
+    <view wx:for="{{pendingProcurements}}" wx:key="_id" class="card">
+      <view class="row-between">
+        <view>
+          <text class="card-title">{{item.itemName}}</text>
+          <text class="item-sub">{{item.bizNo}} · {{item.requester}} · {{item.amountText}}</text>
+        </view>
+        <text class="roi-value">待老板审批</text>
+      </view>
+      <text class="item-sub">财务意见：{{item.financeReviewNote || '已提交老板审批'}}</text>
+      <text class="item-sub">申请说明：{{item.remark || '无'}}</text>
+      <view wx:if="{{isBoss}}" class="action-row">
+        <button class="action-btn reject" size="mini" data-id="{{item._id}}" data-approved="false" bindtap="reviewProcurement" loading="{{actingId === item._id}}" disabled="{{actingId === item._id}}">驳回</button>
+        <button class="action-btn approve" size="mini" data-id="{{item._id}}" data-approved="true" bindtap="reviewProcurement" loading="{{actingId === item._id}}" disabled="{{actingId === item._id}}">通过</button>
+      </view>
+    </view>
+
+    <view wx:for="{{pendingCommissions}}" wx:key="candidateId" class="card">
+      <view class="row-between">
+        <view>
+          <text class="card-title">{{item.candidateName}}</text>
+          <text class="item-sub">待发提成 {{item.totalAmountText}}</text>
+        </view>
+        <text class="roi-value">可一键停发</text>
+      </view>
+      <text class="item-sub">计算时间：{{item.calculatedAtText || '-'}}</text>
+      <view wx:if="{{isBoss}}" class="action-row">
+        <button class="action-btn reject" size="mini" data-id="{{item.candidateId}}" data-freeze="true" bindtap="toggleCommissionFreeze" loading="{{actingId === item.candidateId}}" disabled="{{actingId === item.candidateId}}">一键停发</button>
+      </view>
+    </view>
+
+    <view wx:for="{{frozenCommissions}}" wx:key="candidateId" class="card">
+      <view class="row-between">
+        <view>
+          <text class="card-title">{{item.candidateName}}</text>
+          <text class="item-sub">冻结金额 {{item.totalAmountText}}</text>
+        </view>
+        <text class="roi-value">提成已冻结</text>
+      </view>
+      <text class="item-sub">原因：{{item.reason}}</text>
+      <text wx:if="{{item.note}}" class="item-sub">备注：{{item.note}}</text>
+      <text class="item-sub">操作人：{{item.updatedByName || '老板'}} · {{item.updatedAtText || '-'}}</text>
+      <view wx:if="{{isBoss}}" class="action-row">
+        <button class="action-btn ghost" size="mini" data-id="{{item.candidateId}}" data-freeze="false" bindtap="toggleCommissionFreeze" loading="{{actingId === item.candidateId}}" disabled="{{actingId === item.candidateId}}">解除冻结</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">提醒台账</view>
+    <view wx:if="{{!alertLogs.length}}" class="card">
+      <text class="card-title">暂无提醒记录</text>
+      <text class="item-sub">当财务提交超额采购给老板审批时，这里会记录消息发送和处理结果。</text>
+    </view>
+    <view wx:for="{{alertLogs}}" wx:key="id" class="card">
+      <view class="row-between">
+        <view>
+          <text class="card-title">{{item.title}}</text>
+          <text class="item-sub">{{item.summary}}</text>
+        </view>
+        <text class="roi-value">{{item.statusLabel}}</text>
+      </view>
+      <text class="item-sub">发送时间：{{item.sentAtText || '-'}}</text>
+      <text wx:if="{{item.processedAtText}}" class="item-sub">处理时间：{{item.processedAtText}}</text>
+      <text wx:if="{{item.adminName}}" class="item-sub">接收人：{{item.adminName}}</text>
+      <text wx:if="{{item.resultNote}}" class="item-sub">结果：{{item.resultNote}}</text>
+      <text class="item-sub">尝试次数：{{item.attemptCount || 1}} / 3</text>
+      <text wx:if="{{item.failureCategoryLabel}}" class="item-sub">失败分类：{{item.failureCategoryLabel}}</text>
+      <text wx:if="{{item.lastErrorCode}}" class="item-sub">错误码：{{item.lastErrorCode}}</text>
+      <view wx:if="{{isBoss && item.status === 'failed'}}" class="action-row">
+        <button class="action-btn ghost" size="mini" data-id="{{item.id}}" bindtap="retryBossAlert" loading="{{actingId === item.id}}" disabled="{{actingId === item.id}}">重试发送</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">单人产出比</view>
+    <block wx:for="{{roi}}" wx:key="id">
+      <view class="card">
+        <view class="row-between">
+          <text class="card-title">{{item.name}}</text>
+          <text class="roi-value">ROI {{item.roi}}</text>
+        </view>
+        <view class="grid">
+          <view class="grid-item"><text class="key">底薪</text><text class="value">{{item.salary}}</text></view>
+          <view class="grid-item"><text class="key">服装费</text><text class="value">{{item.costume}}</text></view>
+          <view class="grid-item"><text class="key">培训费</text><text class="value">{{item.training}}</text></view>
+          <view class="grid-item"><text class="key">直播流水</text><text class="value">{{item.revenue}}</text></view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="section">
+    <view class="section-title">基地支出结构</view>
+    <block wx:for="{{costBreakdown}}" wx:key="id">
+      <view class="list-item">
+        <view>
+          <text class="item-title">{{item.label}}</text>
+          <text class="item-sub">占比 {{item.ratio}}</text>
+        </view>
+        <text class="item-amount">{{item.amount}}</text>
+      </view>
+    </block>
+  </view>
+</view>

@@ -25,6 +25,14 @@ export const adminAPI = {
     })
   },
 
+  // 获取候选人面试评价聚合数据
+  getCandidateInterviewEvaluations(id) {
+    return wxcloud.callFunction('admin', {
+      action: 'getCandidateInterviewEvaluations',
+      data: { id }
+    })
+  },
+
   // 更新候选人状态（审核通过/拒绝）
   updateCandidateStatus(id, status, reason = '') {
     return wxcloud.callFunction('admin', {
@@ -141,6 +149,13 @@ export const adminAPI = {
     })
   },
 
+  createTrainingCampTodo(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'createTrainingCampTodo',
+      data
+    })
+  },
+
   // ==================== 用户申请和审核相关 ====================
 
   // 用户申请（无需token）
@@ -211,6 +226,62 @@ export const adminAPI = {
     return wxcloud.callFunction('admin', {
       action: 'deleteInterviewMaterial',
       data: { candidateId, type, fileId }
+    })
+  },
+
+  saveContractWorkflowDraft(data) {
+    return wxcloud.callFunction('admin', {
+      action: 'saveContractWorkflowDraft',
+      data
+    })
+  },
+
+  submitContractFinanceReview(candidateId, comment = '') {
+    return wxcloud.callFunction('admin', {
+      action: 'submitContractFinanceReview',
+      data: { candidateId, comment }
+    })
+  },
+
+  reviewContractFinance(candidateId, approved, comment = '') {
+    return wxcloud.callFunction('admin', {
+      action: 'reviewContractFinance',
+      data: { candidateId, approved, comment }
+    })
+  },
+
+  approveContractAdmin(candidateId, approved, comment = '') {
+    return wxcloud.callFunction('admin', {
+      action: 'approveContractAdmin',
+      data: { candidateId, approved, comment }
+    })
+  },
+
+  updateContractNegotiation(candidateId, negotiationStatus, note = '') {
+    return wxcloud.callFunction('admin', {
+      action: 'updateContractNegotiation',
+      data: { candidateId, negotiationStatus, note }
+    })
+  },
+
+  createContractESignTask(candidateId, useMock = true) {
+    return wxcloud.callFunction('admin', {
+      action: 'createContractESignTask',
+      data: { candidateId, useMock }
+    })
+  },
+
+  refreshContractESignStatus(candidateId) {
+    return wxcloud.callFunction('admin', {
+      action: 'refreshContractESignStatus',
+      data: { candidateId }
+    })
+  },
+
+  mockCompleteContractESign(candidateId) {
+    return wxcloud.callFunction('admin', {
+      action: 'mockCompleteContractESign',
+      data: { candidateId }
     })
   }
 }

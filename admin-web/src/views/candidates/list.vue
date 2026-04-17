@@ -1,5 +1,7 @@
 <template>
   <div class="candidates-page">
+    <MetricCardGrid :cards="metricCards" :active-key="activeFilter" @select="setFilter" />
+
     <!-- 筛选栏 -->
     <el-card class="filter-card" shadow="never">
       <el-row :gutter="16" align="middle">
@@ -18,12 +20,14 @@
         </el-col>
         <el-col :xs="24" :sm="18" class="filter-radio-col">
           <el-radio-group v-model="activeFilter" @change="handleFilterChange">
-            <el-radio-button value="all">全部</el-radio-button>
-            <el-radio-button value="pending">待审核</el-radio-button>
-            <el-radio-button value="approved">待面试安排</el-radio-button>
-            <el-radio-button value="interview_scheduled">已安排面试</el-radio-button>
-            <el-radio-button value="rejected">未通过</el-radio-button>
-            <el-radio-button value="signed">已签约</el-radio-button>
+            <el-radio-button label="all">全部</el-radio-button>
+            <el-radio-button label="pending">待审核</el-radio-button>
+            <el-radio-button label="approved">待面试安排</el-radio-button>
+            <el-radio-button label="interview_scheduled">已安排面试</el-radio-button>
+            <el-radio-button label="online_test_completed">线上测试完成</el-radio-button>
+            <el-radio-button label="rated">面试通过</el-radio-button>
+            <el-radio-button label="rejected">未通过</el-radio-button>
+            <el-radio-button label="signed">已签约</el-radio-button>
           </el-radio-group>
         </el-col>
       </el-row>
@@ -76,12 +80,32 @@
                 ({{ row.basicInfo.artName }})
               </span>
             </span>
+            <el-tag
+              v-if="getInterviewDecisionTag(row)"
+              :type="getInterviewDecisionTag(row).type"
+              size="small"
+              effect="plain"
+              round
+              class="decision-status-tag"
+            >
+              {{ getInterviewDecisionTag(row).label }}
+            </el-tag>
             <el-tag :type="STATUS_MAP[row.status]?.type || 'info'" size="small" effect="dark" round>
               {{ STATUS_MAP[row.status]?.label || row.status }}
             </el-tag>
           </div>
           <div v-if="row.experience?.accountName" class="candidate-name-extra">
             <span class="name-pill name-pill-live">直播名：{{ row.experience.accountName }}</span>
+          </div>
+          <div v-if="row.assignedAgent?.agentName" class="candidate-name-extra">
+            <span class="name-pill name-pill-agent">
+              经纪人：{{ row.assignedAgent.agentName }}<template v-if="row.assignedAgent.agentPhone"> · {{ row.assignedAgent.agentPhone }}</template>
+            </span>
+          </div>
+          <div v-if="getCandidateFailReason(row)" class="candidate-name-extra">
+            <span class="name-pill name-pill-danger">
+              未通过原因：{{ getCandidateFailReason(row) }}
+            </span>
           </div>
           <div class="candidate-meta">
             <span class="meta-item">{{ row.basicInfo?.gender || '-' }}</span>
@@ -145,14 +169,70 @@
               面试：{{ row.interview.date }} {{ row.interview.time }}
             </span>
           </div>
+          <div
+            v-if="isAdmin && canManageInterviewDecision(row)"
+            :class="[
+              'decision-inline-bar',
+              row.interviewFinalDecision?.decision
+                ? `decision-inline-bar-${row.interviewFinalDecision.decision}`
+                : (canOpenHighlightedInterviewDecision(row) ? 'decision-inline-bar-ready' : 'decision-inline-bar-locked')
+            ]"
+          >
+            <span class="decision-inline-label">面试终裁</span>
+            <span class="decision-inline-value">
+              {{
+                row.interviewFinalDecision?.decision
+                  ? getInterviewDecisionTag(row)?.label
+                  : (canOpenHighlightedInterviewDecision(row) ? '可立即处理' : getInterviewDecisionLockReason(row))
+              }}
+            </span>
+          </div>
         </div>
 
         <!-- 右侧：操作按钮 -->
         <div class="candidate-actions" @click.stop>
           <el-button size="small" @click="handleView(row)">查看</el-button>
+          <el-button
+            v-if="canViewInterviewEvaluations(row)"
+            size="small"
+            type="primary"
+            plain
+            @click="handleViewInterviewEvaluations(row)"
+          >
+            面试评价
+          </el-button>
+          <button
+            v-if="isAdmin && canManageInterviewDecision(row)"
+            type="button"
+            :class="[
+              'decision-action-btn',
+              row.interviewFinalDecision?.decision ? 'decision-action-btn-warning' : 'decision-action-btn-success'
+            ]"
+            @click.stop="handleOpenInterviewDecision(row)"
+          >
+            {{ row.interviewFinalDecision?.decision ? '修改终裁' : '面试终裁' }}
+          </button>
+          <el-button
+            v-if="canAssignAgent(row)"
+            size="small"
+            type="warning"
+            plain
+            @click="handleAssignCandidate(row)"
+          >
+            {{ getAssignAgentActionText(row) }}
+          </el-button>
+          <el-button
+            v-if="canManageContractWorkflow(row)"
+            size="small"
+            type="success"
+            plain
+            @click="handleOpenContractWorkflow(row)"
+          >
+            签约流程
+          </el-button>
           <el-button v-if="row.status === 'pending'" size="small" type="success" @click="handleApprove(row)">通过</el-button>
           <el-button v-if="row.status === 'pending'" size="small" type="danger" @click="handleReject(row)">拒绝</el-button>
-          <el-button v-if="row.status === 'approved'" size="small" type="warning" @click="handleSchedule(row)">安排面试</el-button>
+          <el-button v-if="canScheduleInterview(row)" size="small" type="warning" @click="handleSchedule(row)">安排面试</el-button>
           <el-button v-if="isAdmin" size="small" type="danger" plain @click="handleDelete(row)">删除</el-button>
         </div>
       </div>
@@ -279,6 +359,130 @@
               <span class="info-value">{{ formatDate(currentCandidate.createdAt) }}</span>
             </div>
           </div>
+          <div v-if="currentCandidate.assignedAgent?.agentName || canAssignAgent(currentCandidate)" class="info-block">
+            <div class="info-block-title">
+              经纪人
+              <el-button
+                v-if="canAssignAgent(currentCandidate)"
+                type="primary"
+                link
+                size="small"
+                style="float: right; margin-top: -4px"
+                @click="handleAssignCandidate(currentCandidate)"
+              >
+                {{ currentCandidate.assignedAgent?.agentName ? '修改经纪人' : '去设置' }}
+              </el-button>
+            </div>
+            <div class="info-row">
+              <span class="info-label">经纪人姓名</span>
+              <span class="info-value">{{ currentCandidate.assignedAgent?.agentName || '待设置' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">经纪人电话</span>
+              <span class="info-value">{{ currentCandidate.assignedAgent?.agentPhone || '-' }}</span>
+            </div>
+          </div>
+          <div v-if="getCandidateFailReason(currentCandidate)" class="info-block">
+            <div class="info-block-title">未通过原因</div>
+            <div class="info-row">
+              <span class="info-value fail-reason-text">{{ getCandidateFailReason(currentCandidate) }}</span>
+            </div>
+          </div>
+          <div v-if="isAdmin && !isRejectedCandidate(currentCandidate)" class="info-block training-camp-admin-block">
+            <div class="info-block-title">入营邀请函</div>
+            <div v-if="currentCandidate.trainingCampTodo" class="training-camp-summary">
+              <div class="info-row">
+                <span class="info-label">当前状态</span>
+                <span class="info-value">
+                  <el-tag :type="currentCandidate.trainingCampTodo.status === 'pending' ? 'warning' : 'success'" size="small" effect="plain">
+                    {{ currentCandidate.trainingCampTodo.status === 'pending' ? '待主播处理' : '已处理' }}
+                  </el-tag>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">训练营类型</span>
+                <span class="info-value">{{ currentCandidate.trainingCampTodo.campType || '-' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">报到时间</span>
+                <span class="info-value">
+                  {{ currentCandidate.trainingCampTodo.startDate || '-' }}
+                  <template v-if="currentCandidate.trainingCampTodo.startTime"> {{ currentCandidate.trainingCampTodo.startTime }}</template>
+                </span>
+              </div>
+            </div>
+            <el-form label-width="96px" class="training-camp-form">
+              <el-form-item label="指定经纪人" required>
+                <el-select
+                  v-model="trainingCampInviteForm.agentId"
+                  filterable
+                  placeholder="请选择经纪人"
+                  :loading="loadingAgents"
+                >
+                  <el-option
+                    v-for="agent in agentList"
+                    :key="agent._id"
+                    :label="agent.name || agent.username || agent._id"
+                    :value="agent._id"
+                  >
+                    <div class="decision-agent-option">
+                      <span>{{ agent.name || agent.username || agent._id }}</span>
+                      <span class="decision-agent-option-meta">{{ agent.username || '未设置账号' }}</span>
+                    </div>
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="训练营类型" required>
+                <el-select v-model="trainingCampInviteForm.campType" placeholder="请选择训练营类型">
+                  <el-option
+                    v-for="campType in TRAINING_CAMP_TYPE_OPTIONS"
+                    :key="campType"
+                    :label="campType"
+                    :value="campType"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="报到日期" required>
+                <el-date-picker
+                  v-model="trainingCampInviteForm.startDate"
+                  type="date"
+                  value-format="YYYY-MM-DD"
+                  placeholder="选择日期"
+                  style="width: 100%"
+                />
+              </el-form-item>
+              <el-form-item label="报到时间" required>
+                <el-time-picker
+                  v-model="trainingCampInviteForm.startTime"
+                  format="HH:mm"
+                  value-format="HH:mm"
+                  placeholder="选择时间"
+                  style="width: 100%"
+                />
+              </el-form-item>
+              <el-form-item label="备注">
+                <el-input
+                  v-model="trainingCampInviteForm.remark"
+                  type="textarea"
+                  :rows="2"
+                  maxlength="300"
+                  show-word-limit
+                  placeholder="补充集合要求、携带资料或报到提醒"
+                />
+              </el-form-item>
+            </el-form>
+            <div class="training-camp-tip">管理员可忽略当前面试进展，直接指定经纪人并发送邀请函。发送时训练营类型以本次指定内容为准。</div>
+            <div class="training-camp-actions">
+              <el-button
+                type="primary"
+                :loading="trainingCampSubmitting"
+                :disabled="currentCandidate.trainingCampTodo?.status === 'pending'"
+                @click="handleSendTrainingCampTodo"
+              >
+                {{ currentCandidate.trainingCampTodo?.status === 'pending' ? '已有待处理邀请函' : '指定经纪人并发送邀请函' }}
+              </el-button>
+            </div>
+          </div>
           <!-- 星探推荐 - 仅非经纪人可见 -->
           <div v-if="currentCandidate.referral && !isAgent()" class="info-block">
             <div class="info-block-title">
@@ -358,7 +562,17 @@
 
         <!-- 3. 面试信息 -->
         <div v-if="currentCandidate.interview" class="detail-section">
-          <div class="section-title">面试安排</div>
+          <div class="section-title section-title-with-action">
+            <span>面试安排</span>
+            <el-button
+              v-if="canViewInterviewEvaluations(currentCandidate)"
+              type="primary"
+              link
+              @click="handleViewInterviewEvaluations(currentCandidate)"
+            >
+              面试评价
+            </el-button>
+          </div>
           <div class="interview-card">
             <div class="interview-main">
               <span class="interview-date">{{ currentCandidate.interview.date }}</span>
@@ -370,7 +584,7 @@
             </div>
             <div class="interview-details" v-if="currentCandidate.interview.interviewers?.length">
               <span class="info-label">面试官</span>
-              <span class="info-value">{{ currentCandidate.interview.interviewers.join('、') }}</span>
+              <span class="info-value">{{ formatInterviewers(currentCandidate.interview.interviewers) }}</span>
             </div>
             <div class="interview-details" v-if="currentCandidate.interview.notes">
               <span class="info-label">备注</span>
@@ -485,6 +699,65 @@
           </div> -->
         </div>
 
+        <div v-if="canViewContractWorkflowDetails(currentCandidate)" class="detail-section">
+          <div class="section-title section-title-with-action">
+            <span>签约流程</span>
+            <el-button
+              v-if="canManageContractWorkflow(currentCandidate)"
+              type="success"
+              link
+              @click="handleOpenContractWorkflow(currentCandidate)"
+            >
+              打开流程
+            </el-button>
+          </div>
+          <div class="contract-overview-card">
+            <div class="contract-overview-head">
+              <el-tag :type="getContractWorkflowTagType(currentCandidate.contractWorkflow?.status)" effect="plain" round>
+                {{ getContractWorkflowLabel(currentCandidate.contractWorkflow?.status) }}
+              </el-tag>
+              <span v-if="currentCandidate.contractWorkflow?.recommendation?.allS" class="contract-highlight">
+                全员 S 级评价，建议优先推进签约
+              </span>
+            </div>
+            <div class="contract-overview-grid">
+              <div class="contract-overview-item">
+                <span class="contract-overview-label">合同类型</span>
+                <span class="contract-overview-value">{{ currentCandidate.contractWorkflow?.draft?.type || '-' }}</span>
+              </div>
+              <div class="contract-overview-item">
+                <span class="contract-overview-label">合同期限</span>
+                <span class="contract-overview-value">{{ currentCandidate.contractWorkflow?.draft?.durationMonths ? `${currentCandidate.contractWorkflow.draft.durationMonths}个月` : '-' }}</span>
+              </div>
+              <div class="contract-overview-item">
+                <span class="contract-overview-label">财务审核</span>
+                <span class="contract-overview-value">{{ getApprovalLabel(currentCandidate.contractWorkflow?.financeReview?.status) }}</span>
+              </div>
+              <div class="contract-overview-item">
+                <span class="contract-overview-label">管理员审批</span>
+                <span class="contract-overview-value">{{ getApprovalLabel(currentCandidate.contractWorkflow?.adminApproval?.status) }}</span>
+              </div>
+            </div>
+            <div v-if="currentCandidate.contractWorkflow?.draft?.fileUrl" class="contract-link-row">
+              <span class="contract-overview-label">合同文件</span>
+              <a :href="currentCandidate.contractWorkflow.draft.fileUrl" target="_blank" rel="noreferrer" class="contract-file-link">
+                {{ currentCandidate.contractWorkflow?.draft?.fileName || '查看合同文件' }}
+              </a>
+            </div>
+            <div v-if="currentCandidate.contractWorkflow?.negotiation?.note" class="contract-note-block">
+              <div class="contract-overview-label">协商备注</div>
+              <div class="contract-note-text">{{ currentCandidate.contractWorkflow.negotiation.note }}</div>
+            </div>
+            <div v-if="currentCandidate.contractWorkflow?.eSign?.taskId || currentCandidate.contractWorkflow?.eSign?.status" class="contract-note-block">
+              <div class="contract-overview-label">电子签状态</div>
+              <div class="contract-note-text">
+                {{ getESignStatusLabel(currentCandidate.contractWorkflow?.eSign?.status) }}
+                <template v-if="currentCandidate.contractWorkflow?.eSign?.lastMessage"> · {{ currentCandidate.contractWorkflow.eSign.lastMessage }}</template>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 4. 照片 -->
         <div class="detail-section">
           <div class="section-title">照片</div>
@@ -534,13 +807,114 @@
           </div>
         </div>
 
+        <div v-if="isAdmin && canManageInterviewDecision(currentCandidate)" class="detail-section decision-section">
+          <div class="section-title">面试终裁</div>
+          <div v-loading="interviewSummaryLoading" class="decision-panel">
+            <template v-if="interviewSummary">
+              <div v-if="canBypassInterviewDecision(currentCandidate)" class="decision-admin-tip">
+                管理员可无视当前面试流程直接通过面试。通过时必须指定经纪人，后续可继续按经纪人模板补发训练营邀请函。
+              </div>
+              <div class="decision-progress">
+                <div class="decision-progress-head">
+                  <span>面试反馈进度</span>
+                  <span>{{ interviewProgressText }}</span>
+                </div>
+                <el-progress
+                  :percentage="interviewProgressPercent"
+                  :stroke-width="10"
+                  :show-text="false"
+                  color="#13e8dd"
+                />
+              </div>
+
+              <div class="decision-meta-grid">
+                <div class="decision-meta-item">
+                  <span class="decision-meta-label">流程状态</span>
+                  <span class="decision-meta-value">{{ getWorkflowStatusLabel(interviewSummary.progress?.workflowStatus) }}</span>
+                </div>
+                <div class="decision-meta-item">
+                  <span class="decision-meta-label">已提交反馈</span>
+                  <span class="decision-meta-value">{{ interviewSummary.progress?.submittedCount || 0 }} / {{ interviewSummary.progress?.totalAssigned || 0 }}</span>
+                </div>
+                <div class="decision-meta-item">
+                  <span class="decision-meta-label">当前终裁</span>
+                  <span class="decision-meta-value">{{ currentDecisionLabel }}</span>
+                </div>
+                <div class="decision-meta-item">
+                  <span class="decision-meta-label">决策人</span>
+                  <span class="decision-meta-value">{{ interviewSummary.finalDecision?.decidedBy?.name || '-' }}</span>
+                </div>
+              </div>
+
+              <div class="decision-actions">
+                <el-radio-group v-model="decisionForm.decision">
+                  <el-radio-button value="accepted">通过</el-radio-button>
+                  <el-radio-button value="pending">待定</el-radio-button>
+                  <el-radio-button value="rejected">不通过</el-radio-button>
+                </el-radio-group>
+              </div>
+
+              <el-input
+                v-model="decisionForm.comment"
+                type="textarea"
+                :rows="3"
+                placeholder="填写管理员终裁备注"
+              />
+
+              <div class="decision-agent-card">
+                <div class="decision-agent-title">指定经纪人</div>
+                <div class="decision-agent-desc">终裁“通过”时必须同时指定经纪人；待定或不通过可不选。</div>
+                <el-select
+                  v-model="decisionForm.agentId"
+                  filterable
+                  :clearable="decisionForm.decision !== 'accepted'"
+                  :loading="loadingAgents"
+                  placeholder="请选择签约经纪人"
+                >
+                  <el-option
+                    v-for="agent in agentList"
+                    :key="agent._id"
+                    :label="agent.name || agent.username || agent._id"
+                    :value="agent._id"
+                  >
+                    <div class="decision-agent-option">
+                      <span>{{ agent.name || agent.username || agent._id }}</span>
+                      <span class="decision-agent-option-meta">{{ agent.username || '未设置账号' }}</span>
+                    </div>
+                  </el-option>
+                </el-select>
+                <div class="decision-agent-tip">终裁通过时会与经纪人指定一起提交，避免终裁和分配状态不一致。</div>
+              </div>
+
+              <div v-if="interviewSummary.finalDecision?.comment" class="decision-history">
+                <div class="decision-history-title">最近终裁备注</div>
+                <div class="decision-history-text">{{ interviewSummary.finalDecision.comment }}</div>
+              </div>
+
+              <div class="decision-footer">
+                <el-button
+                  type="primary"
+                  :loading="decisionSubmitting"
+                  @click="handleSubmitInterviewDecision"
+                >
+                  保存面试决定
+                </el-button>
+                <el-button plain @click="handleViewInterviewEvaluations(currentCandidate)">查看面试反馈详情</el-button>
+              </div>
+            </template>
+
+            <el-empty v-else description="暂无面试反馈数据" />
+          </div>
+        </div>
+
         <!-- 7. 底部操作 -->
         <div class="detail-footer" v-if="currentCandidate.status === 'pending' || currentCandidate.status === 'approved' || isAdmin">
           <template v-if="currentCandidate.status === 'pending'">
             <el-button type="success" size="large" @click="handleApprove(currentCandidate)">审核通过</el-button>
             <el-button type="danger" size="large" @click="handleReject(currentCandidate)">拒绝</el-button>
           </template>
-          <el-button v-if="currentCandidate.status === 'approved'" type="primary" size="large" @click="handleSchedule(currentCandidate)">安排面试</el-button>
+          <el-button v-if="canScheduleInterview(currentCandidate)" type="primary" size="large" @click="handleSchedule(currentCandidate)">安排面试</el-button>
+          <el-button v-if="canAssignAgent(currentCandidate)" type="warning" size="large" plain @click="handleAssignCandidate(currentCandidate)">{{ getAssignAgentActionText(currentCandidate) }}</el-button>
           <el-button v-if="isAdmin" type="danger" size="large" plain @click="handleDelete(currentCandidate)">删除</el-button>
         </div>
       </template>
@@ -568,7 +942,23 @@
           <el-input v-model="scheduleForm.location" placeholder="如：公司会议室A / 线上链接" />
         </el-form-item>
         <el-form-item label="面试官">
-          <el-input v-model="scheduleForm.interviewers" placeholder="多个面试官用逗号分隔" />
+          <el-select
+            v-model="scheduleForm.interviewers"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择面试官"
+            style="width: 100%"
+            :loading="loadingInterviewers"
+          >
+            <el-option
+              v-for="interviewer in interviewerOptions"
+              :key="interviewer._id"
+              :label="formatInterviewerOption(interviewer)"
+              :value="interviewer._id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="scheduleForm.notes" type="textarea" :rows="2" placeholder="备注信息" />
@@ -577,6 +967,223 @@
       <template #footer>
         <el-button @click="scheduleDialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="submitting" @click="confirmSchedule">确认安排</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="decisionDialogVisible"
+      title="面试终裁"
+      :width="isMobile ? '96vw' : '680px'"
+      destroy-on-close
+      class="decision-dialog"
+    >
+      <div v-loading="interviewSummaryLoading" class="decision-panel decision-dialog-panel">
+        <template v-if="decisionDialogCandidate && interviewSummary">
+          <div class="decision-dialog-summary">
+            <div class="decision-dialog-name">
+              {{ decisionDialogCandidate.basicInfo?.name || decisionDialogCandidate.name || '-' }}
+            </div>
+            <div class="decision-dialog-meta">
+              <span>状态：{{ STATUS_MAP[decisionDialogCandidate.status]?.label || decisionDialogCandidate.status || '-' }}</span>
+              <span v-if="decisionDialogCandidate.assignedAgent?.agentName">
+                当前经纪人：{{ decisionDialogCandidate.assignedAgent.agentName }}
+              </span>
+              <span v-if="decisionDialogCandidate.assignedAgent?.agentPhone">
+                经纪人电话：{{ decisionDialogCandidate.assignedAgent.agentPhone }}
+              </span>
+            </div>
+          </div>
+
+          <div class="decision-progress">
+            <div class="decision-progress-head">
+              <span>面试反馈进度</span>
+              <span>{{ interviewProgressText }}</span>
+            </div>
+            <el-progress
+              :percentage="interviewProgressPercent"
+              :stroke-width="10"
+              :show-text="false"
+              color="#13e8dd"
+            />
+          </div>
+
+          <div class="decision-meta-grid">
+            <div class="decision-meta-item">
+              <span class="decision-meta-label">流程状态</span>
+              <span class="decision-meta-value">{{ getWorkflowStatusLabel(interviewSummary.progress?.workflowStatus) }}</span>
+            </div>
+            <div class="decision-meta-item">
+              <span class="decision-meta-label">已提交反馈</span>
+              <span class="decision-meta-value">{{ interviewSummary.progress?.submittedCount || 0 }} / {{ interviewSummary.progress?.totalAssigned || 0 }}</span>
+            </div>
+            <div class="decision-meta-item">
+              <span class="decision-meta-label">当前终裁</span>
+              <span class="decision-meta-value">{{ currentDecisionLabel }}</span>
+            </div>
+            <div class="decision-meta-item">
+              <span class="decision-meta-label">决策人</span>
+              <span class="decision-meta-value">{{ interviewSummary.finalDecision?.decidedBy?.name || '-' }}</span>
+            </div>
+          </div>
+
+          <div class="decision-actions">
+            <el-radio-group v-model="decisionForm.decision">
+              <el-radio-button value="accepted">通过</el-radio-button>
+              <el-radio-button value="pending">待定</el-radio-button>
+              <el-radio-button value="rejected">不通过</el-radio-button>
+            </el-radio-group>
+          </div>
+
+          <el-input
+            v-model="decisionForm.comment"
+            type="textarea"
+            :rows="3"
+            placeholder="填写管理员终裁备注"
+          />
+
+          <div class="decision-agent-card">
+            <div class="decision-agent-title">指定经纪人</div>
+            <div class="decision-agent-desc">终裁“通过”时必须同时指定经纪人；待定或不通过可不选。</div>
+            <el-select
+              v-model="decisionForm.agentId"
+              filterable
+              :clearable="decisionForm.decision !== 'accepted'"
+              :loading="loadingAgents"
+              placeholder="请选择签约经纪人"
+            >
+              <el-option
+                v-for="agent in agentList"
+                :key="agent._id"
+                :label="agent.name || agent.username || agent._id"
+                :value="agent._id"
+              >
+                <div class="decision-agent-option">
+                  <span>{{ agent.name || agent.username || agent._id }}</span>
+                  <span class="decision-agent-option-meta">{{ agent.username || '未设置账号' }}</span>
+                </div>
+              </el-option>
+            </el-select>
+            <div class="decision-agent-tip">终裁通过时会与经纪人指定一起提交，避免终裁和分配状态不一致。</div>
+          </div>
+
+          <div v-if="isAdmin" class="decision-agent-card">
+            <div class="decision-agent-title">补发入营邀请函</div>
+            <div class="decision-agent-desc">管理员可代指定经纪人补发，发送后沿用经纪人侧相同的逻辑与模板。</div>
+            <div v-if="decisionDialogCandidate?.trainingCampTodo" class="training-camp-summary">
+              <div class="info-row">
+                <span class="info-label">当前状态</span>
+                <span class="info-value">
+                  <el-tag :type="decisionDialogCandidate.trainingCampTodo.status === 'pending' ? 'warning' : 'success'" size="small" effect="plain">
+                    {{ decisionDialogCandidate.trainingCampTodo.status === 'pending' ? '待主播处理' : '已处理' }}
+                  </el-tag>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">训练营类型</span>
+                <span class="info-value">{{ decisionDialogCandidate.trainingCampTodo.campType || '-' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">报到时间</span>
+                <span class="info-value">
+                  {{ decisionDialogCandidate.trainingCampTodo.startDate || '-' }}
+                  <template v-if="decisionDialogCandidate.trainingCampTodo.startTime"> {{ decisionDialogCandidate.trainingCampTodo.startTime }}</template>
+                </span>
+              </div>
+            </div>
+            <el-form label-width="96px" class="training-camp-form">
+              <el-form-item label="指定经纪人" required>
+                <el-select
+                  v-model="trainingCampInviteForm.agentId"
+                  filterable
+                  placeholder="请选择经纪人"
+                  :loading="loadingAgents"
+                >
+                  <el-option
+                    v-for="agent in agentList"
+                    :key="agent._id"
+                    :label="agent.name || agent.username || agent._id"
+                    :value="agent._id"
+                  >
+                    <div class="decision-agent-option">
+                      <span>{{ agent.name || agent.username || agent._id }}</span>
+                      <span class="decision-agent-option-meta">{{ agent.username || '未设置账号' }}</span>
+                    </div>
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="训练营类型" required>
+                <el-select v-model="trainingCampInviteForm.campType" placeholder="请选择训练营类型">
+                  <el-option
+                    v-for="campType in TRAINING_CAMP_TYPE_OPTIONS"
+                    :key="campType"
+                    :label="campType"
+                    :value="campType"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="报到日期" required>
+                <el-date-picker
+                  v-model="trainingCampInviteForm.startDate"
+                  type="date"
+                  value-format="YYYY-MM-DD"
+                  placeholder="选择日期"
+                  style="width: 100%"
+                />
+              </el-form-item>
+              <el-form-item label="报到时间" required>
+                <el-time-picker
+                  v-model="trainingCampInviteForm.startTime"
+                  format="HH:mm"
+                  value-format="HH:mm"
+                  placeholder="选择时间"
+                  style="width: 100%"
+                />
+              </el-form-item>
+              <el-form-item label="备注">
+                <el-input
+                  v-model="trainingCampInviteForm.remark"
+                  type="textarea"
+                  :rows="2"
+                  maxlength="300"
+                  show-word-limit
+                  placeholder="补充集合要求、携带资料或报到提醒"
+                />
+              </el-form-item>
+            </el-form>
+            <div class="training-camp-tip">发送时将按当前指定经纪人身份补发，训练营类型以本次填写内容为准。</div>
+            <div class="training-camp-actions">
+              <el-button
+                type="primary"
+                :loading="trainingCampSubmitting"
+                :disabled="decisionDialogCandidate?.trainingCampTodo?.status === 'pending'"
+                @click="handleSendTrainingCampTodo(decisionDialogCandidate)"
+              >
+                {{ decisionDialogCandidate?.trainingCampTodo?.status === 'pending' ? '已有待处理邀请函' : '补发入营邀请函' }}
+              </el-button>
+            </div>
+          </div>
+
+          <div v-if="interviewSummary.finalDecision?.comment" class="decision-history">
+            <div class="decision-history-title">最近终裁备注</div>
+            <div class="decision-history-text">{{ interviewSummary.finalDecision.comment }}</div>
+          </div>
+        </template>
+
+        <el-empty v-else description="暂无面试反馈数据" />
+      </div>
+
+      <template #footer>
+        <div class="decision-footer">
+          <el-button plain @click="handleViewInterviewEvaluations(decisionDialogCandidate)">查看面试反馈详情</el-button>
+          <el-button @click="decisionDialogVisible = false">取消</el-button>
+          <el-button
+            type="primary"
+            :loading="decisionSubmitting"
+            @click="handleSubmitInterviewDecision(decisionDialogCandidate)"
+          >
+            保存面试决定
+          </el-button>
+        </div>
       </template>
     </el-dialog>
 
@@ -704,8 +1311,8 @@
       </template>
     </el-dialog>
 
-    <!-- 批量分配经纪人对话框 -->
-    <el-dialog v-model="batchAssignDialogVisible" title="批量分配经纪人" width="500px">
+    <!-- 批量设置经纪人对话框 -->
+    <el-dialog v-model="batchAssignDialogVisible" title="批量设置经纪人" width="500px">
       <div class="batch-assign-dialog">
         <div class="selected-info">
           <p style="margin-bottom: 12px; color: #ccc">
@@ -766,6 +1373,125 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="contractDialogVisible" :width="isMobile ? '96vw' : '880px'" top="4vh" class="contract-dialog" destroy-on-close>
+      <template #header>
+        <div class="contract-dialog-header">
+          <div>
+            <div class="contract-dialog-title">签约流程</div>
+            <div class="contract-dialog-subtitle">
+              {{ contractCandidate?.basicInfo?.name || '-' }}
+              <span v-if="contractCandidate?.assignedAgent?.agentName"> · 经纪人：{{ contractCandidate.assignedAgent.agentName }}</span>
+            </div>
+          </div>
+          <el-tag :type="getContractWorkflowTagType(contractForm.status)" effect="plain" round>
+            {{ getContractWorkflowLabel(contractForm.status) }}
+          </el-tag>
+        </div>
+      </template>
+
+      <div v-loading="contractSubmitting" class="contract-dialog-body">
+        <div v-if="contractForm.recommendationReason" class="contract-tip-card">
+          <div class="contract-tip-title">{{ contractForm.recommendationAllS ? '签约建议' : '当前判断' }}</div>
+          <div class="contract-tip-text">{{ contractForm.recommendationReason }}</div>
+        </div>
+
+        <el-form label-width="110px" class="contract-form">
+          <el-form-item label="合同标题">
+            <el-input v-model="contractForm.title" :disabled="!canEditContractDraft" placeholder="例如：主播经纪合作协议" />
+          </el-form-item>
+          <el-form-item label="合同类型">
+            <el-input v-model="contractForm.type" :disabled="!canEditContractDraft" placeholder="例如：全职经纪约 / 训练营协议" />
+          </el-form-item>
+          <el-row :gutter="12">
+            <el-col :span="8">
+              <el-form-item label="期限（月）">
+                <el-input-number v-model="contractForm.durationMonths" :min="1" :disabled="!canEditContractDraft" style="width: 100%" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="底薪">
+                <el-input-number v-model="contractForm.salary" :min="0" :disabled="!canEditContractDraft" style="width: 100%" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="提成比例">
+                <el-input-number v-model="contractForm.commission" :min="0" :max="100" :disabled="!canEditContractDraft" style="width: 100%" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-form-item label="合同文件">
+            <el-input v-model="contractForm.fileUrl" :disabled="!canEditContractDraft" placeholder="请输入合同文件 URL 或 CloudBase 文件地址" />
+          </el-form-item>
+          <el-form-item label="文件名称">
+            <el-input v-model="contractForm.fileName" :disabled="!canEditContractDraft" placeholder="例如：薛测试-经纪合同.pdf" />
+          </el-form-item>
+          <el-form-item label="草稿备注">
+            <el-input v-model="contractForm.remark" type="textarea" :rows="3" :disabled="!canEditContractDraft" placeholder="补充合同重点、签约条件、特殊条款" />
+          </el-form-item>
+        </el-form>
+
+        <div class="contract-status-grid">
+          <div class="contract-status-card">
+            <div class="contract-status-title">财务审核</div>
+            <div class="contract-status-value">{{ getApprovalLabel(contractForm.financeStatus) }}</div>
+            <div v-if="contractForm.financeComment" class="contract-status-note">{{ contractForm.financeComment }}</div>
+          </div>
+          <div class="contract-status-card">
+            <div class="contract-status-title">管理员审批</div>
+            <div class="contract-status-value">{{ getApprovalLabel(contractForm.adminStatus) }}</div>
+            <div v-if="contractForm.adminComment" class="contract-status-note">{{ contractForm.adminComment }}</div>
+          </div>
+          <div class="contract-status-card">
+            <div class="contract-status-title">协商状态</div>
+            <div class="contract-status-value">{{ getNegotiationLabel(contractForm.negotiationStatus) }}</div>
+            <div v-if="contractForm.negotiationNote" class="contract-status-note">{{ contractForm.negotiationNote }}</div>
+          </div>
+          <div class="contract-status-card">
+            <div class="contract-status-title">电子签状态</div>
+            <div class="contract-status-value">{{ getESignStatusLabel(contractForm.eSignStatus) }}</div>
+            <div v-if="contractForm.eSignMessage" class="contract-status-note">{{ contractForm.eSignMessage }}</div>
+            <a v-if="contractForm.eSignUrl" :href="contractForm.eSignUrl" target="_blank" rel="noreferrer" class="contract-file-link">打开签署链接</a>
+          </div>
+        </div>
+
+        <el-form label-width="110px" class="contract-form contract-review-form">
+          <el-form-item label="财务意见">
+            <el-input v-model="contractReviewForm.financeComment" type="textarea" :rows="2" :disabled="!canFinanceReview" placeholder="记录财务审核意见" />
+          </el-form-item>
+          <el-form-item label="管理员意见">
+            <el-input v-model="contractReviewForm.adminComment" type="textarea" :rows="2" :disabled="!canAdminApprove" placeholder="记录管理员审批意见" />
+          </el-form-item>
+          <el-form-item label="协商备注">
+            <el-input v-model="contractReviewForm.negotiationNote" type="textarea" :rows="3" :disabled="!canUpdateNegotiation" placeholder="记录 HR / 经纪人与主播的协商进展" />
+          </el-form-item>
+          <el-form-item label="协商结果">
+            <el-select v-model="contractReviewForm.negotiationStatus" :disabled="!canUpdateNegotiation" style="width: 100%">
+              <el-option label="待开始" value="pending" />
+              <el-option label="协商中" value="in_progress" />
+              <el-option label="需修订" value="revising" />
+              <el-option label="已达成一致" value="agreed" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <template #footer>
+        <div class="contract-dialog-footer">
+          <el-button @click="contractDialogVisible = false">关闭</el-button>
+          <el-button v-if="canEditContractDraft" type="primary" plain @click="handleSaveContractDraft">保存草稿</el-button>
+          <el-button v-if="canSubmitFinanceReview" type="warning" @click="handleSubmitContractFinanceReview">提交财务审核</el-button>
+          <el-button v-if="canFinanceReview" type="success" plain @click="handleFinanceReview(true)">财务通过</el-button>
+          <el-button v-if="canFinanceReview" type="danger" plain @click="handleFinanceReview(false)">财务驳回</el-button>
+          <el-button v-if="canAdminApprove" type="success" @click="handleAdminApprove(true)">管理员通过</el-button>
+          <el-button v-if="canAdminApprove" type="danger" plain @click="handleAdminApprove(false)">管理员驳回</el-button>
+          <el-button v-if="canUpdateNegotiation" type="primary" @click="handleUpdateNegotiation">更新协商进度</el-button>
+          <el-button v-if="canLaunchESign" type="success" @click="handleCreateContractESignTask(true)">发起法大大测试签署</el-button>
+          <el-button v-if="canRefreshESign" type="info" plain @click="handleRefreshContractESignStatus">刷新签署状态</el-button>
+          <el-button v-if="canMockCompleteESign" type="warning" plain @click="handleMockCompleteContractESign">模拟签署完成</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
     <!-- 更改推荐星探对话框 -->
     <el-dialog v-model="referralDialogVisible" title="更改推荐星探" width="500px">
       <div>
@@ -819,14 +1545,23 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <InterviewEvaluationDialog
+      v-model="interviewEvaluationVisible"
+      :candidate-id="interviewEvaluationCandidateId"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Search, Plus, Connection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminAPI, getScouts } from '../../api/admin'
+import { interviewAPI } from '../../api/interview'
+import InterviewEvaluationDialog from '../../components/candidates/interview-evaluation-dialog.vue'
+import MetricCardGrid from '../../components/common/metric-card-grid.vue'
 import { STATUS_MAP, formatDate } from '../../utils/constants'
 import { resolveCandidateImages } from '../../utils/cloudfile'
 import { hasPermission, getUserRole, isAgent } from '../../utils/permission'
@@ -838,6 +1573,20 @@ const currentPage = ref(1)
 const pageSize = ref(20)
 const activeFilter = ref('all')
 const keyword = ref('')
+const route = useRoute()
+const router = useRouter()
+const candidateStats = reactive({
+  total: 0,
+  pending: 0,
+  approved: 0,
+  signed: 0
+})
+const metricCards = computed(() => [
+  { key: 'all', value: candidateStats.total, label: '全部候选人', tone: 'default' },
+  { key: 'pending', value: candidateStats.pending, label: '待审核', tone: 'pending' },
+  { key: 'approved', value: candidateStats.approved, label: '待面试安排', tone: 'approved' },
+  { key: 'signed', value: candidateStats.signed, label: '已签约', tone: 'signed' }
+])
 
 // 响应式
 const windowWidth = ref(window.innerWidth)
@@ -853,6 +1602,8 @@ onUnmounted(() => window.removeEventListener('resize', onResize))
 // 详情抽屉
 const drawerVisible = ref(false)
 const currentCandidate = ref(null)
+const interviewEvaluationVisible = ref(false)
+const interviewEvaluationCandidateId = ref('')
 
 const candidatePhotoList = computed(() => {
   if (!currentCandidate.value?.images) return []
@@ -868,6 +1619,85 @@ const candidateVideos = computed(() => {
   return (currentCandidate.value?.talent?.videos || []).filter(v => v.url)
 })
 
+const interviewSummary = ref(null)
+const interviewSummaryLoading = ref(false)
+const decisionSubmitting = ref(false)
+const decisionDialogVisible = ref(false)
+const decisionDialogCandidate = ref(null)
+const decisionForm = reactive({
+  decision: '',
+  comment: '',
+  agentId: ''
+})
+const TRAINING_CAMP_TYPE_OPTIONS = ['新星训练营', '早早鸟训练营']
+const trainingCampSubmitting = ref(false)
+const trainingCampInviteForm = reactive({
+  agentId: '',
+  campType: '',
+  startDate: '',
+  startTime: '13:00',
+  remark: ''
+})
+
+const DECISION_LABEL_MAP = {
+  accepted: '通过',
+  pending: '待定',
+  rejected: '不通过'
+}
+
+const WORKFLOW_STATUS_LABEL_MAP = {
+  pending: '待终裁',
+  scheduled: '已安排面试',
+  in_progress: '面试进行中',
+  collecting: '待收集反馈',
+  completed: '反馈已齐',
+  finalized: '已终裁'
+}
+
+const interviewProgressPercent = computed(() => {
+  const progress = interviewSummary.value?.progress || {}
+  const total = Number(progress.totalAssigned || 0)
+  const submitted = Number(progress.submittedCount || 0)
+  return total > 0 ? Math.round((submitted / total) * 100) : 0
+})
+
+const interviewProgressText = computed(() => {
+  const progress = interviewSummary.value?.progress || {}
+  return `${progress.submittedCount || 0} / ${progress.totalAssigned || 0}`
+})
+
+const currentDecisionLabel = computed(() => {
+  const decision = interviewSummary.value?.finalDecision?.decision || ''
+  return DECISION_LABEL_MAP[decision] || '-'
+})
+
+const currentRole = computed(() => getUserRole() || '')
+
+const CONTRACT_STATUS_LABELS = {
+  drafting: 'HR拟定中',
+  finance_review: '待财务审核',
+  admin_review: '待管理员审批',
+  negotiating: '协商中',
+  ready_to_sign: '可组织线上签约',
+  signed: '已签约'
+}
+
+const NEGOTIATION_STATUS_LABELS = {
+  pending: '待开始',
+  in_progress: '协商中',
+  revising: '需修订',
+  agreed: '已达成一致'
+}
+
+const ESIGN_STATUS_LABELS = {
+  not_started: '未发起',
+  signing: '签署中',
+  signed: '已签署',
+  pending_launch: '待发起',
+  failed: '失败',
+  config_pending: '待配置'
+}
+
 // 判断是否是admin角色（有删除权限）
 const isAdmin = computed(() => {
   try {
@@ -880,6 +1710,49 @@ const isAdmin = computed(() => {
   }
 })
 
+const contractDialogVisible = ref(false)
+const contractSubmitting = ref(false)
+const contractCandidate = ref(null)
+const contractForm = reactive({
+  status: 'drafting',
+  recommendationAllS: false,
+  recommendationReason: '',
+  title: '',
+  type: '',
+  durationMonths: 12,
+  salary: null,
+  commission: null,
+  fileUrl: '',
+  fileName: '',
+  remark: '',
+  financeStatus: 'pending',
+  financeComment: '',
+  adminStatus: 'pending',
+  adminComment: '',
+  negotiationStatus: 'pending',
+  negotiationNote: '',
+  eSignMode: 'mock',
+  eSignStatus: 'not_started',
+  eSignUrl: '',
+  eSignTaskId: '',
+  eSignMessage: ''
+})
+const contractReviewForm = reactive({
+  financeComment: '',
+  adminComment: '',
+  negotiationStatus: 'pending',
+  negotiationNote: ''
+})
+
+const canEditContractDraft = computed(() => ['admin', 'hr'].includes(currentRole.value))
+const canSubmitFinanceReview = computed(() => ['admin', 'hr'].includes(currentRole.value))
+const canFinanceReview = computed(() => ['admin', 'operations', 'finance'].includes(currentRole.value))
+const canAdminApprove = computed(() => currentRole.value === 'admin')
+const canUpdateNegotiation = computed(() => ['admin', 'hr', 'agent'].includes(currentRole.value))
+const canLaunchESign = computed(() => ['admin', 'hr'].includes(currentRole.value) && contractForm.status === 'ready_to_sign')
+const canRefreshESign = computed(() => ['admin', 'hr', 'operations', 'finance'].includes(currentRole.value) && !!contractForm.eSignTaskId)
+const canMockCompleteESign = computed(() => currentRole.value === 'admin' && contractForm.eSignMode === 'mock' && contractForm.eSignStatus !== 'signed' && !!contractForm.eSignTaskId)
+
 // 拒绝对话框
 const rejectDialogVisible = ref(false)
 const rejectReason = ref('')
@@ -888,11 +1761,22 @@ const rejectingCandidate = ref(null)
 // 面试安排对话框
 const scheduleDialogVisible = ref(false)
 const schedulingCandidate = ref(null)
+const interviewerOptions = ref([])
+const loadingInterviewers = ref(false)
+const INTERVIEWER_ROLE_LABELS = {
+  admin: '管理员',
+  agent: '经纪人',
+  dance_teacher: '舞蹈老师',
+  photographer: '摄影师',
+  host_mc: '主持/MC',
+  makeup_artist: '化妆师',
+  stylist: '造型师'
+}
 const scheduleForm = reactive({
   interviewDate: '',
   interviewTime: '',
   location: '',
-  interviewers: '',
+  interviewers: [],
   notes: ''
 })
 
@@ -1033,9 +1917,211 @@ function handleBatchAssign() {
     return
   }
 
+  if (selectedRows.value.some((row) => isRejectedCandidate(row))) {
+    ElMessage.warning('未通过的候选人不能分配经纪人')
+    return
+  }
+
   selectedAgentId.value = ''
   batchAssignDialogVisible.value = true
   loadAgentList()
+}
+
+function isRejectedCandidate(row) {
+  if (!row) return false
+  return row.status === 'rejected' || row.interviewFinalDecision?.decision === 'rejected'
+}
+
+function getCandidateFailReason(row) {
+  if (!row) return ''
+
+  if (row.interviewFinalDecision?.decision === 'rejected') {
+    return String(row.interviewFinalDecision?.comment || '').trim()
+  }
+
+  if (row.status === 'rejected') {
+    return String(row.reviewReason || '').trim()
+  }
+
+  return ''
+}
+
+function canAssignAgent(row) {
+  if (!row || !hasPermission('assignCandidates')) {
+    return false
+  }
+  if (isRejectedCandidate(row)) {
+    return false
+  }
+  return true
+}
+
+function getAssignAgentActionText(row) {
+  return row?.assignedAgent?.agentId ? '修改经纪人' : '分配经纪人'
+}
+
+function canScheduleInterview(row) {
+  if (!row) return false
+  if (isRejectedCandidate(row)) return false
+  return row.status === 'approved'
+}
+
+function canManageContractWorkflow(row) {
+  if (!row?._id) return false
+  if (!['admin', 'hr', 'operations', 'finance', 'agent'].includes(currentRole.value)) return false
+  if (row.interviewFinalDecision?.decision !== 'accepted') return false
+  if (currentRole.value === 'agent') {
+    return Boolean(row.assignedAgent?.agentId)
+  }
+  return true
+}
+
+function canViewContractWorkflowDetails(row) {
+  if (!row?._id) return false
+  if (!['admin', 'hr', 'operations', 'finance'].includes(currentRole.value)) return false
+  return Boolean(row.contractWorkflow || row.interviewFinalDecision?.decision === 'accepted')
+}
+
+function getContractWorkflowLabel(status) {
+  return CONTRACT_STATUS_LABELS[status] || '未开始'
+}
+
+function getContractWorkflowTagType(status) {
+  const map = {
+    drafting: 'info',
+    finance_review: 'warning',
+    admin_review: 'warning',
+    negotiating: 'primary',
+    ready_to_sign: 'success',
+    signed: 'success'
+  }
+  return map[status] || 'info'
+}
+
+function getApprovalLabel(status) {
+  const map = {
+    pending: '待处理',
+    approved: '已通过',
+    rejected: '已驳回'
+  }
+  return map[status] || '待处理'
+}
+
+function getNegotiationLabel(status) {
+  return NEGOTIATION_STATUS_LABELS[status] || '待开始'
+}
+
+function getESignStatusLabel(status) {
+  return ESIGN_STATUS_LABELS[status] || '未发起'
+}
+
+function fillContractForm(candidate) {
+  const workflow = candidate?.contractWorkflow || {}
+  const draft = workflow.draft || {}
+  const financeReview = workflow.financeReview || {}
+  const adminApproval = workflow.adminApproval || {}
+  const negotiation = workflow.negotiation || {}
+  const eSign = workflow.eSign || {}
+
+  contractForm.status = workflow.status || 'drafting'
+  contractForm.recommendationAllS = Boolean(workflow.recommendation?.allS)
+  contractForm.recommendationReason = workflow.recommendation?.reason || ''
+  contractForm.title = draft.title || ''
+  contractForm.type = draft.type || ''
+  contractForm.durationMonths = draft.durationMonths || 12
+  contractForm.salary = draft.salary ?? null
+  contractForm.commission = draft.commission ?? null
+  contractForm.fileUrl = draft.fileUrl || ''
+  contractForm.fileName = draft.fileName || ''
+  contractForm.remark = draft.remark || ''
+  contractForm.financeStatus = financeReview.status || 'pending'
+  contractForm.financeComment = financeReview.comment || ''
+  contractForm.adminStatus = adminApproval.status || 'pending'
+  contractForm.adminComment = adminApproval.comment || ''
+  contractForm.negotiationStatus = negotiation.status || 'pending'
+  contractForm.negotiationNote = negotiation.note || ''
+  contractForm.eSignMode = eSign.mode || 'mock'
+  contractForm.eSignStatus = eSign.status || 'not_started'
+  contractForm.eSignUrl = eSign.signUrl || ''
+  contractForm.eSignTaskId = eSign.taskId || ''
+  contractForm.eSignMessage = eSign.lastMessage || ''
+
+  contractReviewForm.financeComment = financeReview.comment || ''
+  contractReviewForm.adminComment = adminApproval.comment || ''
+  contractReviewForm.negotiationStatus = negotiation.status || 'pending'
+  contractReviewForm.negotiationNote = negotiation.note || ''
+}
+
+function handleAssignCandidate(row) {
+  const candidateId = getCandidatePrimaryId(row)
+  if (!candidateId) {
+    ElMessage.warning('候选人信息不完整')
+    return
+  }
+
+  if (isRejectedCandidate(row)) {
+    ElMessage.warning('未通过的候选人不能分配经纪人')
+    return
+  }
+
+  selectedIds.value = [candidateId]
+  selectedRows.value = [normalizeCandidateRecord(row)]
+  handleBatchAssign()
+}
+
+async function handleOpenContractWorkflow(row) {
+  const candidateId = getCandidatePrimaryId(row)
+  if (!candidateId) {
+    ElMessage.warning('候选人信息不完整')
+    return
+  }
+
+  contractSubmitting.value = true
+  contractDialogVisible.value = true
+  try {
+    const res = await adminAPI.getCandidateDetail(candidateId)
+    const rawCandidate = normalizeCandidateRecord(res.success ? (res.candidate || res.data || row) : row)
+    const resolvedList = await resolveCandidateImages([rawCandidate])
+    contractCandidate.value = normalizeCandidateRecord(resolvedList[0] || rawCandidate)
+    fillContractForm(contractCandidate.value)
+  } catch (error) {
+    contractCandidate.value = normalizeCandidateRecord(row)
+    fillContractForm(contractCandidate.value)
+    ElMessage.error(error?.message || '加载签约流程失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function refreshContractCandidate() {
+  const candidateId = getCandidatePrimaryId(contractCandidate.value)
+  if (!candidateId) return
+
+  const res = await adminAPI.getCandidateDetail(candidateId)
+  if (res.success) {
+    const rawCandidate = normalizeCandidateRecord(res.candidate || res.data || contractCandidate.value)
+    const resolvedList = await resolveCandidateImages([rawCandidate])
+    contractCandidate.value = normalizeCandidateRecord(resolvedList[0] || rawCandidate)
+    fillContractForm(contractCandidate.value)
+    if (getCandidatePrimaryId(currentCandidate.value) === candidateId) {
+      currentCandidate.value = contractCandidate.value
+    }
+    fetchList()
+  }
+}
+
+async function refreshCurrentCandidateDetail() {
+  if (!currentCandidate.value?._id) {
+    return
+  }
+
+  const detailRes = await adminAPI.getCandidateDetail(currentCandidate.value._id)
+  if (detailRes.success && (detailRes.candidate || detailRes.data)) {
+    const rawCandidate = normalizeCandidateRecord(detailRes.candidate || detailRes.data)
+    const detail = await resolveCandidateImages([rawCandidate])
+    currentCandidate.value = normalizeCandidateRecord(detail[0] || rawCandidate)
+    fillTrainingCampInviteForm(currentCandidate.value)
+  }
 }
 
 async function loadAgentList() {
@@ -1053,6 +2139,54 @@ async function loadAgentList() {
   }
 }
 
+function formatInterviewerOption(interviewer) {
+  if (!interviewer) return ''
+  const roleLabel = INTERVIEWER_ROLE_LABELS[interviewer.role] || interviewer.role || '面试官'
+  const name = interviewer.name || interviewer.username || interviewer._id
+  const username = interviewer.username ? ` (${interviewer.username})` : ''
+  return `${roleLabel} - ${name}${username}`
+}
+
+function formatInterviewers(interviewers = []) {
+  if (!Array.isArray(interviewers) || interviewers.length === 0) {
+    return '-'
+  }
+
+  return interviewers.map((item) => {
+    if (typeof item === 'string') {
+      return item
+    }
+
+    const roleLabel = INTERVIEWER_ROLE_LABELS[item?.role] || ''
+    const name = item?.name || item?.username || item?.account || item?.id || item?._id || ''
+    return roleLabel && name ? `${roleLabel}(${name})` : (name || roleLabel || '-')
+  }).join('、')
+}
+
+async function loadInterviewerOptions() {
+  if (interviewerOptions.value.length > 0) {
+    return
+  }
+
+  loadingInterviewers.value = true
+  try {
+    const res = await adminAPI.getAdminList()
+    if (res.success) {
+      interviewerOptions.value = (res.data || []).filter((item) => (
+        item.status !== 'deleted' &&
+        Object.prototype.hasOwnProperty.call(INTERVIEWER_ROLE_LABELS, item.role)
+      ))
+    } else {
+      ElMessage.error(res.error || '加载面试官列表失败')
+    }
+  } catch (error) {
+    console.error('加载面试官列表失败:', error)
+    ElMessage.error('加载面试官列表失败')
+  } finally {
+    loadingInterviewers.value = false
+  }
+}
+
 async function confirmBatchAssign() {
   if (!selectedAgentId.value) {
     ElMessage.warning('请选择经纪人')
@@ -1067,32 +2201,35 @@ async function confirmBatchAssign() {
     })
 
     if (res.success) {
-      // 显示成功消息
-      let message = `成功分配 ${res.successCount || selectedIds.value.length} 人`
-
-      // 如果有重新分配的情况，显示详细信息
-      if (res.reassignments && res.reassignments.length > 0) {
-        const reassignedNames = res.reassignments
+      if (res.unchangedCandidates && res.unchangedCandidates.length > 0) {
+        const assignedNames = res.unchangedCandidates
           .slice(0, 3)
           .map(r => r.candidateName)
           .join('、')
-        const moreCount = res.reassignments.length - 3
+        const moreCount = res.unchangedCandidates.length - 3
 
         ElMessageBox.alert(
-          `以下候选人已从其他经纪人重新分配：${reassignedNames}${moreCount > 0 ? ` 等${res.reassignments.length}人` : ''}`,
-          '分配成功',
+          `以下主播的经纪人未发生变化：${assignedNames}${moreCount > 0 ? ` 等${res.unchangedCandidates.length}人` : ''}`,
+          '处理完成',
           {
-            type: 'warning',
+            type: 'info',
             confirmButtonText: '知道了'
           }
         )
-      } else {
-        ElMessage.success(message)
+      }
+
+      if ((res.successCount || 0) > 0) {
+        ElMessage.success(`成功更新 ${res.successCount} 人的经纪人`)
+      } else if ((res.unchangedCount || 0) > 0) {
+        ElMessage.success('所选主播的经纪人已是当前选择')
       }
 
       batchAssignDialogVisible.value = false
+      await refreshCurrentCandidateDetail()
       clearSelection()
       fetchList()
+    } else {
+      ElMessage.error(res.error || '分配失败')
     }
   } catch (error) {
     console.error('批量分配失败:', error)
@@ -1107,15 +2244,33 @@ const submitting = ref(false)
 async function fetchList() {
   loading.value = true
   try {
-    const res = await adminAPI.getCandidateList({
-      page: currentPage.value,
-      pageSize: pageSize.value,
-      status: activeFilter.value,
-      keyword: keyword.value
-    })
+    const [res, statsRes] = await Promise.all([
+      adminAPI.getCandidateList({
+        page: currentPage.value,
+        pageSize: pageSize.value,
+        status: activeFilter.value,
+        keyword: keyword.value
+      }),
+      keyword.value
+        ? Promise.resolve(null)
+        : Promise.all([
+            adminAPI.getCandidateList({ page: 1, pageSize: 1, status: 'all' }),
+            adminAPI.getCandidateList({ page: 1, pageSize: 1, status: 'pending' }),
+            adminAPI.getCandidateList({ page: 1, pageSize: 1, status: 'approved' }),
+            adminAPI.getCandidateList({ page: 1, pageSize: 1, status: 'signed' })
+          ])
+    ])
     if (res.success) {
       list.value = await resolveCandidateImages(res.data.list)
       total.value = res.data.total
+      if (statsRes) {
+        candidateStats.total = statsRes[0]?.data?.total || 0
+        candidateStats.pending = statsRes[1]?.data?.total || 0
+        candidateStats.approved = statsRes[2]?.data?.total || 0
+        candidateStats.signed = statsRes[3]?.data?.total || 0
+      } else {
+        candidateStats.total = total.value
+      }
     } else {
       list.value = []
       total.value = 0
@@ -1131,27 +2286,510 @@ async function fetchList() {
 function handleSearch() {
   currentPage.value = 1
   clearSelection()
+  syncQuery()
   fetchList()
 }
 
 function handleFilterChange() {
   currentPage.value = 1
   clearSelection()
+  syncQuery()
   fetchList()
 }
 
+function setFilter(filter) {
+  if (activeFilter.value === filter) {
+    return
+  }
+  activeFilter.value = filter
+  handleFilterChange()
+}
+
+function syncQuery() {
+  router.replace({
+    query: {
+      ...route.query,
+      status: activeFilter.value === 'all' ? undefined : activeFilter.value,
+      keyword: keyword.value || undefined
+    }
+  })
+}
+
+function canViewInterviewEvaluations(row) {
+  if (!row) return false
+  return Boolean(
+    row.interview ||
+    ['interview_scheduled', 'online_test_completed', 'pending_rating', 'rated', 'signed'].includes(row.status)
+  )
+}
+
+function canManageInterviewDecision(row) {
+  if (!row) return false
+  if (isRejectedCandidate(row)) return false
+  if (isAdmin.value) {
+    return Boolean(
+      row.interview ||
+      row.interviewFinalDecision ||
+      ['approved', 'interview_scheduled', 'online_test_completed', 'pending_rating', 'rated', 'signed', 'training', 'active'].includes(row.status)
+    )
+  }
+  return Boolean(
+    row.interview ||
+    row.interviewFinalDecision ||
+    ['interview_scheduled', 'online_test_completed', 'pending_rating', 'rated', 'signed'].includes(row.status)
+  )
+}
+
+function canBypassInterviewDecision(row) {
+  return Boolean(
+    isAdmin.value &&
+    row &&
+    !row.interviewFinalDecision?.decision &&
+    ['approved', 'interview_scheduled', 'online_test_completed', 'pending_rating', 'rated', 'signed', 'training', 'active'].includes(row.status)
+  )
+}
+
+function canOpenHighlightedInterviewDecision(row) {
+  if (!row || !isAdmin.value) return false
+  const hasDecision = Boolean(row.interviewFinalDecision?.decision)
+  const readyForDecision = isInterviewDecisionReady(row)
+  return !hasDecision && readyForDecision
+}
+
+function getInterviewDecisionTag(row) {
+  const decision = row?.interviewFinalDecision?.decision
+  if (!decision) return null
+
+  const map = {
+    accepted: { label: '终裁通过', type: 'success' },
+    pending: { label: '终裁待定', type: 'warning' },
+    rejected: { label: '终裁不通过', type: 'danger' }
+  }
+
+  return map[decision] || { label: '已终裁', type: 'info' }
+}
+
+function getWorkflowStatusLabel(status) {
+  if (!status) return '-'
+  return WORKFLOW_STATUS_LABEL_MAP[status] || status
+}
+
+function getCandidatePrimaryId(candidate) {
+  return candidate?._id || candidate?.id || candidate?.candidateId || ''
+}
+
+function normalizeCandidateRecord(candidate) {
+  if (!candidate) return candidate
+  const primaryId = getCandidatePrimaryId(candidate)
+  return primaryId ? { ...candidate, _id: primaryId } : candidate
+}
+
+function isInterviewDecisionReady(row) {
+  if (!row) return false
+  if (['rated', 'signed'].includes(row.status)) return true
+
+  const submittedCount = Number(row.interviewProgress?.submittedCount || 0)
+  const totalAssigned = Number(row.interviewProgress?.totalAssigned || 0)
+  return totalAssigned > 0 && submittedCount >= totalAssigned
+}
+
+function isInterviewDecisionLocked(row) {
+  if (!row) return true
+  if (isAdmin.value && canManageInterviewDecision(row)) return false
+  if (row.interviewFinalDecision?.decision) return false
+  return !isInterviewDecisionReady(row)
+}
+
+function getInterviewDecisionLockReason(row) {
+  if (!row) return '候选人信息缺失'
+  if (isAdmin.value && canManageInterviewDecision(row)) return '管理员可直接处理'
+  if (row.interviewFinalDecision?.decision) return ''
+
+  const submittedCount = Number(row.interviewProgress?.submittedCount || 0)
+  const totalAssigned = Number(row.interviewProgress?.totalAssigned || 0)
+
+  if (totalAssigned > 0 && submittedCount < totalAssigned) {
+    return `待完成反馈 ${submittedCount}/${totalAssigned}`
+  }
+
+  if (['interview_scheduled', 'online_test_completed', 'pending_rating'].includes(row.status)) {
+    return '待面试反馈完成'
+  }
+
+  return '当前不可终裁'
+}
+
+function fillDecisionForm(summary, candidate) {
+  decisionForm.decision = summary?.finalDecision?.decision || ''
+  decisionForm.comment = summary?.finalDecision?.comment || ''
+  decisionForm.agentId = candidate?.assignedAgent?.agentId || ''
+}
+
+function fillTrainingCampInviteForm(candidate) {
+  trainingCampInviteForm.agentId = candidate?.assignedAgent?.agentId || ''
+  trainingCampInviteForm.campType = candidate?.trainingCampTodo?.campType || ''
+  trainingCampInviteForm.startDate = candidate?.trainingCampTodo?.startDate || ''
+  trainingCampInviteForm.startTime = candidate?.trainingCampTodo?.startTime || '13:00'
+  trainingCampInviteForm.remark = candidate?.trainingCampTodo?.remark || ''
+}
+
+async function loadInterviewSummary(candidateId, candidate = null) {
+  if (!candidateId) {
+    interviewSummary.value = null
+    return
+  }
+
+  interviewSummaryLoading.value = true
+  try {
+    const res = await interviewAPI.getCandidateSummary(candidateId)
+    if (res.success) {
+      interviewSummary.value = res.data || null
+      fillDecisionForm(res.data || null, candidate || currentCandidate.value || decisionDialogCandidate.value)
+    } else {
+      interviewSummary.value = null
+      ElMessage.error(res.error || '加载面试汇总失败')
+    }
+  } catch (error) {
+    interviewSummary.value = null
+    ElMessage.error(error?.message || '加载面试汇总失败')
+  } finally {
+    interviewSummaryLoading.value = false
+  }
+}
+
+function handleViewInterviewEvaluations(row) {
+  if (!row?._id) return
+  interviewEvaluationCandidateId.value = row._id
+  interviewEvaluationVisible.value = true
+}
+
+async function handleOpenInterviewDecision(row) {
+  if (!row?._id) {
+    ElMessage.warning('候选人信息不完整')
+    return
+  }
+
+  if (isRejectedCandidate(row)) {
+    ElMessage.warning('未通过的候选人已关闭面试终裁入口')
+    return
+  }
+
+  decisionDialogCandidate.value = row
+  decisionDialogVisible.value = true
+  interviewSummary.value = null
+  fillDecisionForm(null, row)
+  fillTrainingCampInviteForm(row)
+  await Promise.all([
+    loadAgentList(),
+    loadInterviewSummary(row._id, row)
+  ])
+}
+
+async function handleSaveContractDraft() {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.saveContractWorkflowDraft({
+      candidateId: contractCandidate.value._id,
+      title: contractForm.title,
+      type: contractForm.type,
+      durationMonths: contractForm.durationMonths,
+      salary: contractForm.salary,
+      commission: contractForm.commission,
+      fileUrl: contractForm.fileUrl,
+      fileName: contractForm.fileName,
+      remark: contractForm.remark
+    })
+    if (res.success) {
+      ElMessage.success(res.message || '合同草稿已保存')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '保存失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '保存失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function handleSubmitContractFinanceReview() {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.submitContractFinanceReview(contractCandidate.value._id)
+    if (res.success) {
+      ElMessage.success(res.message || '已提交财务审核')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '提交失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '提交失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function handleFinanceReview(approved) {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.reviewContractFinance(
+      contractCandidate.value._id,
+      approved,
+      contractReviewForm.financeComment
+    )
+    if (res.success) {
+      ElMessage.success(res.message || '财务审核已更新')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '财务审核失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '财务审核失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function handleAdminApprove(approved) {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.approveContractAdmin(
+      contractCandidate.value._id,
+      approved,
+      contractReviewForm.adminComment
+    )
+    if (res.success) {
+      ElMessage.success(res.message || '管理员审批已更新')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '管理员审批失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '管理员审批失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function handleUpdateNegotiation() {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.updateContractNegotiation(
+      contractCandidate.value._id,
+      contractReviewForm.negotiationStatus,
+      contractReviewForm.negotiationNote
+    )
+    if (res.success) {
+      ElMessage.success(res.message || '协商进度已更新')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '更新失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '更新失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function handleCreateContractESignTask(useMock = true) {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.createContractESignTask(contractCandidate.value._id, useMock)
+    if (res.success) {
+      ElMessage.success(res.message || '电子签任务已创建')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '发起电子签失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '发起电子签失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function handleRefreshContractESignStatus() {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.refreshContractESignStatus(contractCandidate.value._id)
+    if (res.success) {
+      ElMessage.success(res.message || '签署状态已刷新')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '刷新签署状态失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '刷新签署状态失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
+async function handleMockCompleteContractESign() {
+  if (!contractCandidate.value?._id) return
+  contractSubmitting.value = true
+  try {
+    const res = await adminAPI.mockCompleteContractESign(contractCandidate.value._id)
+    if (res.success) {
+      ElMessage.success(res.message || '模拟签署已完成')
+      await refreshContractCandidate()
+    } else {
+      ElMessage.error(res.error || '模拟签署失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '模拟签署失败')
+  } finally {
+    contractSubmitting.value = false
+  }
+}
+
 async function handleView(row) {
-  currentCandidate.value = row
+  const candidateId = getCandidatePrimaryId(row)
+  currentCandidate.value = normalizeCandidateRecord(row)
+  fillTrainingCampInviteForm(currentCandidate.value)
   drawerVisible.value = true
+  interviewSummary.value = null
+  fillDecisionForm(null, currentCandidate.value)
   // 拉取详情获取完整数据
   try {
-    const res = await adminAPI.getCandidateDetail(row._id)
-    if (res.success && res.candidate) {
-      const detail = await resolveCandidateImages([res.candidate])
-      currentCandidate.value = detail[0]
+    if (candidateId) {
+      const res = await adminAPI.getCandidateDetail(candidateId)
+      const rawCandidate = normalizeCandidateRecord(res.success ? (res.candidate || res.data || row) : row)
+      const detail = await resolveCandidateImages([rawCandidate])
+      currentCandidate.value = normalizeCandidateRecord(detail[0] || rawCandidate)
+      fillTrainingCampInviteForm(currentCandidate.value)
     }
   } catch {
     // 详情拉取失败时仍使用列表数据
+  }
+
+  if (isAdmin.value && canManageInterviewDecision(currentCandidate.value || row)) {
+    loadAgentList()
+    loadInterviewSummary(candidateId, currentCandidate.value || normalizeCandidateRecord(row))
+  } else if (isAdmin.value) {
+    loadAgentList()
+  }
+}
+
+async function handleSendTrainingCampTodo(targetCandidate = currentCandidate.value || decisionDialogCandidate.value) {
+  const candidateId = getCandidatePrimaryId(targetCandidate)
+  if (!candidateId) {
+    ElMessage.warning('候选人信息缺失')
+    return
+  }
+
+  if (!trainingCampInviteForm.agentId && decisionForm.agentId) {
+    trainingCampInviteForm.agentId = decisionForm.agentId
+  }
+
+  if (!trainingCampInviteForm.agentId) {
+    ElMessage.warning('请选择经纪人')
+    return
+  }
+
+  if (!trainingCampInviteForm.campType || !trainingCampInviteForm.startDate || !trainingCampInviteForm.startTime) {
+    ElMessage.warning('请填写训练营类型和报到时间')
+    return
+  }
+
+  trainingCampSubmitting.value = true
+  try {
+    const res = await adminAPI.createTrainingCampTodo({
+      candidateId,
+      agentId: trainingCampInviteForm.agentId,
+      campType: trainingCampInviteForm.campType,
+      startDate: trainingCampInviteForm.startDate,
+      startTime: trainingCampInviteForm.startTime,
+      remark: trainingCampInviteForm.remark.trim()
+    })
+
+    if (res.success) {
+      ElMessage.success(res.message || '邀请函已发送')
+      await refreshCurrentCandidateDetail()
+      if (getCandidatePrimaryId(currentCandidate.value) === candidateId) {
+        fillTrainingCampInviteForm(currentCandidate.value)
+      }
+      if (decisionDialogCandidate.value && getCandidatePrimaryId(decisionDialogCandidate.value) === candidateId) {
+        const detailRes = await adminAPI.getCandidateDetail(candidateId)
+        if (detailRes.success && (detailRes.candidate || detailRes.data)) {
+          const rawCandidate = normalizeCandidateRecord(detailRes.candidate || detailRes.data)
+          const detail = await resolveCandidateImages([rawCandidate])
+          decisionDialogCandidate.value = normalizeCandidateRecord(detail[0] || rawCandidate)
+          fillTrainingCampInviteForm(decisionDialogCandidate.value)
+        }
+      }
+      fetchList()
+    } else {
+      ElMessage.error(res.error || '发送失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '发送失败')
+  } finally {
+    trainingCampSubmitting.value = false
+  }
+}
+
+async function handleSubmitInterviewDecision(targetCandidate = currentCandidate.value) {
+  const candidateId = getCandidatePrimaryId(targetCandidate)
+  if (!candidateId) {
+    ElMessage.warning('候选人信息缺失')
+    return
+  }
+
+  if (!decisionForm.decision) {
+    ElMessage.warning('请选择面试决定')
+    return
+  }
+
+  if (decisionForm.decision === 'accepted' && !decisionForm.agentId) {
+    ElMessage.warning('终裁通过时请选择经纪人')
+    return
+  }
+
+  decisionSubmitting.value = true
+  try {
+    const res = await interviewAPI.submitFinalDecision({
+      candidateId,
+      finalDecision: decisionForm.decision,
+      comment: decisionForm.comment.trim(),
+      agentId: decisionForm.decision === 'accepted' ? decisionForm.agentId : '',
+      skipInterviewFlow: isAdmin.value && decisionForm.decision === 'accepted'
+    })
+
+    if (res.success) {
+      ElMessage.success(res.message || '面试决定已保存')
+      await loadInterviewSummary(candidateId, normalizeCandidateRecord(targetCandidate))
+      const detailRes = await adminAPI.getCandidateDetail(candidateId)
+      if (detailRes.success && (detailRes.candidate || detailRes.data)) {
+        const rawCandidate = normalizeCandidateRecord(detailRes.candidate || detailRes.data)
+        const detail = await resolveCandidateImages([rawCandidate])
+        const normalizedDetail = normalizeCandidateRecord(detail[0] || rawCandidate)
+        if (getCandidatePrimaryId(currentCandidate.value) === candidateId) {
+          currentCandidate.value = normalizedDetail
+        }
+        if (getCandidatePrimaryId(decisionDialogCandidate.value) === candidateId) {
+          decisionDialogCandidate.value = normalizedDetail
+        }
+      }
+      if (decisionDialogVisible.value && getCandidatePrimaryId(decisionDialogCandidate.value) === candidateId) {
+        decisionDialogVisible.value = false
+      }
+      fetchList()
+    } else {
+      ElMessage.error(res.error || '面试决定保存失败')
+    }
+  } catch (error) {
+    ElMessage.error(error?.message || '面试决定保存失败')
+  } finally {
+    decisionSubmitting.value = false
   }
 }
 
@@ -1204,9 +2842,10 @@ function handleSchedule(row) {
   scheduleForm.interviewDate = ''
   scheduleForm.interviewTime = ''
   scheduleForm.location = '成都市成华区府青路街道二环路北4段3号俊屹中心下沉广场奥米光年传媒'
-  scheduleForm.interviewers = ''
+  scheduleForm.interviewers = []
   scheduleForm.notes = ''
   scheduleDialogVisible.value = true
+  loadInterviewerOptions()
 }
 
 async function confirmSchedule() {
@@ -1214,6 +2853,30 @@ async function confirmSchedule() {
     ElMessage.warning('请选择面试日期和时间')
     return
   }
+
+  if (scheduleForm.interviewers.length === 0) {
+    ElMessage.warning('请选择至少一位面试官')
+    return
+  }
+
+  const selectedInterviewers = interviewerOptions.value
+    .filter((item) => scheduleForm.interviewers.includes(item._id))
+    .map((item) => ({
+      id: item._id,
+      _id: item._id,
+      adminId: item._id,
+      userId: item._id,
+      role: item.role,
+      name: item.name || item.username || item._id,
+      username: item.username || '',
+      account: item.username || ''
+    }))
+
+  if (selectedInterviewers.length !== scheduleForm.interviewers.length) {
+    ElMessage.warning('部分面试官数据无效，请重新选择')
+    return
+  }
+
   submitting.value = true
   try {
     const res = await adminAPI.scheduleInterview({
@@ -1221,9 +2884,7 @@ async function confirmSchedule() {
       interviewDate: scheduleForm.interviewDate,
       interviewTime: scheduleForm.interviewTime,
       location: scheduleForm.location,
-      interviewers: scheduleForm.interviewers
-        ? scheduleForm.interviewers.split(',').map(s => s.trim())
-        : [],
+      interviewers: selectedInterviewers,
       notes: scheduleForm.notes
     })
     if (res.success) {
@@ -1577,7 +3238,21 @@ const handleRemoveReferral = async () => {
   }
 }
 
-onMounted(fetchList)
+onMounted(() => {
+  const routeStatus = route.query.status
+  const routeKeyword = route.query.keyword
+  const validStatuses = ['all', 'pending', 'approved', 'interview_scheduled', 'online_test_completed', 'rated', 'rejected', 'signed']
+
+  if (typeof routeStatus === 'string' && validStatuses.includes(routeStatus)) {
+    activeFilter.value = routeStatus
+  }
+
+  if (typeof routeKeyword === 'string') {
+    keyword.value = routeKeyword
+  }
+
+  fetchList()
+})
 </script>
 
 <style scoped>
@@ -1643,6 +3318,7 @@ onMounted(fetchList)
 
 .candidate-card {
   display: flex;
+  position: relative;
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
@@ -1702,12 +3378,14 @@ onMounted(fetchList)
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow: hidden;
 }
 
 .candidate-header {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .candidate-name {
@@ -1721,6 +3399,10 @@ onMounted(fetchList)
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.decision-status-tag {
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .name-pill {
@@ -1739,6 +3421,180 @@ onMounted(fetchList)
   color: #ffb347;
   background: rgba(255, 179, 71, 0.1);
   border-color: rgba(255, 179, 71, 0.35);
+}
+
+.name-pill-agent {
+  color: #7cdb86;
+  background: rgba(124, 219, 134, 0.1);
+  border-color: rgba(124, 219, 134, 0.35);
+}
+
+.name-pill-danger {
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.fail-reason-text {
+  color: #fca5a5;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.decision-section {
+  border: 1px solid rgba(19, 232, 221, 0.18);
+}
+
+.decision-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.decision-dialog-panel {
+  min-height: 240px;
+}
+
+.decision-dialog-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.decision-dialog-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.decision-dialog-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: #9fb0b8;
+}
+
+.decision-progress {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(19, 232, 221, 0.06);
+}
+
+.decision-progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #cfd8dc;
+}
+
+.decision-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.decision-meta-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #252525;
+  border: 1px solid #333;
+}
+
+.decision-meta-label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.decision-meta-value {
+  display: block;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.decision-admin-tip {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 193, 7, 0.22);
+  background: rgba(255, 193, 7, 0.08);
+  color: #f4d27a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.decision-history {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #20242a;
+  border: 1px solid #2d3640;
+}
+
+.decision-history-title {
+  font-size: 12px;
+  color: #8fa1b3;
+  margin-bottom: 8px;
+}
+
+.decision-history-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #fff;
+  white-space: pre-wrap;
+}
+
+.decision-footer {
+  display: flex;
+  gap: 12px;
+}
+
+.decision-agent-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #20242a;
+  border: 1px solid #2d3640;
+}
+
+.decision-agent-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.decision-agent-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8fa1b3;
+}
+
+.decision-agent-tip {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #7f8c99;
+}
+
+.decision-agent-option {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.decision-agent-option-meta {
+  color: #909399;
+  font-size: 12px;
 }
 
 .candidate-meta {
@@ -1835,9 +3691,307 @@ onMounted(fetchList)
 
 /* 操作按钮 */
 .candidate-actions {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.candidate-actions :deep(.decision-action-btn) {
+  position: relative;
+  z-index: 3;
+  box-shadow: 0 0 0 1px rgba(103, 194, 58, 0.16), 0 6px 18px rgba(103, 194, 58, 0.18);
+}
+
+.decision-action-btn {
+  position: relative;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 15px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.2s;
+  box-shadow: 0 0 0 1px rgba(103, 194, 58, 0.16), 0 6px 18px rgba(103, 194, 58, 0.18);
+}
+
+.decision-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.decision-action-btn-success {
+  color: #fff;
+  background: #67c23a;
+  border-color: #67c23a;
+}
+
+.decision-action-btn-success:hover {
+  background: #7bcf54;
+  border-color: #7bcf54;
+}
+
+.decision-action-btn-warning {
+  color: #fff;
+  background: #e6a23c;
+  border-color: #e6a23c;
+  box-shadow: 0 0 0 1px rgba(230, 162, 60, 0.18), 0 6px 18px rgba(230, 162, 60, 0.18);
+}
+
+.decision-action-btn-warning:hover {
+  background: #ebb563;
+  border-color: #ebb563;
+}
+
+.decision-inline-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.decision-inline-label {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a9b4ba;
+}
+
+.decision-inline-value {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.decision-inline-bar-ready {
+  background: rgba(103, 194, 58, 0.12);
+  border-color: rgba(103, 194, 58, 0.26);
+}
+
+.decision-inline-bar-ready .decision-inline-value {
+  color: #8ee26b;
+}
+
+.decision-inline-bar-locked {
+  background: rgba(144, 147, 153, 0.08);
+  border-color: rgba(144, 147, 153, 0.16);
+}
+
+.decision-inline-bar-locked .decision-inline-value {
+  color: #aeb6bf;
+}
+
+.decision-inline-bar-accepted {
+  background: rgba(103, 194, 58, 0.14);
+  border-color: rgba(103, 194, 58, 0.28);
+}
+
+.decision-inline-bar-accepted .decision-inline-value {
+  color: #8ee26b;
+}
+
+.decision-inline-bar-pending {
+  background: rgba(230, 162, 60, 0.14);
+  border-color: rgba(230, 162, 60, 0.3);
+}
+
+.decision-inline-bar-pending .decision-inline-value {
+  color: #f3c969;
+}
+
+.decision-inline-bar-rejected {
+  background: rgba(245, 108, 108, 0.14);
+  border-color: rgba(245, 108, 108, 0.28);
+}
+
+.decision-inline-bar-rejected .decision-inline-value {
+  color: #ff8f8f;
+}
+
+.contract-overview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #1f2421;
+  border: 1px solid rgba(124, 219, 134, 0.18);
+}
+
+.contract-overview-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.contract-highlight {
+  color: #9be27a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.contract-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.contract-overview-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.contract-overview-label {
+  display: block;
+  font-size: 12px;
+  color: #8ea097;
+  margin-bottom: 6px;
+}
+
+.contract-overview-value {
+  display: block;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.contract-link-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contract-file-link {
+  color: var(--color-cyan, #13e8dd);
+  text-decoration: none;
+}
+
+.contract-note-block {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.contract-note-text {
+  color: #fff;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.contract-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.contract-dialog-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.contract-dialog-subtitle {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #97a6ae;
+}
+
+.contract-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contract-tip-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(103, 194, 58, 0.1);
+  border: 1px solid rgba(103, 194, 58, 0.2);
+}
+
+.contract-tip-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9be27a;
+}
+
+.contract-tip-text {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #d7e6db;
+}
+
+.contract-form {
+  padding: 18px;
+  border-radius: 14px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+}
+
+.contract-review-form {
+  margin-top: 4px;
+}
+
+.contract-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.contract-status-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #20242a;
+  border: 1px solid #2d3640;
+}
+
+.contract-status-title {
+  font-size: 12px;
+  color: #90a1af;
+}
+
+.contract-status-value {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.contract-status-note {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #c9d2d8;
+  white-space: pre-wrap;
+}
+
+.contract-dialog-footer {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* 分页 */
@@ -2028,6 +4182,13 @@ onMounted(fetchList)
   margin-bottom: 14px;
   padding-left: 10px;
   border-left: 3px solid var(--color-cyan, #13e8dd);
+}
+
+.section-title-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 /* 面试卡片 */
@@ -2310,6 +4471,37 @@ onMounted(fetchList)
   margin-top: 28px;
   padding-top: 20px;
   border-top: 1px solid #333;
+}
+
+.training-camp-admin-block {
+  border: 1px solid rgba(19, 232, 221, 0.16);
+  background: linear-gradient(180deg, rgba(19, 232, 221, 0.05), rgba(37, 37, 37, 0.96));
+}
+
+.training-camp-summary {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(15, 15, 15, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.training-camp-form :deep(.el-select),
+.training-camp-form :deep(.el-date-editor) {
+  width: 100%;
+}
+
+.training-camp-tip {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #9fb1b8;
+}
+
+.training-camp-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* 流水截图区域 */

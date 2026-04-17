@@ -1,0 +1,36 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">人才回访库</text>
+    <text class="hero-desc">针对暂未入职的 B / C 级候选人做 30 天回访提醒，降低优质线索流失。</text>
+    <text class="hero-badge">当前到期提醒 {{dueCount}} 人</text>
+  </view>
+
+  <view wx:if="{{candidates.length === 0}}" class="empty-card">
+    <text class="empty-title">当前没有待回访候选人</text>
+    <text class="empty-desc">B/C 级暂未入职选手会自动进入回访库，并在 30 天后生成提醒。</text>
+  </view>
+
+  <view wx:else class="card-list">
+    <view wx:for="{{candidates}}" wx:key="recordId" class="card">
+      <view class="card-top">
+        <view class="candidate-main">
+          <image wx:if="{{item.avatar}}" class="candidate-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+          <view wx:else class="candidate-avatar avatar-placeholder">{{item.displayInitial}}</view>
+          <view class="candidate-copy">
+            <text class="card-title">{{item.displayName}}</text>
+            <text class="card-meta">评级 {{item.followUpGrade}} · {{item.source || '未知来源'}}</text>
+          </view>
+        </view>
+        <text class="reminder-tag {{item.reminderDue ? 'is-due' : ''}}">
+          {{item.reminderDue ? '建议回访' : '待提醒'}}
+        </text>
+      </view>
+      <text class="card-meta">提醒日期：{{item.reminderDate || '待生成'}}</text>
+      <text class="card-note">{{item.followUp.note || '该选手近期可能有变动，建议回访。'}}</text>
+      <view class="action-row">
+        <button class="action-btn" bindtap="onMarkFollowed" data-id="{{item.recordId}}">登记已回访</button>
+        <button class="action-btn ghost" bindtap="onViewCandidate" data-id="{{item.recordId}}">查看详情</button>
+      </view>
+    </view>
+  </view>
+</view>

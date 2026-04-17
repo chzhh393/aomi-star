@@ -1,10 +1,13 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { copyFileSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    base: '/admin/',
     plugins: [
       vue(),
       // 本地代理中间件：自动管理 access_token，转发云函数调用
@@ -89,6 +92,18 @@ export default defineConfig(({ mode }) => {
               res.end(JSON.stringify({ error: err.message }))
             }
           })
+        }
+      },
+      {
+        name: 'spa-fallback-404',
+        closeBundle() {
+          const distDir = resolve(process.cwd(), 'dist')
+          const indexPath = resolve(distDir, 'index.html')
+          const fallbackPath = resolve(distDir, '404.html')
+
+          if (existsSync(indexPath)) {
+            copyFileSync(indexPath, fallbackPath)
+          }
         }
       }
     ]

@@ -1,0 +1,124 @@
+<view class="page" wx:if="{{!loading && anchor}}">
+  <view class="hero-card">
+    <view class="hero-top">
+      <image class="avatar" src="{{anchor.avatar}}" mode="aspectFill" />
+      <view class="hero-main">
+        <view class="name-row">
+          <text class="name">{{anchor.artName}}</text>
+          <text class="level-badge level-{{anchor.level}}">{{anchor.level}}</text>
+        </view>
+        <text class="sub-name">本名：{{anchor.name}}</text>
+        <text class="meta">{{anchor.platform}} · {{anchor.statusText}}</text>
+        <text class="meta">签约时间：{{anchor.joinDateText}}</text>
+      </view>
+    </view>
+    <view class="tag-row">
+      <text class="tag">MBTI {{anchor.mbti}}</text>
+      <text class="tag" wx:for="{{anchor.talents}}" wx:key="*this">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">核心数据</view>
+    <view class="metrics-grid">
+      <view class="metric-card">
+        <text class="metric-label">本月流水</text>
+        <text class="metric-value">{{anchor.monthRevenueText}}</text>
+        <text class="metric-note">{{metrics.revenueDeltaText}} · {{metrics.revenueTrendText}}</text>
+      </view>
+      <view class="metric-card">
+        <text class="metric-label">粉丝规模</text>
+        <text class="metric-value">{{anchor.fansCountText}}</text>
+        <text class="metric-note">本月新增 {{anchor.newFansText}}</text>
+      </view>
+      <view class="metric-card">
+        <text class="metric-label">直播时长</text>
+        <text class="metric-value">{{anchor.liveHours}}h</text>
+        <text class="metric-note">{{metrics.hoursDeltaText}} · {{metrics.hoursTrendText}}</text>
+      </view>
+      <view class="metric-card">
+        <text class="metric-label">上月流水</text>
+        <text class="metric-value">{{anchor.lastMonthRevenueText}}</text>
+        <text class="metric-note">用于环比参考</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">运营档案</view>
+    <view class="info-list">
+      <view class="info-row">
+        <text class="info-label">经纪人</text>
+        <text class="info-value">{{anchor.agentName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">经纪人ID</text>
+        <text class="info-value">{{anchor.agentId}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">平台</text>
+        <text class="info-value">{{anchor.platform}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">当前状态</text>
+        <text class="info-value">{{anchor.statusText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">最近训练记录</view>
+    <view wx:if="{{hasPracticeRecords}}" class="practice-list">
+      <view class="practice-card" wx:for="{{practiceRecords}}" wx:key="id">
+        <view class="practice-head">
+          <text class="practice-type">{{item.typeName}}</text>
+          <text class="practice-score">{{item.scoreText}}</text>
+        </view>
+        <text class="practice-desc">{{item.description}}</text>
+        <text class="practice-meta">{{item.date}} {{item.time}} · {{item.tutorName}}</text>
+        <text class="practice-comment" wx:if="{{item.comment}}">评语：{{item.comment}}</text>
+      </view>
+    </view>
+    <view wx:else class="empty-text">暂无训练记录</view>
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">近期排班</view>
+    <view wx:if="{{hasScheduleRecords}}" class="schedule-list">
+      <view class="schedule-card" wx:for="{{scheduleRecords}}" wx:key="id">
+        <view class="schedule-head">
+          <text class="schedule-slot">{{item.slotName}}</text>
+          <text class="schedule-status">{{item.statusText}}</text>
+        </view>
+        <text class="schedule-main">{{item.dateTimeText}}</text>
+        <text class="schedule-meta">{{item.platform}} · {{item.anchorName}}</text>
+      </view>
+    </view>
+    <view wx:else class="empty-text">暂无排班记录</view>
+  </view>
+
+  <view class="panel">
+    <view class="panel-title">成长轨迹</view>
+    <view class="timeline-list">
+      <view class="timeline-item" wx:for="{{growthTimeline}}" wx:key="id">
+        <view class="timeline-axis">
+          <view class="timeline-dot"></view>
+          <view class="timeline-line" wx:if="{{item.showLine}}"></view>
+        </view>
+        <view class="timeline-body">
+          <text class="timeline-date">{{item.date}}</text>
+          <text class="timeline-title">{{item.title}}</text>
+          <text class="timeline-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="loading-state" wx:elif="{{loading}}">
+  <text class="loading-text">加载中...</text>
+</view>
+
+<view class="loading-state" wx:else>
+  <text class="loading-text">暂无主播信息</text>
+</view>

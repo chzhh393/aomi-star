@@ -31,6 +31,68 @@
     <view class="status-desc">{{statusInfo.desc}}</view>
   </view>
 
+  <view class="notice-card" wx:if="{{candidate.trainingCampNotice && !candidate.trainingCampTodo}}">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text">CAMP NOTICE</text>
+    </view>
+    <view class="notice-title">{{candidate.trainingCampNotice.title}}</view>
+    <view class="notice-content">{{candidate.trainingCampNotice.content}}</view>
+  </view>
+
+  <view class="todo-card" wx:if="{{candidate.trainingCampTodo}}">
+    <view class="block-label">
+      <view class="label-slash"></view>
+      <text class="label-text todo-label-text">TRAINING TODO</text>
+    </view>
+    <view class="todo-title">训练营入营待办</view>
+    <view class="todo-row">
+      <text class="todo-key">状态</text>
+      <text class="todo-value">{{trainingCampTodoStatusText}}</text>
+    </view>
+    <view class="todo-row">
+      <text class="todo-key">训练营类型</text>
+      <text class="todo-value">{{displayCampType || '-'}}</text>
+    </view>
+    <view class="todo-row">
+      <text class="todo-key">入营时间</text>
+      <text class="todo-value">{{candidate.trainingCampTodo.startDate || '-'}} {{candidate.trainingCampTodo.startTime || ''}}</text>
+    </view>
+    <view class="todo-panel" wx:if="{{candidate.trainingCampTodo.invitationContent}}">
+      <view class="todo-panel-head">
+        <text class="todo-panel-title">训练营邀请函</text>
+        <text class="todo-panel-tag">OFFICIAL NOTICE</text>
+      </view>
+      <rich-text class="todo-panel-content" nodes="{{invitationRichText}}"></rich-text>
+    </view>
+    <view class="todo-panel todo-panel-muted" wx:if="{{candidate.trainingCampTodo.remark}}">
+      <view class="todo-panel-head">
+        <text class="todo-panel-title">备注</text>
+      </view>
+      <text class="todo-panel-content todo-panel-content-muted">{{candidate.trainingCampTodo.remark}}</text>
+    </view>
+    <view class="todo-panel todo-panel-muted" wx:if="{{candidate.trainingCampTodo.rejectReason}}">
+      <view class="todo-panel-head">
+        <text class="todo-panel-title">拒绝原因</text>
+      </view>
+      <text class="todo-panel-content todo-panel-content-muted">{{candidate.trainingCampTodo.rejectReason}}</text>
+    </view>
+    <view class="todo-btn-row" wx:if="{{canHandleTrainingCampTodo}}">
+      <button class="todo-btn todo-btn-half" bindtap="confirmTrainingCampTodo">确认入营</button>
+      <button class="todo-btn todo-btn-half" bindtap="rejectTrainingCampTodo">拒绝入营</button>
+    </view>
+    <view class="workspace-entry" wx:if="{{candidate.status === 'training' || candidate.status === 'signed' || candidate.status === 'active'}}">
+      <view class="workspace-entry-head">
+        <text class="workspace-entry-title">主播工作入口</text>
+        <text class="workspace-entry-copy">主播中台作为主入口，训练记录保留为快捷操作。</text>
+      </view>
+      <view class="workspace-entry-actions">
+        <button class="todo-btn todo-btn-half workspace-main-btn" bindtap="enterAnchorWorkspace">进入主播中台</button>
+        <button class="todo-btn todo-btn-half workspace-sub-btn" wx:if="{{candidate.status === 'training'}}" bindtap="goToTrainingDaily">快捷记录训练</button>
+      </view>
+    </view>
+  </view>
+
   <!-- 进度条 -->
   <view class="progress-block">
     <view class="block-label">

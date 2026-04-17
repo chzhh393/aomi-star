@@ -80,6 +80,38 @@
   padding: 24rpx;
 }
 
+.referral-banner {
+  background: #000000;
+  border-left: 8rpx solid #13E8DD;
+  margin-bottom: 24rpx;
+  padding: 24rpx;
+}
+
+.referral-banner-kicker {
+  display: block;
+  font-size: 20rpx;
+  font-weight: 900;
+  letter-spacing: 3rpx;
+  color: rgba(19, 232, 221, 0.78);
+}
+
+.referral-banner-title {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+  line-height: 1.5;
+}
+
+.referral-banner-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.72);
+}
+
 .form-step {
   background: #FFFFFF;
   border: 4rpx solid #000000;
@@ -502,6 +534,13 @@
   display: flex;
   gap: 16rpx;
   z-index: 100;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.form-footer.keyboard-open {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(100%);
 }
 
 .btn-secondary,
@@ -513,6 +552,12 @@
   font-size: 32rpx;
   font-weight: 900;
   border-radius: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .btn-secondary {

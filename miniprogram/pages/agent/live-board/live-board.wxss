@@ -1,0 +1,169 @@
+page {
+  background: #f7f3eb;
+}
+
+.page {
+  padding: 24rpx;
+}
+
+.hero {
+  padding: 28rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #11172a 0%, #2b3250 100%);
+  color: #fff8ec;
+  margin-bottom: 24rpx;
+}
+
+.hero-title {
+  font-size: 34rpx;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.hero-item {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 18rpx;
+  padding: 18rpx 14rpx;
+}
+
+.hero-value {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.hero-label {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: rgba(255, 248, 236, 0.72);
+}
+
+.section {
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b1c22;
+  margin-bottom: 16rpx;
+}
+
+.board-list,
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.board-card,
+.schedule-item {
+  background: #fffdf8;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 10rpx 24rpx rgba(27, 28, 34, 0.06);
+}
+
+.board-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.board-name {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b1c22;
+}
+
+.board-time,
+.board-goal,
+.board-script {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  line-height: 1.6;
+  color: #5d5751;
+}
+
+.board-goal {
+  color: #d7542f;
+  font-weight: 600;
+}
+
+.board-level {
+  height: fit-content;
+  border-radius: 999rpx;
+  padding: 8rpx 18rpx;
+  background: #1b1c22;
+  color: #fff8ec;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.skill-row {
+  display: grid;
+  grid-template-columns: 120rpx 1fr 80rpx;
+  gap: 14rpx;
+  align-items: center;
+}
+
+.skill-name,
+.skill-value {
+  font-size: 22rpx;
+  color: #5d5751;
+}
+
+.skill-track {
+  height: 14rpx;
+  border-radius: 999rpx;
+  background: #efe6da;
+  overflow: hidden;
+}
+
+.skill-bar {
+  height: 100%;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, #ff8f5a 0%, #ffcb69 100%);
+}
+
+.schedule-item {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 1fr;
+  gap: 12rpx;
+  align-items: center;
+}
+
+.schedule-name {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #1b1c22;
+}
+
+.schedule-slot,
+.schedule-time {
+  font-size: 23rpx;
+  color: #5d5751;
+}
+
+.schedule-slot {
+  text-align: center;
+}
+
+.schedule-time {
+  text-align: right;
+}

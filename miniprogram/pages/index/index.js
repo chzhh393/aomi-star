@@ -1,6 +1,8 @@
 // pages/index/index.js
 // 游客首页 - 双入口设计
 
+import { isAgentLoggedIn } from '../../utils/agent-auth.js';
+
 Page({
   data: {
     // 无需初始化数据

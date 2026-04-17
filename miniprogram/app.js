@@ -20,7 +20,8 @@ App({
   globalData: {
     env: "cloud1-0g9rnpap8488905b",  // 云开发环境
     sceneParams: null,        // 启动场景参数
-    scoutShareCode: null      // 星探分享码
+    scoutShareCode: null,     // 星探分享码
+    scoutReferral: null       // 星探推荐上下文
   },
 
   /**
@@ -93,6 +94,18 @@ App({
     if (sceneParams.scoutShareCode) {
       this.globalData.scoutShareCode = sceneParams.scoutShareCode;
       console.log('[App] 检测到星探推荐码:', sceneParams.scoutShareCode);
+    } else {
+      this.globalData.scoutShareCode = null;
+    }
+
+    if (sceneParams.scoutShareCode || sceneParams.scoutId || sceneParams.scoutName) {
+      this.globalData.scoutReferral = {
+        scoutShareCode: sceneParams.scoutShareCode || '',
+        scoutId: sceneParams.scoutId || '',
+        scoutName: sceneParams.scoutName || ''
+      };
+    } else {
+      this.globalData.scoutReferral = null;
     }
 
     // 保存到本地存储（供后续页面使用）
@@ -113,5 +126,15 @@ App({
    */
   getScoutShareCode() {
     return this.globalData.scoutShareCode;
+  },
+
+  getScoutReferral() {
+    return this.globalData.scoutReferral || null;
+  },
+
+  clearScoutReferral() {
+    this.globalData.scoutShareCode = null;
+    this.globalData.scoutReferral = null;
+    this.globalData.sceneParams = null;
   }
 });

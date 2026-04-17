@@ -1,0 +1,154 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">{{detail.candidateName || '分润明细'}}</text>
+    <text class="hero-desc">查看当前主播的分润状态、金额构成和收益分配明细。</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-state">加载中...</view>
+
+  <view wx:elif="{{detail}}" class="content">
+    <view class="summary-card">
+      <view class="summary-row">
+        <view>
+          <text class="label">当前状态</text>
+          <text class="value">{{detail.statusLabel}}</text>
+        </view>
+        <view class="align-right">
+          <text class="label">应发提成</text>
+          <text class="amount">{{detail.totalAmountText}}</text>
+        </view>
+      </view>
+
+      <view class="grid">
+        <view class="grid-item">
+          <text class="label">主播评级</text>
+          <text class="value">{{detail.anchorLevel || '-'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">星探等级</text>
+          <text class="value">{{detail.scoutGrade || '-'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">计算时间</text>
+          <text class="value">{{detail.calculatedAtText || '-'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">支付时间</text>
+          <text class="value">{{detail.paidAtText || '-'}}</text>
+        </view>
+      </view>
+
+      <view class="grid contract-grid">
+        <view class="grid-item">
+          <text class="label">财务审核</text>
+          <text class="value">{{detail.financeStatusLabel || '未提交'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">流程状态</text>
+          <text class="value">{{detail.workflowStatusLabel || '未开始'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">财务审核人</text>
+          <text class="value">{{detail.financeReviewer || '待处理'}}</text>
+        </view>
+        <view class="grid-item grid-item-full">
+          <text class="label">合同文件</text>
+          <text class="value">{{detail.contractFileName || '暂无合同文件'}}</text>
+        </view>
+      </view>
+
+      <view class="grid contract-grid">
+        <view class="grid-item">
+          <text class="label">工资条状态</text>
+          <text class="value">{{detail.payslipStatusLabel || '未发送工资条'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">查看回执</text>
+          <text class="value">{{detail.payslipReceiptStatusLabel || '待主播查看'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">发送时间</text>
+          <text class="value">{{detail.payslipSentAtText || '-'}}</text>
+        </view>
+        <view class="grid-item">
+          <text class="label">查看时间</text>
+          <text class="value">{{detail.payslipViewedAtText || '-'}}</text>
+        </view>
+        <view class="grid-item grid-item-full">
+          <text class="label">工资条编号</text>
+          <text class="value">{{detail.payslipSlipNo || '发送后生成'}}</text>
+        </view>
+        <view class="grid-item grid-item-full">
+          <text class="label">发放说明</text>
+          <text class="value">{{detail.payslipDeliveryNote || '支付完成后可一键发送到主播端。'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="action-row">
+      <button
+        wx:if="{{detail.candidateId && detail.statusLabel !== '已支付'}}"
+        class="action-button action-primary"
+        loading="{{paying}}"
+        disabled="{{paying}}"
+        bindtap="confirmPayment"
+      >
+        确认支付
+      </button>
+      <button
+        wx:if="{{detail.status === 'paid' || detail.statusLabel === '已支付'}}"
+        class="action-button action-accent"
+        loading="{{sendingPayslip}}"
+        disabled="{{sendingPayslip}}"
+        bindtap="sendPayslip"
+      >
+        {{detail.payslipStatus === 'sent' ? '重新发送工资条' : '发送电子工资条'}}
+      </button>
+      <button
+        class="action-button action-secondary"
+        loading="{{openingContract}}"
+        disabled="{{openingContract}}"
+        bindtap="openContract"
+      >
+        查看合同
+      </button>
+      <button
+        class="action-button action-secondary"
+        bindtap="openCandidate"
+      >
+        查看候选人
+      </button>
+      <button
+        class="action-button action-secondary"
+        bindtap="openContractReview"
+      >
+        去合同审核
+      </button>
+    </view>
+
+    <view class="section">
+      <view class="section-title">收益分配</view>
+      <block wx:if="{{!detail.distribution || !detail.distribution.length}}">
+        <view class="empty-state">暂无收益分配明细</view>
+      </block>
+      <block wx:else>
+        <block wx:for="{{detail.distribution}}" wx:key="scoutId">
+          <view class="distribution-card">
+            <view class="row-between">
+              <view>
+                <text class="card-title">{{item.scoutName}}</text>
+                <text class="card-sub">{{item.typeLabel}}</text>
+              </view>
+              <text class="amount">{{item.amountText}}</text>
+            </view>
+
+            <view class="distribution-meta">
+              <text class="meta-text">占比 {{item.percentage}}%</text>
+              <text class="meta-text">ID {{item.scoutId || '-'}}</text>
+            </view>
+          </view>
+        </block>
+      </block>
+    </view>
+  </view>
+</view>

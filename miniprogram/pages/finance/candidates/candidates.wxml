@@ -1,0 +1,86 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-title">财务候选人总表</text>
+    <text class="hero-desc">聚合合同审核与分润状态，直接进入财务详情页处理。</text>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.total}}</text>
+      <text class="stat-label">候选人总数</text>
+    </view>
+    <view class="stat-card is-pending">
+      <text class="stat-value">{{stats.pending}}</text>
+      <text class="stat-label">待财务审核</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.approved}}</text>
+      <text class="stat-label">财务已通过</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.rejected}}</text>
+      <text class="stat-label">财务已驳回</text>
+    </view>
+  </view>
+
+  <scroll-view class="filter-row" scroll-x enable-flex show-scrollbar="{{false}}">
+    <view
+      wx:for="{{filterOptions}}"
+      wx:key="value"
+      class="filter-chip {{filter === item.value ? 'is-active' : ''}}"
+      data-filter="{{item.value}}"
+      bindtap="onFilterChange"
+    >
+      {{item.label}}
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{loading}}" class="empty-state">
+    <text class="empty-title">加载中...</text>
+    <text class="empty-desc">正在同步候选人与结算状态</text>
+  </view>
+
+  <view wx:elif="{{!filteredCandidates.length}}" class="empty-state">
+    <text class="empty-title">暂无候选人</text>
+    <text class="empty-desc">当前筛选条件下没有可展示的财务候选人</text>
+  </view>
+
+  <view wx:else class="list">
+    <view wx:for="{{filteredCandidates}}" wx:key="id" class="candidate-card" data-id="{{item.id}}" bindtap="openDetail">
+      <view class="card-head">
+        <view>
+          <text class="candidate-name">{{item.name}}</text>
+          <text class="candidate-meta">{{item.candidateNo}}</text>
+        </view>
+        <view class="status-group">
+          <text class="status-badge finance-{{item.financeStatus || 'none'}}">{{item.financeStatusLabel}}</text>
+          <text class="status-hint">{{item.workflowStatusLabel}}</text>
+        </view>
+      </view>
+
+      <view class="detail-grid">
+        <view class="detail-item">
+          <text class="detail-label">合同名称</text>
+          <text class="detail-value">{{item.contractTitle}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">审核人</text>
+          <text class="detail-value">{{item.financeReviewer}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">分润状态</text>
+          <text class="detail-value">{{item.commissionStatusLabel}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">应发提成</text>
+          <text class="detail-value">{{item.commissionAmountText}}</text>
+        </view>
+      </view>
+
+      <view class="card-foot">
+        <text class="updated-at">更新时间：{{item.updatedAtText}}</text>
+        <text class="detail-link">查看财务详情</text>
+      </view>
+    </view>
+  </view>
+</view>

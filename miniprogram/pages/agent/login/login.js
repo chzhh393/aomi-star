@@ -2,24 +2,33 @@
  * 经纪人登录页
  */
 
-import { agentLogin, isAgentLoggedIn } from '../../../utils/agent-auth.js';
+import { agentLogin, getAgentInfo, isAgentLoggedIn } from '../../../utils/agent-auth.js';
+import { getInterviewerRoleConfig, getWorkspacePathByRole, isInterviewerRole } from '../../../utils/interviewer.js';
 
 Page({
   data: {
     username: '',
     password: '',
     showPassword: false,
-    loading: false
+    loading: false,
+    role: 'agent',
+    roleConfig: getInterviewerRoleConfig('agent')
   },
 
   onLoad(options) {
+    const role = isInterviewerRole(options?.role) ? options.role : 'agent';
+    const roleConfig = getInterviewerRoleConfig(role);
+    this.setData({ role, roleConfig });
+
     // 检查是否已登录
     if (isAgentLoggedIn()) {
-      console.log('[经纪人登录] 已登录，跳转到主页');
-      wx.redirectTo({
-        url: '/pages/agent/home/home'
-      });
-      return;
+      const agentInfo = getAgentInfo();
+      if (agentInfo?.role === role) {
+        wx.redirectTo({
+          url: getWorkspacePathByRole(role)
+        });
+        return;
+      }
     }
 
     // 保存重定向URL（如果有）
@@ -85,7 +94,17 @@ Page({
       const result = await agentLogin(username, password);
 
       if (result.success) {
-        console.log('[经纪人登录] 登录成功:', result.agent);
+        console.log('[员工登录] 登录成功:', result.agent);
+
+        if (result.agent.role !== this.data.role) {
+          wx.removeStorageSync('agent_token');
+          wx.removeStorageSync('agent_info');
+          wx.showToast({
+            title: `请使用${this.data.roleConfig.name}账号登录`,
+            icon: 'none'
+          });
+          return;
+        }
 
         // 显示欢迎信息
         wx.showToast({
@@ -96,7 +115,7 @@ Page({
 
         // 延迟跳转到主页或重定向页面
         setTimeout(() => {
-          const url = this.redirectUrl || '/pages/agent/home/home';
+          const url = this.redirectUrl || getWorkspacePathByRole(result.agent.role);
           wx.redirectTo({ url });
         }, 1500);
       }

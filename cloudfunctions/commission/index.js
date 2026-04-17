@@ -54,7 +54,10 @@ exports.main = async (event) => {
       case 'getScoutEarnings':
         return await getScoutEarnings(data.scoutId);
       case 'confirmPayment':
-        return await confirmPayment(data.candidateId);
+        return {
+          success: false,
+          error: '支付确认入口已迁移，请使用 admin.confirmFinanceCommissionPayment'
+        };
       case 'getPendingCommissions':
         return await getPendingCommissions();
       default:
@@ -237,46 +240,6 @@ async function getScoutEarnings(scoutId) {
       pendingCommission: (stats.totalCommission || 0) - (stats.paidCommission || 0)
     },
     commissionDetails: commissionDetails
-  };
-}
-
-// 确认支付
-async function confirmPayment(candidateId) {
-  const candidateRes = await db.collection('candidates').doc(candidateId).get();
-  if (!candidateRes.data) {
-    return { success: false, error: '候选人不存在' };
-  }
-
-  const candidate = candidateRes.data;
-  if (!candidate.commission || candidate.commission.status !== COMMISSION_CONFIG.STATUS.CALCULATED) {
-    return { success: false, error: '佣金未计算或已支付' };
-  }
-
-  // 更新候选人佣金状态
-  await db.collection('candidates').doc(candidateId).update({
-    data: {
-      'commission.status': COMMISSION_CONFIG.STATUS.PAID,
-      'commission.paidAt': db.serverDate()
-    }
-  });
-
-  // 更新星探收益（单一星探）
-  for (const item of candidate.commission.distribution) {
-    try {
-      await db.collection('scouts').doc(item.scoutId).update({
-        data: {
-          'stats.paidCommission': _.inc(item.amount),
-          updatedAt: db.serverDate()
-        }
-      });
-    } catch (error) {
-      console.error('[commission] 更新星探已支付金额失败:', item.scoutId, error);
-    }
-  }
-
-  return {
-    success: true,
-    message: '支付确认成功'
   };
 }
 

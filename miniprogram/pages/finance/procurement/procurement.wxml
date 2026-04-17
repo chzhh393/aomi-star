@@ -1,0 +1,126 @@
+<view class="page">
+  <view class="hero sand">
+    <text class="hero-title">采购审批</text>
+    <text class="hero-desc">财务先审，金额超过 5000 元的申请会自动流转到老板终审。</text>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.pending}}</text>
+      <text class="stat-label">待审批</text>
+      <text class="stat-note">含财务待审与老板待审</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.approved}}</text>
+      <text class="stat-label">已通过</text>
+      <text class="stat-note">已完成财务审批</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.rejected}}</text>
+      <text class="stat-label">已驳回</text>
+      <text class="stat-note">待业务侧调整后重提</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">¥{{stats.totalAmount}}</text>
+      <text class="stat-label">申请总额</text>
+      <text class="stat-note">当前列表累计金额</text>
+    </view>
+  </view>
+
+  <scroll-view class="filter-row" scroll-x enhanced show-scrollbar="{{false}}">
+    <block wx:for="{{filterOptions}}" wx:key="value">
+      <view
+        class="filter-chip {{filter === item.value ? 'filter-chip-active' : ''}}"
+        data-filter="{{item.value}}"
+        bindtap="onFilterChange"
+      >
+        {{item.label}}
+      </view>
+    </block>
+  </scroll-view>
+
+  <view class="section">
+    <view class="section-title">采购申请列表</view>
+    <view wx:if="{{loading}}" class="empty-state">加载中...</view>
+    <view wx:elif="{{!filteredRequests.length}}" class="empty-state">当前筛选下暂无采购申请</view>
+    <block wx:else>
+      <block wx:for="{{filteredRequests}}" wx:key="_id">
+        <view class="card">
+          <view class="row-between">
+            <view>
+              <text class="card-title">{{item.itemName}}</text>
+              <text class="card-sub">{{item.bizNo}} · {{item.category}}</text>
+            </view>
+            <text class="item-amount">{{item.amountText}}</text>
+          </view>
+
+          <view class="meta-row">
+            <text class="chip">{{item.priorityLabel}}</text>
+            <text class="chip chip-status">{{item.statusLabel}}</text>
+          </view>
+
+          <view class="grid">
+            <view class="grid-item">
+              <text class="key">申请人</text>
+              <text class="value">{{item.requester}}</text>
+            </view>
+            <view class="grid-item">
+              <text class="key">部门</text>
+              <text class="value">{{item.department}}</text>
+            </view>
+            <view class="grid-item">
+              <text class="key">数量</text>
+              <text class="value">{{item.quantity || '-'}}</text>
+            </view>
+            <view class="grid-item">
+              <text class="key">申请时间</text>
+              <text class="value">{{item.requestedAt || '-'}}</text>
+            </view>
+          </view>
+
+          <text class="card-sub">申请说明：{{item.remark || '无'}}</text>
+          <text wx:if="{{item.requiresBossApproval}}" class="card-sub">审批规则：超过 ¥{{item.thresholdAmount}} 需老板终审</text>
+          <text wx:if="{{item.financeReviewNote}}" class="card-sub">财务意见：{{item.financeReviewNote}}</text>
+          <text wx:if="{{item.bossReviewNote}}" class="card-sub">老板意见：{{item.bossReviewNote}}</text>
+          <text wx:if="{{item.status === 'pending_boss'}}" class="card-sub">当前状态：财务已通过，等待老板手机确认</text>
+
+          <textarea
+            wx:if="{{item.status === 'pending'}}"
+            class="note-input"
+            placeholder="填写审批意见，可选"
+            auto-height
+            maxlength="500"
+            data-id="{{item._id}}"
+            bindinput="onNoteInput"
+            value="{{draftNotes[item._id] || ''}}"
+          />
+
+          <view wx:if="{{item.status === 'pending'}}" class="action-row">
+            <button
+              class="action-button reject"
+              size="mini"
+              loading="{{submittingId === item._id}}"
+              disabled="{{submittingId === item._id}}"
+              data-id="{{item._id}}"
+              data-approved="false"
+              bindtap="reviewRequest"
+            >
+              驳回
+            </button>
+            <button
+              class="action-button approve"
+              size="mini"
+              loading="{{submittingId === item._id}}"
+              disabled="{{submittingId === item._id}}"
+              data-id="{{item._id}}"
+              data-approved="true"
+              bindtap="reviewRequest"
+            >
+              通过
+            </button>
+          </view>
+        </view>
+      </block>
+    </block>
+  </view>
+</view>

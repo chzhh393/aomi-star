@@ -1,7 +1,7 @@
 {
-  "navigationBarTitleText": "选择角色",
-  "navigationBarBackgroundColor": "#000000",
+  "navigationBarTitleText": "员工入口",
+  "navigationBarBackgroundColor": "#101725",
   "navigationBarTextStyle": "white",
-  "backgroundColor": "#F0F0F0",
+  "backgroundColor": "#EEF3F9",
   "backgroundTextStyle": "dark"
 }

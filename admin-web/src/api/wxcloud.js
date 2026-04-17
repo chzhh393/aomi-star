@@ -4,14 +4,25 @@ import { getCloudApp } from '../utils/cloudbase.js'
 const IS_DEV = import.meta.env.DEV
 
 class WxCloudAPI {
-  async callFunction(name, data) {
+  async callFunction(name, payload = {}) {
+    const {
+      needToken = true,
+      ...data
+    } = payload
+
     // 兼容历史 key：admin_token；当前登录流程使用 token
-    const adminToken = localStorage.getItem('token') || localStorage.getItem('admin_token')
+    const adminToken = needToken
+      ? (localStorage.getItem('token') || localStorage.getItem('admin_token'))
+      : ''
+
+    const requestData = needToken
+      ? { ...data, token: adminToken }
+      : data
 
     if (IS_DEV) {
       const response = await axios.post('/api/cloudfunction', {
         name,
-        data: { ...data, token: adminToken }
+        data: requestData
       })
       const result = response.data
       if (result.errcode && result.errcode !== 0) {
@@ -24,7 +35,7 @@ class WxCloudAPI {
     const app = await getCloudApp()
     const res = await app.callFunction({
       name,
-      data: { ...data, token: adminToken }
+      data: requestData
     })
     return res.result
   }

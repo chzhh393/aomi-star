@@ -1,72 +1,91 @@
-<!--pages/agent/home/home.wxml-->
 <view class="agent-home">
-  <!-- 顶部经纪人信息卡片 -->
-  <view class="agent-info-card">
-    <view class="agent-avatar">
-      <text class="avatar-icon">👤</text>
+  <view class="hero-card">
+    <view class="hero-top">
+      <view>
+        <view class="hero-kicker">AGENT CONSOLE</view>
+        <view class="hero-title">经纪人工作台</view>
+        <view class="hero-subtitle">保姆式心理托底 + 直播变现推进</view>
+      </view>
+      <view class="logout-btn" bindtap="handleLogout">切换</view>
     </view>
-    <view class="agent-details">
-      <view class="agent-name">{{agentInfo.name || agentInfo.username}}</view>
-      <view class="agent-role">经纪人</view>
-    </view>
-    <view class="logout-btn" bindtap="handleLogout">
-      <text class="logout-icon">🚪</text>
-    </view>
-  </view>
 
-  <!-- 数据统计卡片 -->
-  <view class="stats-section">
-    <view class="stats-grid">
-      <view class="stat-item">
-        <text class="stat-value">{{stats.totalCount}}</text>
-        <text class="stat-label">分配候选人</text>
-      </view>
-      <view class="stat-item highlight">
-        <text class="stat-value">{{stats.pendingCount}}</text>
-        <text class="stat-label">待打分</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.scoredCount}}</text>
-        <text class="stat-label">已打分</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{stats.monthCount}}</text>
-        <text class="stat-label">本月打分</text>
-      </view>
+    <view class="hero-user">
+      <view class="user-name">{{agentInfo.name || agentInfo.username}}</view>
+      <view class="user-role">主播直接责任人</view>
     </view>
-  </view>
 
-  <!-- 快捷入口 -->
-  <view class="quick-actions-section">
-    <view class="section-title">快捷入口</view>
-    <view class="action-grid">
-      <view class="action-item" bindtap="goToCandidateList">
-        <view class="action-icon-box primary">
-          <text class="action-icon">📋</text>
-        </view>
-        <text class="action-text">候选人列表</text>
-        <view class="action-badge" wx:if="{{stats.pendingCount > 0}}">
-          {{stats.pendingCount}}
-        </view>
+    <view class="hero-metrics">
+      <view class="hero-metric">
+        <text class="metric-value">{{workbench.overview.managedCount}}</text>
+        <text class="metric-label">负责主播</text>
       </view>
-
-      <view class="action-item" bindtap="goToMyScores">
-        <view class="action-icon-box success">
-          <text class="action-icon">⭐</text>
-        </view>
-        <text class="action-text">评价记录</text>
+      <view class="hero-metric">
+        <text class="metric-value">{{workbench.overview.todayLiveCount}}</text>
+        <text class="metric-label">今日场次</text>
+      </view>
+      <view class="hero-metric">
+        <text class="metric-value">{{workbench.overview.monthRevenueText}}w</text>
+        <text class="metric-label">月流水池</text>
+      </view>
+      <view class="hero-metric">
+        <text class="metric-value">{{workbench.overview.averageLiveHours}}h</text>
+        <text class="metric-label">人均时长</text>
       </view>
     </view>
   </view>
 
-  <!-- 待打分候选人列表（快速预览） -->
-  <view class="pending-section" wx:if="{{pendingCandidates.length > 0}}">
-    <view class="section-header">
-      <text class="section-title">待打分候选人</text>
-      <text class="section-more" bindtap="goToCandidateList">查看全部 →</text>
+  <view class="duty-grid">
+    <view
+      wx:for="{{responsibilityCards}}"
+      wx:key="key"
+      class="duty-card"
+      bindtap="goToResponsibilityCard"
+      data-path="{{item.path}}"
+    >
+      <text class="duty-title">{{item.title}}</text>
+      <text class="duty-summary">{{item.summary}}</text>
+      <text class="duty-detail">{{item.detail}}</text>
+      <text class="duty-link">点击进入</text>
+    </view>
+  </view>
+
+  <view class="section-card">
+    <view class="section-head">
+      <text class="section-title">招聘协同</text>
+      <text class="section-tip">面试管理保持现状，继续沿用当前评分链路</text>
     </view>
 
-    <view class="candidate-preview-list">
+    <view class="recruit-stats">
+      <view class="recruit-stat">
+        <text class="metric-value">{{stats.totalCount}}</text>
+        <text class="metric-label">分配候选人</text>
+      </view>
+      <view class="recruit-stat recruit-stat-warn">
+        <text class="metric-value">{{stats.pendingCount}}</text>
+        <text class="metric-label">待打分</text>
+      </view>
+      <view class="recruit-stat">
+        <text class="metric-value">{{stats.scoredCount}}</text>
+        <text class="metric-label">已打分</text>
+      </view>
+      <view class="recruit-stat">
+        <text class="metric-value">{{stats.monthCount}}</text>
+        <text class="metric-label">本月打分</text>
+      </view>
+    </view>
+
+    <view class="quick-actions">
+      <view class="quick-action" bindtap="goToCandidateList">
+        <text class="quick-action-title">候选人列表</text>
+        <text class="quick-action-desc">查看待处理面试候选人</text>
+      </view>
+      <view class="quick-action" bindtap="goToMyScores">
+        <text class="quick-action-title">评价记录</text>
+        <text class="quick-action-desc">回看历史评分与意见</text>
+      </view>
+    </view>
+
+    <view class="candidate-preview-list" wx:if="{{pendingCandidates.length > 0}}">
       <view
         wx:for="{{pendingCandidates}}"
         wx:key="_id"
@@ -74,27 +93,16 @@
         bindtap="goToCandidateDetail"
         data-id="{{item._id}}"
       >
-        <view class="candidate-name">{{item.basicInfo.name}}</view>
-        <view class="candidate-meta">
-          <text class="meta-item">{{item.basicInfo.age}}岁</text>
-          <text class="meta-divider">·</text>
-          <text class="meta-item">{{item.basicInfo.height}}cm</text>
+        <view>
+          <view class="candidate-name">{{item.basicInfo.name}}</view>
+          <view class="candidate-meta">{{item.basicInfo.age}}岁 · {{item.basicInfo.height}}cm</view>
         </view>
-        <view class="action-tag">去打分</view>
+        <view class="candidate-tag">去打分</view>
       </view>
     </view>
   </view>
 
-  <!-- 空状态提示 -->
-  <view class="empty-state" wx:if="{{!loading && stats.totalCount === 0}}">
-    <text class="empty-icon">📝</text>
-    <text class="empty-text">暂无分配的候选人</text>
-    <text class="empty-desc">等待管理员为您分配候选人</text>
-  </view>
-
-  <!-- 刷新按钮 -->
   <view class="refresh-btn" bindtap="handleRefresh">
-    <text class="refresh-icon">🔄</text>
-    <text class="refresh-text">刷新数据</text>
+    <text class="refresh-text">刷新工作台</text>
   </view>
 </view>

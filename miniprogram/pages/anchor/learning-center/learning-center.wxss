@@ -1,0 +1,144 @@
+.detail-page {
+  min-height: 100vh;
+  padding: 28rpx 24rpx 40rpx;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(224, 122, 44, 0.16), transparent 24%),
+    radial-gradient(circle at 92% 10%, rgba(45, 162, 153, 0.14), transparent 24%),
+    linear-gradient(180deg, #f3ede2 0%, #efe7da 100%);
+}
+
+.hero-card,
+.loading-card,
+.demo-card {
+  border-radius: 30rpx;
+  border: 2rpx solid rgba(101, 82, 57, 0.12);
+  box-shadow: 0 18rpx 44rpx rgba(50, 37, 20, 0.08);
+}
+
+.hero-card {
+  padding: 30rpx;
+  margin-bottom: 22rpx;
+  background: linear-gradient(135deg, #1a1714 0%, #2a231c 100%);
+}
+
+.hero-kicker,
+.hero-title,
+.hero-copy,
+.demo-title,
+.demo-scene,
+.demo-duration,
+.demo-tip,
+.demo-rate {
+  display: block;
+}
+
+.hero-kicker {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+}
+
+.hero-title {
+  margin-top: 12rpx;
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #fff8ef;
+}
+
+.hero-copy {
+  margin-top: 14rpx;
+  font-size: 23rpx;
+  line-height: 1.7;
+  color: rgba(255, 247, 235, 0.82);
+}
+
+.rate-switcher {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 22rpx;
+}
+
+.rate-chip {
+  padding: 10rpx 22rpx;
+  border-radius: 999rpx;
+  background: #efe6d9;
+  color: #7a6653;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.rate-chip.active {
+  background: #1f7d70;
+  color: #fff;
+}
+
+.loading-card {
+  padding: 40rpx 30rpx;
+  background: rgba(255, 251, 245, 0.94);
+  text-align: center;
+  color: #7a6653;
+}
+
+.demo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.demo-card {
+  padding: 22rpx;
+  background: rgba(255, 251, 245, 0.94);
+}
+
+.demo-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.demo-title {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #241c16;
+}
+
+.demo-scene,
+.demo-duration,
+.demo-tip,
+.demo-rate {
+  margin-top: 10rpx;
+  color: #7a6653;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.demo-video,
+.demo-empty {
+  width: 100%;
+  height: 320rpx;
+  margin-top: 18rpx;
+  border-radius: 22rpx;
+  background: #161616;
+}
+
+.demo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32rpx;
+}
+
+.demo-empty-title {
+  color: #fff4e6;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.demo-empty-copy {
+  margin-top: 12rpx;
+  color: rgba(255, 244, 230, 0.78);
+  font-size: 22rpx;
+  text-align: center;
+  line-height: 1.7;
+}

@@ -33,7 +33,7 @@ Page({
         title: '主播管理',
         desc: '查看和管理所有主播',
         color: '#FFD700',
-        route: '/pages/agent/anchors/anchors'
+        route: '/pages/admin/anchor-list/anchor-list'
       },
       {
         id: 'data',
@@ -50,6 +50,14 @@ Page({
         desc: '配置和管理系统参数',
         color: '#9C27B0',
         route: ''
+      },
+      {
+        id: 'interview-review',
+        icon: '📝',
+        title: '面试评价',
+        desc: '查看已分配候选人并完成评价',
+        color: '#26C6DA',
+        route: '/pages/operations/interview-home/home'
       }
     ]
   },

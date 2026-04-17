@@ -1,7 +1,7 @@
 {
-  "navigationBarTitleText": "舞蹈导师工作台",
-  "navigationBarBackgroundColor": "#f5576c",
-  "navigationBarTextStyle": "white",
+  "navigationBarTitleText": "舞蹈资产与训练工作台",
+  "navigationBarBackgroundColor": "#F0F0F0",
+  "navigationBarTextStyle": "black",
   "enablePullDownRefresh": true,
-  "backgroundColor": "#f5576c"
+  "backgroundColor": "#F0F0F0"
 }

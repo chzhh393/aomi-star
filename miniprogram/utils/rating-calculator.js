@@ -1,7 +1,18 @@
 /**
  * 评级计算工具
  * 根据舞蹈导师评分和妆容AI评分计算候选人综合评级
+ *
+ * Deprecated:
+ * 招聘新流程已切换到 S/A/B/C 五维等级制公共能力模型。
+ * 本文件仅保留给旧的 `pages/recruit/rating-review/*` 兼容使用。
+ * 新的面试官端/创始人端公共层请改用：
+ * - `utils/interview-grade-config.js`
+ * - `utils/interview-grade-validator.js`
+ * - `utils/interview-evaluation.js`
+ * - `utils/interview-api.js`
  */
+
+export const LEGACY_RATING_CALCULATOR_DEPRECATED = true;
 
 // ==================== 评级等级定义 ====================
 

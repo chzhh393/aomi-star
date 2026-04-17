@@ -1,11 +1,47 @@
 /**
- * 经纪人认证工具
- * 处理经纪人登录、登出、会话管理
+ * 员工认证工具
+ * 当前复用 admin 云函数登录能力，支持经纪人和面试角色登录
  */
+
+import { getInterviewerRoleConfig, isInterviewerRole } from './interviewer.js';
 
 // 存储键名
 const AGENT_TOKEN_KEY = 'agent_token';
 const AGENT_INFO_KEY = 'agent_info';
+const AGENT_LOGIN_EXPIRES_AT_KEY = 'agent_login_expires_at';
+const LOGIN_VALID_DURATION = 30 * 24 * 60 * 60 * 1000;
+
+function clearAgentSession() {
+  wx.removeStorageSync(AGENT_TOKEN_KEY);
+  wx.removeStorageSync(AGENT_INFO_KEY);
+  wx.removeStorageSync(AGENT_LOGIN_EXPIRES_AT_KEY);
+}
+
+export function saveAgentSession(token, admin) {
+  const expiresAt = Date.now() + LOGIN_VALID_DURATION;
+  wx.setStorageSync(AGENT_TOKEN_KEY, token || '');
+  wx.setStorageSync(AGENT_INFO_KEY, admin || null);
+  wx.setStorageSync(AGENT_LOGIN_EXPIRES_AT_KEY, expiresAt);
+  return expiresAt;
+}
+
+function refreshAgentSessionExpiryIfNeeded(token, admin, expiresAt) {
+  if (!token || !admin) {
+    return expiresAt;
+  }
+
+  const targetExpiresAt = Date.now() + LOGIN_VALID_DURATION;
+  if (!expiresAt || expiresAt < targetExpiresAt) {
+    wx.setStorageSync(AGENT_LOGIN_EXPIRES_AT_KEY, targetExpiresAt);
+    return targetExpiresAt;
+  }
+
+  return expiresAt;
+}
+
+export function getAgentSessionExpiry() {
+  return Number(wx.getStorageSync(AGENT_LOGIN_EXPIRES_AT_KEY) || 0);
+}
 
 // ==================== 登录 ====================
 
@@ -44,14 +80,13 @@ export async function agentLogin(username, password) {
     if (res.result && res.result.success) {
       const { token, admin } = res.result;
 
-      // 检查是否是经纪人角色
-      if (admin.role !== 'agent') {
-        throw new Error('此账号不是经纪人账号，请使用经纪人账号登录');
+      // 检查是否是可登录的员工角色
+      if (!isInterviewerRole(admin.role)) {
+        throw new Error('此账号未开通面试角色工作台权限');
       }
 
       // 保存 token 和用户信息
-      wx.setStorageSync(AGENT_TOKEN_KEY, token);
-      wx.setStorageSync(AGENT_INFO_KEY, admin);
+      saveAgentSession(token, admin);
 
       console.log('[经纪人登录] 登录成功，角色:', admin.role);
 
@@ -91,7 +126,20 @@ export async function agentLogin(username, password) {
 export function isAgentLoggedIn() {
   const token = wx.getStorageSync(AGENT_TOKEN_KEY);
   const agent = wx.getStorageSync(AGENT_INFO_KEY);
-  return !!(token && agent);
+  const expiresAt = getAgentSessionExpiry();
+
+  if (!token || !agent || !expiresAt) {
+    return false;
+  }
+
+  if (Date.now() >= expiresAt) {
+    clearAgentSession();
+    return false;
+  }
+
+  refreshAgentSessionExpiryIfNeeded(token, agent, expiresAt);
+
+  return true;
 }
 
 /**
@@ -100,7 +148,11 @@ export function isAgentLoggedIn() {
  */
 export function getAgentToken() {
   try {
-    return wx.getStorageSync(AGENT_TOKEN_KEY) || null;
+    const token = wx.getStorageSync(AGENT_TOKEN_KEY) || null;
+    const agent = wx.getStorageSync(AGENT_INFO_KEY) || null;
+    const expiresAt = getAgentSessionExpiry();
+    refreshAgentSessionExpiryIfNeeded(token, agent, expiresAt);
+    return token;
   } catch (error) {
     console.error('[经纪人认证] 获取Token失败:', error);
     return null;
@@ -113,7 +165,11 @@ export function getAgentToken() {
  */
 export function getAgentInfo() {
   try {
-    return wx.getStorageSync(AGENT_INFO_KEY) || null;
+    const agent = wx.getStorageSync(AGENT_INFO_KEY) || null;
+    const token = wx.getStorageSync(AGENT_TOKEN_KEY) || null;
+    const expiresAt = getAgentSessionExpiry();
+    refreshAgentSessionExpiryIfNeeded(token, agent, expiresAt);
+    return agent;
   } catch (error) {
     console.error('[经纪人认证] 获取信息失败:', error);
     return null;
@@ -151,14 +207,13 @@ export function updateAgentInfo(updates) {
 export function agentLogout() {
   try {
     // 清除所有认证相关数据
-    wx.removeStorageSync(AGENT_TOKEN_KEY);
-    wx.removeStorageSync(AGENT_INFO_KEY);
+    clearAgentSession();
 
     console.log('[经纪人登出] 成功');
 
     // 跳转到登录页
     wx.reLaunch({
-      url: '/pages/agent/login/login'
+      url: '/pages/role-select/role-select'
     });
   } catch (error) {
     console.error('[经纪人登出] 失败:', error);
@@ -175,17 +230,36 @@ export function agentLogout() {
  * @returns {Boolean} 是否已登录
  */
 export function requireAgentLogin(options = {}) {
-  const { success, redirectUrl } = options;
+  const {
+    success,
+    redirectUrl,
+    allowedRoles = []
+  } = options;
 
   if (isAgentLoggedIn()) {
+    const agentInfo = getAgentInfo();
+    if (allowedRoles.length > 0 && !allowedRoles.includes(agentInfo?.role)) {
+      const expectedName = getInterviewerRoleConfig(allowedRoles[0]).name;
+      wx.showToast({
+        title: `请使用${expectedName}账号登录`,
+        icon: 'none'
+      });
+
+      setTimeout(() => {
+        agentLogout();
+      }, 1200);
+      return false;
+    }
+
     // 已登录，执行回调
-    success && success(getAgentInfo());
+    success && success(agentInfo);
     return true;
   } else {
     // 未登录，跳转到登录页
+    const targetRole = allowedRoles.length === 1 ? allowedRoles[0] : '';
     const url = redirectUrl
-      ? `/pages/agent/login/login?redirect=${encodeURIComponent(redirectUrl)}`
-      : '/pages/agent/login/login';
+      ? `/pages/role-select/role-select?redirect=${encodeURIComponent(redirectUrl)}${targetRole ? `&role=${encodeURIComponent(targetRole)}` : ''}`
+      : `/pages/role-select/role-select${targetRole ? `?role=${encodeURIComponent(targetRole)}` : ''}`;
 
     wx.redirectTo({ url });
     return false;
@@ -242,13 +316,12 @@ export function handleTokenExpired() {
   });
 
   // 清除登录信息
-  wx.removeStorageSync(AGENT_TOKEN_KEY);
-  wx.removeStorageSync(AGENT_INFO_KEY);
+  clearAgentSession();
 
   // 延迟跳转到登录页
   setTimeout(() => {
     wx.reLaunch({
-      url: '/pages/agent/login/login'
+      url: '/pages/role-select/role-select'
     });
   }, 2000);
 }

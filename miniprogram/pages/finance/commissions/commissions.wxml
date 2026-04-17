@@ -1,0 +1,103 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-badge">COMMISSION LEDGER</text>
+    <text class="hero-title">结算台账</text>
+    <text class="hero-desc">汇总签约主播分账记录，财务可在这里确认款项已支付并追踪发放进度。</text>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.totalPending}}</text>
+      <text class="stat-label">待支付单数</text>
+    </view>
+    <view class="stat-card tone-accent">
+      <text class="stat-value">{{stats.pendingAmountText}}</text>
+      <text class="stat-label">待支付金额</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.paidAmountText}}</text>
+      <text class="stat-label">已支付金额</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.frozenCountText || '0笔'}}</text>
+      <text class="stat-label">冻结笔数</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-value">{{stats.totalAmountText}}</text>
+      <text class="stat-label">累计金额</text>
+    </view>
+  </view>
+
+  <scroll-view class="filter-row" scroll-x enable-flex show-scrollbar="{{false}}">
+    <view
+      wx:for="{{filterOptions}}"
+      wx:key="value"
+      class="filter-chip {{filter === item.value ? 'is-active' : ''}}"
+      data-filter="{{item.value}}"
+      bindtap="onFilterChange"
+    >
+      {{item.label}}
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{loading}}" class="empty-state">
+    <text class="empty-title">加载中...</text>
+    <text class="empty-desc">正在同步最新分账记录</text>
+  </view>
+
+  <view wx:elif="{{!filteredCommissions.length}}" class="empty-state">
+    <text class="empty-title">暂无分账记录</text>
+    <text class="empty-desc">当前筛选条件下没有需要展示的结算单</text>
+  </view>
+
+  <view wx:else class="list">
+    <view wx:for="{{filteredCommissions}}" wx:key="candidateId" class="ledger-card">
+      <view class="card-head">
+        <view>
+          <text class="candidate-name">{{item.candidateName}}</text>
+          <text class="candidate-meta">定级 {{item.anchorLevel}} · 星探等级 {{item.scoutGrade}}</text>
+        </view>
+        <view class="head-right">
+          <text class="status-badge status-{{item.status}}">{{item.statusLabel}}</text>
+          <text class="total-amount">{{item.totalAmountText}}</text>
+        </view>
+      </view>
+
+      <view class="distribution-list">
+        <view wx:for="{{item.distribution}}" wx:key="scoutId" class="distribution-item">
+          <view class="distribution-main">
+            <text class="distribution-name">{{item.scoutName}}</text>
+            <text class="distribution-type">{{item.typeLabel}}</text>
+          </view>
+          <view class="distribution-side">
+            <text class="distribution-percent">{{item.percentage}}%</text>
+            <text class="distribution-amount">{{item.amountText}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="time-row">
+        <text class="time-text">计算时间：{{item.calculatedAtText}}</text>
+        <text wx:if="{{item.status === 'paid'}}" class="time-text">支付时间：{{item.paidAtText}}</text>
+      </view>
+
+      <view wx:if="{{item.freezeStatus === 'frozen'}}" class="freeze-panel">
+        <text class="freeze-title">老板已冻结该笔提成</text>
+        <text class="freeze-text">原因：{{item.freezeReason || '未填写'}}</text>
+        <text wx:if="{{item.freezeNote}}" class="freeze-text">备注：{{item.freezeNote}}</text>
+        <text class="freeze-text">操作人：{{item.freezeUpdatedByName || '老板'}} · {{item.freezeUpdatedAtText || '-'}}</text>
+      </view>
+
+      <button
+        wx:if="{{item.status === 'calculated'}}"
+        class="pay-btn"
+        data-id="{{item.candidateId}}"
+        bindtap="confirmPayment"
+        loading="{{payingId === item.candidateId}}"
+        disabled="{{payingId === item.candidateId || !item.canPay}}"
+      >
+        {{item.canPay ? '确认支付' : '已冻结不可支付'}}
+      </button>
+    </view>
+  </view>
+</view>

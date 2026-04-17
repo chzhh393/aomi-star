@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "资料学习中心",
+  "navigationBarBackgroundColor": "#2A231C",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F4EFE6"
+}

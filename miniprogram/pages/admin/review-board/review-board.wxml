@@ -1,0 +1,79 @@
+<view class="page">
+  <view class="hero">
+    <text class="hero-tag">ADMIN REVIEW</text>
+    <text class="hero-title">面试总评列表</text>
+    <text class="hero-desc">管理员从这里进入单个候选人的汇总页，继续做终审与决策。</text>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-value">{{stats.pending}}</text>
+      <text class="stat-label">待总评</text>
+    </view>
+    <view class="stat-card accent">
+      <text class="stat-value">{{stats.reviewed}}</text>
+      <text class="stat-label">已评价</text>
+    </view>
+  </view>
+
+  <view class="tab-row">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="value"
+      class="tab-chip {{currentTab === item.value ? 'active' : ''}}"
+      data-tab="{{item.value}}"
+      bindtap="switchTab"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="empty-state">
+    <text class="empty-title">加载中...</text>
+    <text class="empty-desc">正在同步候选人面试汇总数据</text>
+  </view>
+
+  <view wx:elif="{{!candidateList.length}}" class="empty-state">
+    <text class="empty-title">暂无候选人</text>
+    <text class="empty-desc">当前筛选条件下没有可处理的面试汇总记录</text>
+  </view>
+
+  <view wx:else class="card-list">
+    <view
+      wx:for="{{candidateList}}"
+      wx:key="_id"
+      class="candidate-card"
+      bindtap="goToDetail"
+      data-path="{{item.detailPath}}"
+    >
+      <image wx:if="{{item.avatar}}" class="avatar" src="{{item.avatar}}" mode="aspectFill" binderror="handleAvatarError" data-id="{{item._id}}"></image>
+      <view wx:else class="avatar placeholder">{{item.nameInitial}}</view>
+      <view class="content">
+        <view class="title-row">
+          <text class="candidate-name">{{item.name}}</text>
+          <text class="arrow">→</text>
+        </view>
+        <view class="meta-row">
+          <text class="meta-label">直播名</text>
+          <text class="meta-value">{{item.liveName}}</text>
+        </view>
+        <view class="meta-row">
+          <text class="meta-label">经纪人</text>
+          <text class="meta-value">{{item.assignedAgentName}}</text>
+        </view>
+        <view class="meta-row">
+          <text class="meta-label">联系电话</text>
+          <text class="meta-value">{{item.assignedAgentPhone}}</text>
+        </view>
+        <view class="meta-row">
+          <text class="meta-label">当前结果</text>
+          <text class="meta-value">{{item.statusLabel}}</text>
+        </view>
+        <view wx:if="{{item.rejectReason}}" class="meta-row">
+          <text class="meta-label">未通过原因</text>
+          <text class="meta-value">{{item.rejectReason}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
