@@ -37,6 +37,9 @@ Page({
         douyinFans: '',
         xiaohongshu: '',
         xiaohongshuFans: '',
+        expectedSalary: '',
+        styleLabels: [],
+        selectedStyleLabels: {},
         facePhoto: '',
         lifePhoto1: '',
         lifePhoto2: '',
@@ -63,6 +66,7 @@ Page({
     genderOptions: ['男', '女'],
     mbtiOptions: ['INTJ', 'INTP', 'ENTJ', 'ENTP', 'INFJ', 'INFP', 'ENFJ', 'ENFP', 'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ', 'ISTP', 'ISFP', 'ESTP', 'ESFP', '不清楚'],
     hobbyOptions: ['游戏电竞', '健身撸铁', '户外运动', '音乐', '摄影', '美食', '二次元', '穿搭', '宠物'],
+    styleLabelsOptions: ['霸总', '奶狗', '阳光', '暖男', '高冷', '爹系', '痞帅', '温柔', '绅士', '傲娇', '幽默'],
     talentCategories: [
       { name: '唱歌', options: ['流行唱法', '民族唱法', '美声唱法', '说唱'] },
       { name: '舞蹈', options: ['民族舞', '街舞', '现代舞', '古典舞', '拉丁舞'] },
@@ -176,6 +180,12 @@ Page({
           c.basicInfo.hobbies.forEach(h => { selectedHobbies[h] = true; });
         }
 
+        // 重建 selectedStyleLabels
+        const selectedStyleLabels = {};
+        if (c.basicInfo.styleLabels) {
+          c.basicInfo.styleLabels.forEach(s => { selectedStyleLabels[s] = true; });
+        }
+
         // 重建 selectedTalents
         const selectedTalents = {};
         if (c.talent && c.talent.talents) {
@@ -202,6 +212,9 @@ Page({
             douyinFans: c.basicInfo.douyinFans || '',
             xiaohongshu: c.basicInfo.xiaohongshu || '',
             xiaohongshuFans: c.basicInfo.xiaohongshuFans || '',
+            expectedSalary: c.basicInfo.expectedSalary || '',
+            styleLabels: c.basicInfo.styleLabels || [],
+            selectedStyleLabels: selectedStyleLabels,
             facePhoto: (c.images && c.images.facePhoto) || c.basicInfo.facePhoto || '',
             lifePhoto1: (c.images && c.images.lifePhoto1) || c.basicInfo.lifePhoto1 || '',
             lifePhoto2: (c.images && c.images.lifePhoto2) || c.basicInfo.lifePhoto2 || '',
@@ -352,6 +365,26 @@ Page({
     this.setData({
       'formData.basicInfo.hasOtherHobby': hasOtherHobby,
       'formData.basicInfo.otherHobby': hasOtherHobby ? this.data.formData.basicInfo.otherHobby : ''
+    });
+    this.saveDraft();
+  },
+
+  // 个人风格标签多选切换
+  onStyleLabelToggle(e) {
+    const { label } = e.currentTarget.dataset;
+    const isSelected = this.data.formData.basicInfo.selectedStyleLabels[label];
+    const styleLabels = this.data.formData.basicInfo.styleLabels ? this.data.formData.basicInfo.styleLabels.slice() : [];
+
+    if (isSelected) {
+      const index = styleLabels.indexOf(label);
+      if (index > -1) styleLabels.splice(index, 1);
+    } else {
+      styleLabels.push(label);
+    }
+
+    this.setData({
+      'formData.basicInfo.styleLabels': styleLabels,
+      ['formData.basicInfo.selectedStyleLabels.' + label]: !isSelected
     });
     this.saveDraft();
   },
@@ -597,6 +630,12 @@ Page({
       if (!normalized.basicInfo.selectedHobbies || typeof normalized.basicInfo.selectedHobbies !== 'object') {
         normalized.basicInfo.selectedHobbies = {};
       }
+      if (!Array.isArray(normalized.basicInfo.styleLabels)) {
+        normalized.basicInfo.styleLabels = [];
+      }
+      if (!normalized.basicInfo.selectedStyleLabels || typeof normalized.basicInfo.selectedStyleLabels !== 'object') {
+        normalized.basicInfo.selectedStyleLabels = {};
+      }
     }
 
     if (formData.talent && typeof formData.talent === 'object') {
@@ -803,6 +842,14 @@ Page({
       var hasLifePhoto = formData.basicInfo.lifePhoto1 || formData.basicInfo.lifePhoto2 || formData.basicInfo.lifePhoto3;
       if (!hasLifePhoto) {
         wx.showToast({ title: '请至少上传一张生活照', icon: 'none' });
+        return false;
+      }
+      if (!formData.basicInfo.expectedSalary) {
+        wx.showToast({ title: '请输入期望收入', icon: 'none' });
+        return false;
+      }
+      if (!formData.basicInfo.styleLabels || formData.basicInfo.styleLabels.length === 0) {
+        wx.showToast({ title: '请至少选择一个个人风格标签', icon: 'none' });
         return false;
       }
     }

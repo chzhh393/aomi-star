@@ -219,6 +219,33 @@
         </view>
       </view>
 
+      <view class="form-field">
+        <text class="field-label">期望收入 *</text>
+        <input
+          class="field-input"
+          type="number"
+          placeholder="请输入期望收入（元/月）"
+          value="{{formData.basicInfo.expectedSalary}}"
+          data-field="basicInfo.expectedSalary"
+          bindinput="onInput"
+        />
+      </view>
+
+      <view class="form-field">
+        <text class="field-label">个人风格标签（可多选）*</text>
+        <view class="hobby-grid">
+          <view
+            wx:for="{{styleLabelsOptions}}"
+            wx:key="*this"
+            class="hobby-tag {{formData.basicInfo.selectedStyleLabels[item] ? 'selected' : ''}}"
+            data-label="{{item}}"
+            bindtap="onStyleLabelToggle"
+          >
+            {{item}}
+          </view>
+        </view>
+      </view>
+
       <!-- 照片上传 -->
       <view class="form-field">
         <text class="field-label">照片上传 *</text>

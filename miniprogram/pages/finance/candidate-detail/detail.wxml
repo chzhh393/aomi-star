@@ -38,8 +38,14 @@
         <view class="grid-item"><text class="label">平台</text><text class="value">{{candidate.platform}}</text></view>
         <view class="grid-item"><text class="label">最高粉丝</text><text class="value">{{candidate.maxFans}}</text></view>
         <view class="grid-item"><text class="label">最高收入</text><text class="value">{{candidate.maxIncome}}</text></view>
-        <view class="grid-item"><text class="label">期望薪资</text><text class="value">{{candidate.salaryRange}}</text></view>
+        <view class="grid-item"><text class="label">期望收入</text><text class="value">{{candidate.expectedSalary || candidate.salaryRange || '未填写'}}</text></view>
         <view class="grid-item grid-item-full"><text class="label">投入时间</text><text class="value">{{candidate.timeCommitment}}</text></view>
+        <view class="grid-item grid-item-full" wx:if="{{candidate.styleLabels && candidate.styleLabels.length > 0}}">
+          <text class="label">个人风格</text>
+          <view class="tag-row">
+            <text wx:for="{{candidate.styleLabels}}" wx:key="*this" class="tag">{{item}}</text>
+          </view>
+        </view>
       </view>
     </view>
 

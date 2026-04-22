@@ -84,6 +84,15 @@
         <text class="info-label">城市</text>
         <text class="info-value">{{candidate.basicInfo.city}}</text>
       </view>
+      <view class="info-item" wx:if="{{candidate.basicInfo.expectedSalary}}">
+        <text class="info-label">期望收入</text>
+        <text class="info-value">{{candidate.basicInfo.expectedSalary}}元/月</text>
+      </view>
+    </view>
+
+    <!-- 个人风格标签 -->
+    <view class="tags-row" wx:if="{{candidate.basicInfo.styleLabels && candidate.basicInfo.styleLabels.length > 0}}">
+      <view class="tag" wx:for="{{candidate.basicInfo.styleLabels}}" wx:key="index">{{item}}</view>
     </view>
   </view>
 

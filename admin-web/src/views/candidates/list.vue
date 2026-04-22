@@ -289,6 +289,16 @@
               <span class="stat-chip">{{ currentCandidate.basicInfo?.height }}cm</span>
               <span class="stat-chip">{{ currentCandidate.basicInfo?.weight }}kg</span>
               <span v-if="currentCandidate.basicInfo?.mbti" class="stat-chip stat-mbti">{{ currentCandidate.basicInfo.mbti }}</span>
+              <span v-if="currentCandidate.basicInfo?.expectedSalary" class="stat-chip stat-salary">💰 期望收入{{ currentCandidate.basicInfo.expectedSalary }}元/月</span>
+            </div>
+            <div class="detail-style-labels" v-if="currentCandidate.basicInfo?.styleLabels?.length">
+              <el-tag
+                v-for="label in currentCandidate.basicInfo.styleLabels"
+                :key="label"
+                effect="plain"
+                round
+                class="style-label-chip"
+              >{{ label }}</el-tag>
             </div>
             <div class="detail-talents" v-if="currentCandidate.talent?.talents?.length || currentCandidate.talent?.otherTalent">
               <el-tag
@@ -4100,6 +4110,26 @@ onMounted(() => {
   border-color: rgba(255, 152, 0, 0.3);
   color: #ff9800;
   background: rgba(255, 152, 0, 0.08);
+}
+
+.stat-salary {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+}
+
+.detail-style-labels {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.style-label-chip {
+  border-color: rgba(233, 30, 99, 0.3);
+  color: #e91e63;
+  background: rgba(233, 30, 99, 0.08);
 }
 
 /* 信息网格 */

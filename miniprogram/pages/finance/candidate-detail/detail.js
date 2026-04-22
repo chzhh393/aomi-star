@@ -121,6 +121,8 @@ function mapCandidate(candidate = {}) {
     maxIncome: experience.maxIncome ? formatCurrency(experience.maxIncome) : '-',
     platform: experience.platform || '-',
     salaryRange: expectation.salaryRange || '-',
+    expectedSalary: basicInfo.expectedSalary || '',
+    styleLabels: basicInfo.styleLabels || [],
     timeCommitment: expectation.timeCommitment || '-',
     contractTitle: draft.title || draft.fileName || '未创建合同',
     contractType: draft.type || '-',

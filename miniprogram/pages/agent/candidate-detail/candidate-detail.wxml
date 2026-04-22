@@ -63,6 +63,20 @@
           <text class="label">学历</text>
           <text class="value">{{candidate.basicInfo.education || '未填写'}}</text>
         </view>
+        <view class="info-item" wx:if="{{candidate.basicInfo.expectedSalary}}">
+          <text class="label">期望收入</text>
+          <text class="value">{{candidate.basicInfo.expectedSalary}}元/月</text>
+        </view>
+      </view>
+
+      <!-- 个人风格标签 -->
+      <view class="talent-section" wx:if="{{candidate.basicInfo.styleLabels && candidate.basicInfo.styleLabels.length > 0}}">
+        <view class="talent-item">
+          <text class="talent-label">个人风格：</text>
+          <view class="talent-tags">
+            <text wx:for="{{candidate.basicInfo.styleLabels}}" wx:key="*this" class="talent-tag">{{item}}</text>
+          </view>
+        </view>
       </view>
     </view>
 

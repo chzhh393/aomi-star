@@ -309,7 +309,9 @@ async function submitCandidate(openId, data) {
       douyin: data.formData.basicInfo.douyin || '',
       douyinFans: data.formData.basicInfo.douyinFans || '',
       xiaohongshu: data.formData.basicInfo.xiaohongshu || '',
-      xiaohongshuFans: data.formData.basicInfo.xiaohongshuFans || ''
+      xiaohongshuFans: data.formData.basicInfo.xiaohongshuFans || '',
+      expectedSalary: data.formData.basicInfo.expectedSalary || '',
+      styleLabels: data.formData.basicInfo.styleLabels || []
     },
 
     // 照片
@@ -514,7 +516,9 @@ async function updateCandidate(openId, data) {
       douyin: data.formData.basicInfo.douyin || '',
       douyinFans: data.formData.basicInfo.douyinFans || '',
       xiaohongshu: data.formData.basicInfo.xiaohongshu || '',
-      xiaohongshuFans: data.formData.basicInfo.xiaohongshuFans || ''
+      xiaohongshuFans: data.formData.basicInfo.xiaohongshuFans || '',
+      expectedSalary: data.formData.basicInfo.expectedSalary || '',
+      styleLabels: data.formData.basicInfo.styleLabels || []
     },
     images: uploadedImages,
     talent: {
