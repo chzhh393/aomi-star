@@ -80,8 +80,6 @@ Page({
     // 上传状态
     uploading: false,
 
-    keyboardVisible: false,
-
     // 编辑模式
     isEditMode: false,
     genderIndex: 0,
@@ -90,14 +88,6 @@ Page({
 
   async onLoad(options) {
     this._skipDraftSave = false;
-    this._keyboardHandler = (res = {}) => {
-      this.setData({
-        keyboardVisible: Number(res.height || 0) > 0
-      });
-    };
-    if (wx.onKeyboardHeightChange) {
-      wx.onKeyboardHeightChange(this._keyboardHandler);
-    }
 
     // 获取星探推荐上下文
     const { mode } = options || {};
@@ -155,9 +145,6 @@ Page({
     if (this._draftSaveTimer) {
       clearTimeout(this._draftSaveTimer);
       this._draftSaveTimer = null;
-    }
-    if (wx.offKeyboardHeightChange && this._keyboardHandler) {
-      wx.offKeyboardHeightChange(this._keyboardHandler);
     }
   },
 

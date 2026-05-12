@@ -537,13 +537,6 @@
   display: flex;
   gap: 16rpx;
   z-index: 100;
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-
-.form-footer.keyboard-open {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(100%);
 }
 
 .btn-secondary,

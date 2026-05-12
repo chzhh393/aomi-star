@@ -482,7 +482,7 @@
   </view>
 
   <!-- 底部按钮 -->
-  <view class="form-footer {{keyboardVisible ? 'keyboard-open' : ''}}">
+  <view class="form-footer">
     <button
       class="btn-secondary"
       wx:if="{{currentStep > 0}}"
