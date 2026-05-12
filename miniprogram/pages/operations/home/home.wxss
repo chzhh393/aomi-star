@@ -1,64 +1,61 @@
 /* pages/operations/home/home.wxss */
-/* 运营工作台 - 街头运动风格 - 紫色主题 */
+/* 运营工作台 - 统一配色 */
 
 /* ==================== 主容器 ==================== */
 .container {
   min-height: 100vh;
-  background: #F0F0F0;
-  padding: 0 0 120rpx;
+  background: linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 36%, #f5f5f5 36%, #ffffff 100%);
+  padding: 28rpx 24rpx 120rpx;
 }
 
 /* ==================== 顶部横幅 ==================== */
 .header-banner {
-  background: #000000;
-  padding: 48rpx 32rpx 32rpx;
+  background: linear-gradient(135deg, #F8D55D 0%, #FADF7F 100%);
+  padding: 30rpx;
+  border-radius: 32rpx;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 20rpx 40rpx rgba(248, 213, 93, 0.3);
 }
 
 .banner-slash {
-  position: absolute;
-  top: 0;
-  right: -40rpx;
-  width: 200rpx;
-  height: 100%;
-  background: #9C27B0;
-  transform: skewX(-15deg);
+  display: none;
 }
 
 .banner-text {
-  font-size: 48rpx;
-  font-weight: 900;
-  color: #FFFFFF;
-  letter-spacing: 4rpx;
+  font-size: 46rpx;
+  font-weight: 700;
+  color: #221714;
+  letter-spacing: 2rpx;
   position: relative;
   z-index: 1;
   display: block;
-  text-transform: uppercase;
 }
 
 .banner-subtitle {
   font-size: 24rpx;
-  color: #999999;
+  color: rgba(34, 23, 20, 0.76);
   position: relative;
   z-index: 1;
   display: block;
-  margin-top: 8rpx;
+  margin-top: 12rpx;
 }
 
 /* ==================== 欢迎卡片 ==================== */
 .welcome-card {
-  background: #FFFFFF;
-  margin: 24rpx;
-  padding: 32rpx;
-  border: 4rpx solid #000000;
+  background: #ffffff;
+  margin: 24rpx 0;
+  padding: 24rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid #e5e5e5;
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .welcome-icon {
-  font-size: 64rpx;
+  font-size: 48rpx;
   flex-shrink: 0;
 }
 
@@ -67,78 +64,83 @@
 }
 
 .welcome-title {
-  font-size: 32rpx;
-  font-weight: 900;
-  color: #000000;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1b1c22;
   margin-bottom: 8rpx;
 }
 
 .welcome-desc {
-  font-size: 24rpx;
-  color: #666666;
-  font-weight: 600;
+  font-size: 22rpx;
+  color: #5d5751;
 }
 
 /* ==================== 统计块 ==================== */
 .stats-block {
-  background: #000000;
-  margin: 0 24rpx 24rpx;
-  padding: 32rpx;
+  background: #ffffff;
+  margin: 0 0 24rpx;
+  padding: 24rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .block-label {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: 20rpx;
 }
 
 .label-slash {
   width: 6rpx;
-  height: 32rpx;
-  background: #9C27B0;
+  height: 28rpx;
+  background: #F8D55D;
+  border-radius: 3rpx;
 }
 
 .label-text {
   font-size: 24rpx;
-  font-weight: 900;
-  color: #FFFFFF;
-  letter-spacing: 3rpx;
+  font-weight: 700;
+  color: #1b1c22;
+  letter-spacing: 2rpx;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24rpx;
+  gap: 16rpx;
 }
 
 .stat-item {
-  background: #1A1A1A;
-  padding: 32rpx 24rpx;
+  background: #f9f9f9;
+  padding: 24rpx 20rpx;
   text-align: center;
-  border: 3rpx solid #333333;
+  border-radius: 22rpx;
+  border: 2rpx solid #e5e5e5;
 }
 
 .stat-value {
-  font-size: 56rpx;
-  font-weight: 900;
-  color: #9C27B0;
-  margin-bottom: 12rpx;
+  font-size: 42rpx;
+  font-weight: 700;
+  color: #F8D55D;
+  margin-bottom: 8rpx;
   line-height: 1;
 }
 
 .stat-label {
   font-size: 22rpx;
-  color: #999999;
-  font-weight: 600;
+  color: #7d736a;
 }
 
 /* ==================== 快捷功能 ==================== */
 .actions-block {
-  background: #FFFFFF;
-  margin: 0 24rpx 24rpx;
-  padding: 32rpx;
-  border: 4rpx solid #000000;
+  background: #ffffff;
+  margin: 0 0 24rpx;
+  padding: 24rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .actions-grid {
@@ -148,17 +150,17 @@
 }
 
 .action-card {
-  background: #F8F8F8;
-  border: 3rpx solid #E0E0E0;
-  padding: 32rpx 24rpx;
+  background: #f9f9f9;
+  border: 2rpx solid #e5e5e5;
+  border-radius: 22rpx;
+  padding: 24rpx 20rpx;
   text-align: center;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s ease;
 }
 
 .action-card:active {
-  transform: scale(0.95);
+  background: rgba(248, 213, 93, 0.1);
 }
 
 .card-accent {
@@ -167,32 +169,34 @@
   top: 0;
   width: 100%;
   height: 6rpx;
+  background: #F8D55D;
 }
 
 .card-icon {
-  font-size: 56rpx;
-  margin-bottom: 16rpx;
+  font-size: 48rpx;
+  margin-bottom: 14rpx;
 }
 
 .card-title {
   font-size: 26rpx;
-  font-weight: 900;
-  color: #000000;
+  font-weight: 700;
+  color: #1b1c22;
   margin-bottom: 8rpx;
 }
 
 .card-desc {
   font-size: 20rpx;
-  color: #666666;
-  line-height: 1.4;
+  color: #5d5751;
+  line-height: 1.5;
 }
 
 /* ==================== 温馨提示 ==================== */
 .tips-block {
-  margin: 24rpx;
-  padding: 24rpx;
-  background: rgba(156, 39, 176, 0.1);
-  border-left: 6rpx solid #9C27B0;
+  margin: 24rpx 0;
+  padding: 20rpx 24rpx;
+  background: rgba(248, 213, 93, 0.1);
+  border-left: 6rpx solid #F8D55D;
+  border-radius: 0 22rpx 22rpx 0;
 }
 
 .tip-item {
@@ -202,13 +206,13 @@
 }
 
 .tip-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
   flex-shrink: 0;
 }
 
 .tip-text {
-  font-size: 24rpx;
-  color: #666666;
-  line-height: 1.6;
+  font-size: 22rpx;
+  color: #5d5751;
+  line-height: 1.7;
   flex: 1;
 }

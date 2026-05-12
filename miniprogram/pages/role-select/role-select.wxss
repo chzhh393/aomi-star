@@ -1,10 +1,7 @@
 .container {
   min-height: 100vh;
   padding: 48rpx 26rpx 120rpx;
-  background:
-    linear-gradient(120deg, rgba(255, 106, 61, 0.16) 0%, transparent 28%),
-    radial-gradient(circle at top right, rgba(17, 214, 197, 0.12), transparent 24%),
-    linear-gradient(180deg, #09090d 0%, #111116 36%, #f4efe6 36%, #efe7dc 100%);
+  background: linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 36%, #f5f5f5 36%, #ffffff 100%);
 }
 
 .hero {
@@ -40,12 +37,11 @@
 
 .panel {
   position: relative;
-  background:
-    linear-gradient(180deg, rgba(255, 248, 240, 0.96) 0%, rgba(244, 239, 230, 0.98) 100%);
+  background: #ffffff;
   border-radius: 42rpx;
   padding: 38rpx 30rpx 48rpx;
-  border: 2rpx solid rgba(199, 185, 165, 0.34);
-  box-shadow: 0 28rpx 64rpx rgba(19, 14, 11, 0.18);
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
@@ -57,7 +53,7 @@
   width: 148rpx;
   height: 8rpx;
   border-radius: 999rpx;
-  background: linear-gradient(90deg, #ff6a3d 0%, #11d6c5 100%);
+  background: linear-gradient(90deg, #F8D55D 0%, #FADF7F 100%);
 }
 
 .role-selector {
@@ -82,7 +78,7 @@
 .selector-desc {
   font-size: 23rpx;
   line-height: 1.75;
-  color: #6b6259;
+  color: #666666;
 }
 
 .role-grid {
@@ -95,9 +91,9 @@
   min-width: 140rpx;
   padding: 18rpx 22rpx;
   border-radius: 999rpx;
-  background: rgba(255, 251, 245, 0.88);
-  border: 2rpx solid #d8cbbb;
-  color: #322824;
+  background: #ffffff;
+  border: 2rpx solid #e0e0e0;
+  color: #333333;
   font-size: 25rpx;
   font-weight: 700;
   text-align: center;
@@ -105,18 +101,18 @@
 }
 
 .role-chip.is-active {
-  background: linear-gradient(135deg, #161217 0%, #2f2925 72%, #ff6a3d 160%);
-  border-color: #161217;
-  color: #ffffff;
-  box-shadow: 0 16rpx 30rpx rgba(22, 18, 23, 0.2);
+  background: #F8D55D;
+  border-color: #F8D55D;
+  color: #1a1a1a;
+  box-shadow: 0 8rpx 20rpx rgba(248, 213, 93, 0.3);
 }
 
 .selected-role-banner {
   padding: 22rpx 24rpx;
   border-radius: 24rpx;
-  background: linear-gradient(135deg, rgba(255, 106, 61, 0.1) 0%, rgba(17, 214, 197, 0.08) 100%);
-  border: 2rpx solid rgba(255, 106, 61, 0.26);
-  color: #7b341e;
+  background: rgba(248, 213, 93, 0.15);
+  border: 2rpx solid rgba(248, 213, 93, 0.4);
+  color: #996B00;
   font-size: 25rpx;
   font-weight: 700;
 }
@@ -130,13 +126,13 @@
 .intro-card {
   padding: 30rpx 28rpx 28rpx;
   border-radius: 30rpx;
-  background: linear-gradient(180deg, rgba(255, 251, 246, 0.96) 0%, rgba(251, 243, 233, 0.94) 100%);
-  border: 2rpx solid rgba(199, 185, 165, 0.42);
+  background: #f9f9f9;
+  border: 2rpx solid #e5e5e5;
 }
 
 .register-intro {
-  background: linear-gradient(180deg, rgba(255, 244, 235, 0.96) 0%, rgba(252, 239, 226, 0.94) 100%);
-  border-color: rgba(255, 106, 61, 0.24);
+  background: rgba(248, 213, 93, 0.08);
+  border-color: rgba(248, 213, 93, 0.2);
 }
 
 .session-card {
@@ -145,33 +141,47 @@
   gap: 24rpx;
   padding: 40rpx 30rpx 32rpx;
   border-radius: 32rpx;
-  background: linear-gradient(135deg, #fff7ef 0%, #f8efe2 56%, #efe7dc 100%);
-  border: 2rpx solid rgba(199, 185, 165, 0.42);
+  background: #ffffff;
+  border: 3rpx solid #F8D55D;
+  box-shadow: 0 8rpx 24rpx rgba(248, 213, 93, 0.12);
 }
 
-.intro-title,
-.session-title {
+.intro-title {
   display: block;
   font-size: 32rpx;
   font-weight: 800;
   color: #171214;
 }
 
-.intro-desc,
+.session-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.intro-desc {
+  display: block;
+  font-size: 25rpx;
+  line-height: 1.82;
+  color: #666666;
+}
+
 .session-desc {
   display: block;
   font-size: 25rpx;
   line-height: 1.82;
-  color: #615850;
+  color: #666666;
 }
 
 .switch-account-link {
   align-self: center;
   margin-top: 6rpx;
   font-size: 24rpx;
-  color: #d4572b;
+  color: #C9A832;
   font-weight: 600;
 }
+
 
 .field-row {
   display: flex;
@@ -191,7 +201,7 @@
 
 .field-label {
   font-size: 25rpx;
-  color: #534741;
+  color: #333333;
   font-weight: 700;
   padding-left: 6rpx;
 }
@@ -202,9 +212,9 @@
   min-height: 92rpx;
   padding: 0 28rpx;
   border-radius: 24rpx;
-  background: rgba(255, 252, 248, 0.92);
-  border: 2rpx solid #d8cbbb;
-  color: #151214;
+  background: #ffffff;
+  border: 2rpx solid #e0e0e0;
+  color: #1a1a1a;
   font-size: 28rpx;
   display: flex;
   align-items: center;
@@ -224,13 +234,13 @@
   justify-content: center;
   border: none;
   border-radius: 999rpx;
-  background: linear-gradient(135deg, #151216 0%, #2a2420 56%, #ff6a3d 132%);
-  color: #f9f3ea;
+  background: #F8D55D;
+  color: #1a1a1a;
   font-size: 30rpx;
   font-weight: 800;
   text-align: center;
   letter-spacing: 2rpx;
-  box-shadow: 0 18rpx 34rpx rgba(23, 18, 18, 0.24);
+  box-shadow: 0 12rpx 28rpx rgba(248, 213, 93, 0.3);
 }
 
 .primary-btn[disabled] {
@@ -251,11 +261,11 @@
 }
 
 .register-text {
-  color: #7b6e66;
+  color: #666666;
 }
 
 .register-link {
-  color: #d4572b;
+  color: #C9A832;
   font-weight: 700;
   font-size: 28rpx;
   line-height: 1.6;
@@ -265,7 +275,7 @@
 .form-tip {
   font-size: 23rpx;
   line-height: 1.85;
-  color: #7b6e66;
+  color: #888888;
   text-align: center;
   padding: 12rpx 18rpx 0;
 }
@@ -273,13 +283,13 @@
 .empty-form-state {
   padding: 40rpx 24rpx;
   border-radius: 28rpx;
-  background: rgba(255, 250, 244, 0.82);
-  border: 2rpx dashed rgba(199, 185, 165, 0.72);
+  background: #f9f9f9;
+  border: 2rpx dashed #d0d0d0;
   text-align: center;
 }
 
 .empty-form-text {
   font-size: 24rpx;
   line-height: 1.7;
-  color: #7b6e66;
+  color: #888888;
 }

@@ -1,7 +1,5 @@
 page {
-  background:
-    radial-gradient(circle at top, rgba(255, 142, 83, 0.20), transparent 36%),
-    linear-gradient(180deg, #101321 0%, #181d2d 42%, #f5efe5 42%, #f7f3eb 100%);
+  background: linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 36%, #f5f5f5 36%, #ffffff 100%);
 }
 
 .agent-home {
@@ -9,10 +7,10 @@ page {
 }
 
 .hero-card {
-  background: linear-gradient(135deg, #ff8f5a 0%, #ff5c39 52%, #ffcb69 100%);
+  background: linear-gradient(135deg, #F8D55D 0%, #FADF7F 100%);
   border-radius: 32rpx;
   padding: 30rpx;
-  box-shadow: 0 20rpx 40rpx rgba(255, 92, 57, 0.24);
+  box-shadow: 0 20rpx 40rpx rgba(248, 213, 93, 0.3);
   margin-bottom: 24rpx;
 }
 
@@ -83,10 +81,11 @@ page {
 }
 
 .duty-card {
-  background: rgba(255, 253, 248, 0.96);
+  background: #ffffff;
   border-radius: 28rpx;
   padding: 24rpx;
-  box-shadow: 0 12rpx 30rpx rgba(19, 22, 35, 0.08);
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .duty-title {
@@ -101,7 +100,7 @@ page {
   margin-top: 10rpx;
   font-size: 32rpx;
   font-weight: 700;
-  color: #d7542f;
+  color: #F8D55D;
 }
 
 .duty-detail {
@@ -117,11 +116,11 @@ page {
   margin-top: 14rpx;
   font-size: 22rpx;
   font-weight: 600;
-  color: #d7542f;
+  color: #F8D55D;
 }
 
 .hero-metric {
-  background: rgba(255, 250, 244, 0.72);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 24rpx;
   padding: 22rpx 16rpx;
 }
@@ -142,11 +141,12 @@ page {
 
 .overview-panel,
 .section-card {
-  background: rgba(255, 253, 248, 0.96);
+  background: #ffffff;
   border-radius: 28rpx;
   padding: 28rpx 24rpx;
   margin-bottom: 24rpx;
-  box-shadow: 0 12rpx 30rpx rgba(19, 22, 35, 0.08);
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .section-head {
@@ -181,7 +181,7 @@ page {
 .section-link {
   font-size: 24rpx;
   font-weight: 600;
-  color: #d7542f;
+  color: #C9A832;
 }
 
 .signal-grid {
@@ -236,7 +236,7 @@ page {
 .asset-item,
 .candidate-preview-item {
   border-radius: 22rpx;
-  background: #f7f1e7;
+  background: #f9f9f9;
   padding: 22rpx;
 }
 
@@ -337,12 +337,12 @@ page {
 
 .battle-goal {
   font-weight: 600;
-  color: #d7542f;
+  color: #C9A832;
 }
 
 .asset-tier {
-  background: #efe1bf;
-  color: #7b5718;
+  background: rgba(248, 213, 93, 0.3);
+  color: #996B00;
 }
 
 .schedule-list {
@@ -358,9 +358,9 @@ page {
   align-items: center;
   padding: 20rpx;
   border-radius: 18rpx;
-  background: #f7f1e7;
+  background: #f9f9f9;
   font-size: 24rpx;
-  color: #443c35;
+  color: #333333;
 }
 
 .schedule-name {
@@ -383,18 +383,18 @@ page {
 }
 
 .recruit-stat {
-  background: #f7f1e7;
+  background: #f9f9f9;
   border-radius: 20rpx;
   padding: 24rpx 18rpx;
 }
 
 .recruit-stat-warn {
-  background: linear-gradient(135deg, #ff7a5c 0%, #ff9c59 100%);
+  background: linear-gradient(135deg, #F8D55D 0%, #FADF7F 100%);
 }
 
 .recruit-stat-warn .metric-value,
 .recruit-stat-warn .metric-label {
-  color: #fffaf0;
+  color: #1a1a1a;
 }
 
 .quick-actions {
@@ -407,7 +407,7 @@ page {
 
 .quick-action {
   border-radius: 20rpx;
-  background: #1b1c22;
+  background: #F8D55D;
   padding: 24rpx 20rpx;
 }
 
@@ -415,7 +415,7 @@ page {
   display: block;
   font-size: 28rpx;
   font-weight: 700;
-  color: #fff7ec;
+  color: #1a1a1a;
 }
 
 .quick-action-desc {
@@ -423,7 +423,7 @@ page {
   margin-top: 10rpx;
   font-size: 22rpx;
   line-height: 1.5;
-  color: rgba(255, 247, 236, 0.68);
+  color: rgba(26, 26, 26, 0.7);
 }
 
 .candidate-preview-item {
@@ -434,22 +434,22 @@ page {
 }
 
 .candidate-tag {
-  background: #ffd676;
-  color: #5c3d09;
+  background: #F8D55D;
+  color: #1a1a1a;
 }
 
 .refresh-btn {
   height: 88rpx;
   border-radius: 999rpx;
-  background: #1b1c22;
+  background: #F8D55D;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12rpx 24rpx rgba(27, 28, 34, 0.18);
+  box-shadow: 0 12rpx 24rpx rgba(248, 213, 93, 0.3);
 }
 
 .refresh-text {
   font-size: 28rpx;
   font-weight: 700;
-  color: #fff7ec;
+  color: #1a1a1a;
 }

@@ -40,6 +40,13 @@ export function isAdmin() {
   return getUserRole() === 'admin'
 }
 
+// 检查是否是超级管理员（只有特定用户名才能查看敏感信息）
+const SUPER_ADMIN_USERNAMES = ['admin']
+export function isSuperAdmin() {
+  const userInfo = getUserInfo()
+  return userInfo?.username && SUPER_ADMIN_USERNAMES.includes(userInfo.username)
+}
+
 // 检查是否是经纪人
 export function isAgent() {
   return getUserRole() === 'agent'

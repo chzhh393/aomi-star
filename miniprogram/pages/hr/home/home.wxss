@@ -1,20 +1,18 @@
 .hr-home {
   min-height: 100vh;
-  padding: 28rpx;
-  background:
-    radial-gradient(circle at top right, rgba(255, 212, 163, 0.45), transparent 26%),
-    linear-gradient(180deg, #18212b 0%, #223141 34%, #f2ebe2 34%, #f7f2ea 100%);
+  padding: 28rpx 24rpx 110rpx;
+  background: linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 36%, #f5f5f5 36%, #ffffff 100%);
 }
 
 .hero-panel {
   display: flex;
   justify-content: space-between;
   gap: 24rpx;
-  padding: 36rpx;
-  border-radius: 28rpx;
-  background: linear-gradient(135deg, #21303f, #10181f);
-  color: #fff9ef;
-  box-shadow: 0 20rpx 50rpx rgba(17, 23, 30, 0.24);
+  padding: 30rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #F8D55D 0%, #FADF7F 100%);
+  color: #221714;
+  box-shadow: 0 20rpx 40rpx rgba(248, 213, 93, 0.3);
 }
 
 .hero-copy {
@@ -24,30 +22,31 @@
 .hero-kicker {
   display: block;
   font-size: 20rpx;
-  letter-spacing: 6rpx;
-  color: #f6b26b;
+  letter-spacing: 4rpx;
+  color: rgba(30, 20, 18, 0.72);
 }
 
 .hero-title {
   display: block;
   margin-top: 14rpx;
-  font-size: 52rpx;
+  font-size: 46rpx;
   font-weight: 700;
+  color: #221714;
 }
 
 .hero-desc {
   display: block;
   margin-top: 18rpx;
-  font-size: 26rpx;
+  font-size: 24rpx;
   line-height: 1.7;
-  color: rgba(255, 249, 239, 0.78);
+  color: rgba(34, 23, 20, 0.76);
 }
 
 .hero-user {
   min-width: 168rpx;
   padding: 22rpx 24rpx;
   border-radius: 22rpx;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -55,53 +54,62 @@
 
 .user-role {
   font-size: 20rpx;
-  color: #f6b26b;
+  color: rgba(34, 23, 20, 0.62);
   letter-spacing: 4rpx;
 }
 
 .user-name {
   font-size: 32rpx;
-  font-weight: 600;
+  font-weight: 700;
+  color: #221714;
 }
 
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18rpx;
+  gap: 16rpx;
   margin-top: 24rpx;
 }
 
 .stat-card {
-  padding: 28rpx;
+  padding: 24rpx;
   border-radius: 24rpx;
-  background: #fffdf8;
-  box-shadow: 0 12rpx 30rpx rgba(50, 44, 36, 0.08);
+  background: #ffffff;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .stat-card.accent {
-  background: linear-gradient(135deg, #f6b26b, #e88d52);
-  color: #1f1710;
+  background: linear-gradient(135deg, #F8D55D 0%, #FADF7F 100%);
+  border: none;
+  color: #1a1a1a;
+  box-shadow: 0 12rpx 24rpx rgba(248, 213, 93, 0.3);
 }
 
 .stat-value {
   display: block;
-  font-size: 48rpx;
+  font-size: 38rpx;
   font-weight: 700;
+  color: #1b1c22;
 }
 
 .stat-label {
   display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: #6b625b;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: rgba(34, 23, 20, 0.62);
+}
+
+.stat-card.accent .stat-value {
+  color: #1a1a1a;
 }
 
 .stat-card.accent .stat-label {
-  color: rgba(31, 23, 16, 0.78);
+  color: rgba(26, 26, 26, 0.78);
 }
 
 .section {
-  margin-top: 28rpx;
+  margin-top: 24rpx;
 }
 
 .section-header {
@@ -112,59 +120,61 @@
 }
 
 .section-title {
-  font-size: 34rpx;
+  font-size: 30rpx;
   font-weight: 700;
-  color: #1a232d;
+  color: #1b1c22;
 }
 
 .section-subtitle,
 .section-link {
   font-size: 24rpx;
-  color: #8d6f52;
+  color: #F8D55D;
+  font-weight: 600;
 }
 
 .module-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18rpx;
+  gap: 16rpx;
 }
 
 .module-card {
   min-height: 252rpx;
-  padding: 28rpx;
-  border-radius: 26rpx;
-  background: linear-gradient(180deg, #fffdf7, #f4ece3);
-  box-shadow: 0 16rpx 36rpx rgba(40, 32, 26, 0.08);
+  padding: 24rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .module-title {
   display: block;
-  font-size: 32rpx;
+  font-size: 28rpx;
   font-weight: 700;
-  color: #202830;
+  color: #1b1c22;
 }
 
 .module-desc {
   display: block;
   min-height: 104rpx;
   margin-top: 14rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
   line-height: 1.7;
-  color: #6f665d;
+  color: #5d5751;
 }
 
 .module-metric {
   display: block;
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 700;
-  color: #9a4f23;
+  color: #F8D55D;
 }
 
 .module-highlight {
   display: block;
   margin-top: 8rpx;
   font-size: 22rpx;
-  color: #7a7268;
+  color: #7d736a;
 }
 
 .module-cta {
@@ -172,22 +182,24 @@
   margin-top: 18rpx;
   padding: 10rpx 20rpx;
   border-radius: 999rpx;
-  background: #1c2b37;
-  color: #fff6ea;
+  background: #F8D55D;
+  color: #1a1a1a;
   font-size: 22rpx;
+  font-weight: 600;
 }
 
 .empty-card {
   padding: 34rpx;
   border-radius: 24rpx;
-  background: #fffaf2;
+  background: #ffffff;
+  border: 2rpx solid #e5e5e5;
 }
 
 .empty-title {
   display: block;
   font-size: 28rpx;
   font-weight: 700;
-  color: #26303a;
+  color: #1b1c22;
 }
 
 .empty-desc {
@@ -195,7 +207,7 @@
   margin-top: 10rpx;
   font-size: 24rpx;
   line-height: 1.7;
-  color: #756b63;
+  color: #7d736a;
 }
 
 .priority-list,
@@ -207,10 +219,11 @@
 
 .priority-card,
 .followup-card {
-  padding: 26rpx 28rpx;
+  padding: 22rpx 24rpx;
   border-radius: 24rpx;
-  background: #fffdf8;
-  box-shadow: 0 12rpx 30rpx rgba(50, 44, 36, 0.08);
+  background: #ffffff;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .priority-card {
@@ -229,18 +242,19 @@
   display: inline-flex;
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  background: #f5e5d3;
-  color: #8d4c20;
+  background: rgba(248, 213, 93, 0.2);
+  color: #996B00;
   font-size: 20rpx;
+  font-weight: 600;
 }
 
 .priority-name,
 .followup-name {
   display: block;
   margin-top: 14rpx;
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 700;
-  color: #1f2831;
+  color: #1b1c22;
 }
 
 .priority-subtitle,
@@ -248,9 +262,9 @@
 .followup-state {
   display: block;
   margin-top: 8rpx;
-  font-size: 24rpx;
+  font-size: 23rpx;
   line-height: 1.6;
-  color: #756b63;
+  color: #5d5751;
 }
 
 .priority-btn {
@@ -258,9 +272,11 @@
   padding: 0 24rpx;
   line-height: 72rpx;
   border-radius: 999rpx;
-  background: #20303f;
-  color: #fff8ee;
+  background: #F8D55D;
+  color: #1a1a1a;
   font-size: 24rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 20rpx rgba(248, 213, 93, 0.3);
 }
 
 .priority-btn::after {

@@ -113,7 +113,7 @@
             <span class="meta-item">{{ row.basicInfo?.age || '-' }}岁</span>
             <span class="meta-divider">/</span>
             <span class="meta-item">{{ row.basicInfo?.height || '-' }}cm</span>
-            <template v-if="!isAgent()">
+            <template v-if="isSuperAdmin()">
               <span class="meta-divider">|</span>
               <span class="meta-item meta-phone">{{ row.basicInfo?.phone || '-' }}</span>
             </template>
@@ -289,7 +289,7 @@
               <span class="stat-chip">{{ currentCandidate.basicInfo?.height }}cm</span>
               <span class="stat-chip">{{ currentCandidate.basicInfo?.weight }}kg</span>
               <span v-if="currentCandidate.basicInfo?.mbti" class="stat-chip stat-mbti">{{ currentCandidate.basicInfo.mbti }}</span>
-              <span v-if="currentCandidate.basicInfo?.expectedSalary" class="stat-chip stat-salary">💰 期望收入{{ currentCandidate.basicInfo.expectedSalary }}元/月</span>
+              <span v-if="isSuperAdmin() && currentCandidate.basicInfo?.expectedSalary" class="stat-chip stat-salary">💰 期望收入{{ currentCandidate.basicInfo.expectedSalary }}元/月</span>
             </div>
             <div class="detail-style-labels" v-if="currentCandidate.basicInfo?.styleLabels?.length">
               <el-tag
@@ -321,8 +321,8 @@
 
         <!-- 2. 信息卡片网格 -->
         <div class="detail-grid">
-          <!-- 联系方式 - 仅非经纪人可见 -->
-          <div v-if="!isAgent()" class="info-block">
+          <!-- 联系方式 - 仅超级管理员可见 -->
+          <div v-if="isSuperAdmin()" class="info-block">
             <div class="info-block-title">联系方式</div>
             <div class="info-row">
               <span class="info-label">手机</span>
@@ -334,8 +334,8 @@
             </div>
           </div>
 
-          <!-- 社交账号 - 仅非经纪人可见 -->
-          <div v-if="!isAgent()" class="info-block">
+          <!-- 社交账号 - 仅超级管理员可见 -->
+          <div v-if="isSuperAdmin()" class="info-block">
             <div class="info-block-title">社交账号</div>
             <div class="info-row">
               <span class="info-label">抖音</span>
@@ -356,14 +356,17 @@
               <span class="info-label">直播经验</span>
               <span class="info-value">{{ currentCandidate.experience?.hasExperience ? '有' : '无' }}</span>
             </div>
-            <div class="info-row" v-if="currentCandidate.experience?.hasExperience">
-              <span class="info-label">所属公会</span>
-              <span class="info-value">{{ currentCandidate.experience?.guild || '-' }}</span>
-            </div>
-            <div class="info-row" v-if="currentCandidate.experience?.hasExperience && currentCandidate.experience?.accountName">
-              <span class="info-label">直播账号名</span>
-              <span class="info-value">{{ currentCandidate.experience.accountName }}</span>
-            </div>
+            <!-- 直播经验详情 - 仅超级管理员可见 -->
+            <template v-if="isSuperAdmin()">
+              <div class="info-row" v-if="currentCandidate.experience?.hasExperience">
+                <span class="info-label">所属公会</span>
+                <span class="info-value">{{ currentCandidate.experience?.guild || '-' }}</span>
+              </div>
+              <div class="info-row" v-if="currentCandidate.experience?.hasExperience && currentCandidate.experience?.accountName">
+                <span class="info-label">直播账号名</span>
+                <span class="info-value">{{ currentCandidate.experience.accountName }}</span>
+              </div>
+            </template>
             <div class="info-row">
               <span class="info-label">报名时间</span>
               <span class="info-value">{{ formatDate(currentCandidate.createdAt) }}</span>
@@ -785,8 +788,8 @@
           </div>
         </div>
 
-        <!-- 5. 流水截图 -->
-        <div v-if="currentCandidate.experience?.hasExperience && currentCandidate.experience?.incomeScreenshot" class="detail-section">
+        <!-- 5. 流水截图 - 仅超级管理员可见 -->
+        <div v-if="isSuperAdmin() && currentCandidate.experience?.hasExperience && currentCandidate.experience?.incomeScreenshot" class="detail-section">
           <div class="section-title">流水截图</div>
           <div class="income-screenshot-section">
             <el-image
@@ -1574,7 +1577,7 @@ import InterviewEvaluationDialog from '../../components/candidates/interview-eva
 import MetricCardGrid from '../../components/common/metric-card-grid.vue'
 import { STATUS_MAP, formatDate } from '../../utils/constants'
 import { resolveCandidateImages } from '../../utils/cloudfile'
-import { hasPermission, getUserRole, isAgent } from '../../utils/permission'
+import { hasPermission, getUserRole, isAgent, isSuperAdmin } from '../../utils/permission'
 
 const list = ref([])
 const total = ref(0)

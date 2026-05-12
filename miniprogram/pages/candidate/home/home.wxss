@@ -1,57 +1,54 @@
 /* pages/candidate/home/home.wxss */
-/* 候选人工作台 - 街头运动风格 - 蓝色主题 */
+/* 候选人工作台 - 统一配色 */
 
 /* ==================== 主容器 ==================== */
 .container {
   min-height: 100vh;
-  background: #F0F0F0;
-  padding: 0 0 120rpx;
+  background: linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 36%, #f5f5f5 36%, #ffffff 100%);
+  padding: 28rpx 24rpx 120rpx;
 }
 
 /* ==================== 顶部横幅 ==================== */
 .header-banner {
-  background: #000000;
-  padding: 48rpx 32rpx 32rpx;
+  background: linear-gradient(135deg, #F8D55D 0%, #FADF7F 100%);
+  padding: 30rpx;
+  border-radius: 32rpx;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 20rpx 40rpx rgba(248, 213, 93, 0.3);
 }
 
 .banner-slash {
-  position: absolute;
-  top: 0;
-  right: -40rpx;
-  width: 200rpx;
-  height: 100%;
-  background: #13E8DD;
-  transform: skewX(-15deg);
+  display: none;
 }
 
 .banner-text {
-  font-size: 48rpx;
-  font-weight: 900;
-  color: #FFFFFF;
-  letter-spacing: 4rpx;
+  font-size: 46rpx;
+  font-weight: 700;
+  color: #221714;
+  letter-spacing: 2rpx;
   position: relative;
   z-index: 1;
   display: block;
-  text-transform: uppercase;
 }
 
 .banner-subtitle {
   font-size: 24rpx;
-  color: #999999;
+  color: rgba(34, 23, 20, 0.76);
   position: relative;
   z-index: 1;
   display: block;
-  margin-top: 8rpx;
+  margin-top: 12rpx;
 }
 
 /* ==================== 状态卡片 ==================== */
 .status-card {
-  background: #FFFFFF;
-  margin: 24rpx;
+  background: #ffffff;
+  margin: 24rpx 0;
   padding: 40rpx 32rpx;
-  border: 4rpx solid #000000;
+  border-radius: 28rpx;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
   text-align: center;
   position: relative;
 }
@@ -65,43 +62,47 @@
 }
 
 .status-title {
-  font-size: 36rpx;
-  font-weight: 900;
-  color: #000000;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1b1c22;
   margin-bottom: 16rpx;
 }
 
 .status-desc {
-  font-size: 26rpx;
-  color: #666666;
-  line-height: 1.6;
+  font-size: 24rpx;
+  color: #5d5751;
+  line-height: 1.7;
 }
 
 /* ==================== 进度块 ==================== */
 .progress-block {
-  background: #000000;
-  margin: 0 24rpx 24rpx;
-  padding: 32rpx;
+  background: #ffffff;
+  margin: 0 0 24rpx;
+  padding: 24rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .block-label {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: 20rpx;
 }
 
 .label-slash {
   width: 6rpx;
-  height: 32rpx;
-  background: #13E8DD;
+  height: 28rpx;
+  background: #F8D55D;
+  border-radius: 3rpx;
 }
 
 .label-text {
   font-size: 24rpx;
-  font-weight: 900;
-  color: #FFFFFF;
-  letter-spacing: 3rpx;
+  font-weight: 700;
+  color: #1b1c22;
+  letter-spacing: 2rpx;
 }
 
 .progress-steps {
@@ -120,17 +121,17 @@
 .step-icon-box {
   width: 72rpx;
   height: 72rpx;
-  background: #333333;
+  background: #f9f9f9;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 4rpx solid #333333;
+  border: 2rpx solid #e5e5e5;
 }
 
 .step-item.active .step-icon-box {
-  background: #13E8DD;
-  border-color: #13E8DD;
+  background: linear-gradient(135deg, #F8D55D 0%, #FADF7F 100%);
+  border-color: #F8D55D;
 }
 
 .step-icon {
@@ -139,19 +140,19 @@
 
 .step-label {
   font-size: 22rpx;
-  color: #666666;
+  color: #7d736a;
   font-weight: 600;
 }
 
 .step-item.active .step-label {
-  color: #13E8DD;
-  font-weight: 900;
+  color: #996B00;
+  font-weight: 700;
 }
 
 .step-line {
   flex: 1;
   height: 4rpx;
-  background: #333333;
+  background: #e5e5e5;
   position: relative;
   margin: 0 16rpx;
 }
@@ -159,7 +160,7 @@
 .step-line-fill {
   height: 100%;
   width: 0;
-  background: #13E8DD;
+  background: #F8D55D;
   transition: width 0.5s ease;
 }
 
@@ -169,17 +170,19 @@
 
 /* ==================== 审核信息块 ==================== */
 .review-block {
-  background: #FFFFFF;
-  margin: 0 24rpx 24rpx;
-  padding: 32rpx;
-  border: 4rpx solid #000000;
+  background: #ffffff;
+  margin: 0 0 24rpx;
+  padding: 24rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid #e5e5e5;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
 .review-item {
   display: flex;
   justify-content: space-between;
-  padding: 20rpx 0;
-  border-bottom: 2rpx solid #E0E0E0;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .review-item:last-child {
@@ -187,14 +190,14 @@
 }
 
 .review-label {
-  font-size: 26rpx;
-  color: #666666;
+  font-size: 24rpx;
+  color: #7d736a;
   font-weight: 600;
 }
 
 .review-value {
-  font-size: 26rpx;
-  color: #000000;
+  font-size: 24rpx;
+  color: #1b1c22;
   font-weight: 700;
   max-width: 60%;
   text-align: right;
@@ -202,7 +205,6 @@
 
 /* ==================== 操作按钮 ==================== */
 .actions-block {
-  padding: 0 24rpx;
   display: flex;
   flex-direction: column;
   gap: 16rpx;
@@ -213,28 +215,29 @@
   height: 88rpx;
   border: none;
   font-size: 28rpx;
-  font-weight: 900;
-  border-radius: 0;
+  font-weight: 700;
+  border-radius: 22rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .btn-primary {
-  background: #13E8DD;
-  color: #000000;
+  background: #F8D55D;
+  color: #1a1a1a;
+  box-shadow: 0 12rpx 24rpx rgba(248, 213, 93, 0.3);
 }
 
 .btn-secondary {
-  background: #FFFFFF;
-  color: #000000;
-  border: 4rpx solid #000000;
+  background: #f9f9f9;
+  color: #1b1c22;
+  border: 2rpx solid #e5e5e5;
 }
 
 .btn-ghost {
   background: transparent;
-  color: #000000;
-  border: 4rpx solid #000000;
+  color: #1b1c22;
+  border: 2rpx solid #e5e5e5;
 }
 
 .btn-primary:active {
@@ -257,15 +260,16 @@
 
 .btn-text {
   font-size: 28rpx;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 /* ==================== 温馨提示 ==================== */
 .tips-block {
-  margin: 24rpx;
-  padding: 24rpx;
-  background: rgba(19, 232, 221, 0.1);
-  border-left: 6rpx solid #13E8DD;
+  margin: 24rpx 0;
+  padding: 20rpx 24rpx;
+  background: rgba(248, 213, 93, 0.1);
+  border-left: 6rpx solid #F8D55D;
+  border-radius: 0 22rpx 22rpx 0;
 }
 
 .tip-item {
@@ -280,13 +284,13 @@
 }
 
 .tip-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
   flex-shrink: 0;
 }
 
 .tip-text {
-  font-size: 24rpx;
-  color: #666666;
-  line-height: 1.6;
+  font-size: 22rpx;
+  color: #5d5751;
+  line-height: 1.7;
   flex: 1;
 }
